@@ -33,12 +33,12 @@ In any case, only the first maxPrnDoc characters of each characteristic document
 
 \references{
  
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
 
 }
 
 \author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Antón
-Sánchez-Espigares\cr}
+Sánchez-Espigares, Belchin Kostov}
 
 \seealso{ \code{\link{TextData}}, \code{\link{print.LexChar}}, \code{\link{plot.LexChar}}}
 

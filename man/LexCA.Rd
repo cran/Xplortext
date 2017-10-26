@@ -63,11 +63,11 @@ In the case of a direct CA, DocTerm is a non-aggregate table and:
 \references{
 Benzecri, J, P. (1981). Pratique de l'analyse des donnees. Linguistique & lexicologie (Vol.3). (P. Dunod., Ed).
 
-Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC.
+Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. <doi:10.1080/02664763.2012.657409>.
 
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
 
-Murtagh F. (2005). Correspondence Analysis and Data Coding with R and Java. Chapman & Hall/CRC.
+Murtagh F. (2005). Correspondence Analysis and Data Coding with R and Java. Chapman & Hall/CRC. <doi:10.1201/9781420034943>.
 }
 \author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Anton 
   Sánchez-Espigares\cr}

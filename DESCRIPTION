@@ -1,20 +1,18 @@
 Package: Xplortext
 Type: Package
 Title: Statistical Analysis of Textual Data
-Version: 1.00
-Date: 2017-05-24
-Author: Monica Bécue-Bertaut, Ramón Alvarez-Esteban, Josep-Anton Sánchez-
-    Espigares
+Version: 1.1.0
+Date: 2017-10-26
+Author: Monica Bécue-Bertaut, Ramón Alvarez-Esteban, Josep-Anton Sánchez-Espigares
 Maintainer: Ramón Alvarez-Esteban <ramon.alvarez@unileon.es>
-Description: A complete set of functions devoted to statistical analysis of
-    documents.
+Description: Provides a set of functions devoted to multivariate exploratory statistics on textual data. Classical methods such as correspondence analysis and agglomerative hierarchical clustering are available. Chronologically constrained agglomerative hierarchical clustering enriched with labelled-by-words trees is offered. Given a division of the corpus into parts, their characteristic words and documents are identified. Further, accessing to 'FactoMineR' functions is very easy. Two of them are relevant in textual domain. MFA() addresses multiple lexical table allowing applications such as dealing with multilingual corpora as well as simultaneously analyzing both open-ended and closed questions in surveys. CaGalt() helps to explore the relationships between lexical choices and contextual variables. See <http://www.Xplortext.org> for examples.
 License: GPL (>= 2.0)
-Depends: R (>= 3.4.0), FactoMineR(>= 1.35), ggplot2(>= 2.2.1)
+Depends: R (>= 3.3.1), FactoMineR(>= 1.36), ggplot2(>= 2.2.1)
 Imports: tm, stringr, slam, stats, graphics, gridExtra, utils
 URL: http://www.xplortext.org
 Encoding: latin1
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-05-25 12:27:46 UTC; Usuario
+Packaged: 2017-10-26 17:52:33 UTC; Usuario
 Repository: CRAN
-Date/Publication: 2017-05-25 14:33:20 UTC
+Date/Publication: 2017-10-26 20:33:58 UTC

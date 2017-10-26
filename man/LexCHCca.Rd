@@ -52,7 +52,7 @@ The tree is plotted jointly with a barchart of the successive values of the aggr
 
 \references{
 Bécue-Bertaut, M., Kostov, B., Morin, A., & Naro, G. (2014). Rhetorical Strategy in Forensic Speeches: 
-Multidimensional Statistics-Based Methodology. Journal of Classification,31, 85--106.
+Multidimensional Statistics-Based Methodology. Journal of Classification,31, 85-106. <doi:10.1007/s00357-014-9148-9>.
 
 Lebart L. (1978). Programme d'agrégation avec contraintes. Les Cahiers de l'Analyse des Données, 3, pp. 275--288.
 
@@ -62,7 +62,8 @@ Murtagh F. (1985). Multidimensional Clustering Algorithms. Vienna: Physica-Verla
 
 }
 
-\author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton Sánchez-Espigares\cr}
+\author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton Sánchez-Espigares, 
+Belchin Kostov\cr}
 
 \seealso{\code{\link{plot.LexCHCca}}, \code{\link{LabelTree}}, \code{\link{LexCA}}}
 

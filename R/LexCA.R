@@ -12,6 +12,7 @@ plotLexCA <- function()
 # if(dev.interactive()) dev.new()
 plot.LexCA(res, selDoc=NULL, selWord=NULL, eigen=TRUE, axes=axes)
 
+
 if(!is.null(res$quanti.sup$coord)) {
 #  if(dev.interactive()) dev.new()
  plot.LexCA(res, selDoc=NULL, selWord=NULL, quanti.sup=rownames(res$quanti.sup$coord), eigen=FALSE, axes=axes)
@@ -26,7 +27,7 @@ if(!is.null(rownames(res$segment$coord))& segment==TRUE){
 
 if(!is.null(res$quali.sup)) {
 # if(dev.interactive()) dev.new()
- plot.LexCA(res, selDoc= NULL, selWord= NULL, quali.sup="ALL", axes=axes)
+  plot.LexCA(res, selDoc= NULL, selWord= NULL, quali.sup="ALL", axes=axes)
  }
 
 if(!is.null(res$row.sup$coord)){
@@ -222,16 +223,33 @@ if(context=="ALL") {
  if(!is.null(object$context$quali)) context <- as.character(colnames(object$context$quali))
  if(!is.null(object$context$quanti)) context <- c(context,colnames(object$context$quanti))
 }
-
   if(!is.null(object$context$quanti)){
    context.quanti <- checkcontext(context,object$context$quanti)
    context.quanti <- colnames(object$context$quanti)[context.quanti]
+
+  fval <- apply(object$context$quanti[context.quanti], 2, function(x) max(x)-min(x))
+  fval <- context.quanti[which(fval==0)]
+  if(length(fval)>0){
+   warning("Quantitative variables with the same value are removed: ",fval)
+   context.quanti <- context.quanti[- which(fval==0)]
+  }
   if(length(context.quanti)==0) context.quanti<-NULL
     } else {context.quanti<-NULL}
 
   if(!is.null(as.character(colnames(object$context$quali)))){
    context.quali <- checkcontext(context,object$context$quali)
    context.quali <- colnames(object$context$quali)[context.quali]
+
+
+
+
+
+
+
+
+
+
+
    if(length(context.quali)==0) context.quali<-NULL
 } else { context.quali<- NULL}
 } # Final if(!is.null(context))
@@ -321,14 +339,6 @@ pos.elim<-which(colSums(LTS[c(1:ndocact),,drop=FALSE])==0)
   nsegm <- ncol(LTS)	
    LT <- cbind(LT,LTS)	}	
 
-
-
-
-
-
-
-
-#_____________________________________________	
 # ==== Yuxtapostition of qualitative and quantitative variables 	
  if(length(context.quali)>0) {
       yQL <- data.frame(object$context$quali[rownames(LT),context.quali])
@@ -387,9 +397,9 @@ if(nquanti >0){ quanti.sup <- c((ncoltemp+1):(ncoltemp+nquanti)); ncoltemp <- nc
 
 res <- CA(LT, ncp, row.sup=row.sup, col.sup=word.sup, quali.sup=quali.sup, quanti.sup=quanti.sup, graph=FALSE)
  res$meta <- Keys(res,lmd,lmw,naxes, axes)
-res$VCr <- round(sqrt(sum(res$eig[, 1])/ (minrowcol-1) ), 4)
-res$Inertia <- round(sum(res$eig[, 1]), 4)
-res$info <- info
+ res$VCr <- round(sqrt(sum(res$eig[, 1])/ (minrowcol-1) ), 4)
+ res$Inertia <- round(sum(res$eig[, 1]), 4)
+ res$info <- info
 
 if(segment==TRUE) if(ncol(LTS)==0) segment<-NULL
 if(segment==TRUE) {
@@ -404,6 +414,7 @@ if(segment==TRUE) {
  suppressWarnings(res$segment$cos2 <- res$col.sup$cos2[(1:nsegm),,drop=FALSE])
 }}
 
+
 if(!is.null(res$quali.sup$coord)) {
   res$quali.sup$cos2 <- res$quali.sup$coord[,,drop=FALSE]
   Xact <- as.matrix( LT[,1:nwordact, drop=FALSE])
@@ -417,6 +428,23 @@ if(!is.null(res$quali.sup$coord)) {
 }
 
  class(res) <- c("LexCA","CA", "list")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if(graph==TRUE) plotLexCA()
 return(res)
@@ -637,6 +665,8 @@ suppressWarnings(res$segment$cos2 <- res$col.sup$cos2[(1:nsegm),])
  if(!is.null(var.agg))
 {
    rownames(res$segment$coord)<- substring(rownames(res$segment$coord),2)
+   aa <- sub('\\.', ':', rownames(res$segment$coord)) 
+   rownames(res$segment$coord) <- gsub("\\."," ",aa)
    rownames(res$segment$cos2) <-  rownames(res$segment$coord)
    rownames(res$col.sup$coord)[(nwordsup+1):nrow(res$col.sup$coord)] <- rownames(res$segment$coord)
    rownames(res$col.sup$cos2)<-  rownames(res$col.sup$coord)

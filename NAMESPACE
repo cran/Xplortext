@@ -45,3 +45,5 @@ importFrom(graphics,text)
 importFrom(utils,head)
 importFrom(utils,modifyList)
 importFrom(utils,write.table)
+importFrom(utils,packageDescription)
+

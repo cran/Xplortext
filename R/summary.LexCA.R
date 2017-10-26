@@ -20,10 +20,11 @@ printC <- function(obj, text1, nval, nDim, nIni) {
 
 
 printI <- function(obj, obj2, text1, nval) {
- cat(paste("\n",text1,"\n"))
+# cat(paste("\n",text1,"\n"))
+ cat(paste("\n"))
  obj <- matrix(round(obj[1:nval],nb.dec),nrow=nval,ncol=1)
  rownames(obj) <- rownames(obj2)[1:nrow(obj)]; colnames(obj) <- "Inertia"
- if(nrow(obj2)> nval) cat(paste("Only the first ", nval, "elements are shown\n"))
+# if(nrow(obj2)> nval) cat(paste("Only the first ", nval, "elements are shown\n"))
  print(obj)
 }
 
@@ -43,9 +44,7 @@ ndoc <- min(nrow(object$row$coord),ndoc)
 nword <- min(nrow(object$col$coord),nword)
 nseg <- min(nseg,nrow(object$segment$coord))
 
-
-
-for(i in seq_len(sink.number())){sink(NULL)}
+# for(i in seq_len(sink.number())){sink(NULL)}
 if(!is.null(file)) sink(file) else file=""
 
 cat("Correspondence analysis summary\n")
@@ -62,10 +61,10 @@ eige <- format(t(round(object$eig[1:nEig, 1:3], nb.dec)), justify = "right")
 if(ndoc>0) {
 cat("\n\nDOCUMENTS")
 if(!is.null(object$var.agg)) cat("\nAll documents are aggregate documents\n")
-printC(object$row$coord,"Coordinates of the documents", ndoc, nEig,1)
-printC(object$row$contrib,"Contribution of the documents (by column total=100)", ndoc, nEig,1)
-printC(object$row$cos2,"Squared cosinus of the documents (by row total=1)", ndoc, nEig,1)
-printI(object$row$inertia,object$row$coord, "Documents inertia", ndoc)}
+printC(object$row$coord,"Coordinates", ndoc, nEig,1)
+printC(object$row$contrib,"Contributions (by column total=100)", ndoc, nEig,1)
+printC(object$row$cos2,"Square cosinus (by row total=1)", ndoc, nEig,1)
+printI(object$row$inertia,object$row$coord, "", ndoc)}
 
 if(metaDocs!=FALSE){
 cat("\n\nDocuments whose contribution is over ", object$meta$lmd, " times the average document contribution\n")
@@ -80,10 +79,10 @@ for(i in 1:nEig) {
 
 if(nword>0) {
 cat("\n\nWORDS\n")
-printC(object$col$coord,"Coordinates of the words", nword, nEig,1)
-printC(object$col$contrib,"Contribution of the words (by-column total=100)", nword, nEig,1)
-printC(object$col$cos2,"Squared cosinus of the words (by-row total=1)", nword, nEig,1)
-printI(object$col$inertia,object$col$coord, "Words inertia", nword)}
+printC(object$col$coord,"Coordinates", nword, nEig,1)
+printC(object$col$contrib,"Contributions (by-column total=100)", nword, nEig,1)
+printC(object$col$cos2,"Square cosinus (by-row total=1)", nword, nEig,1)
+printI(object$col$inertia,object$col$coord, "", nword)}
 
 if(metaWords!=FALSE){
 cat("\n\nWords whose contribution is over ", object$meta$lmw , " times the average word contribution\n")
@@ -97,13 +96,16 @@ for(i in 1:nEig) {
 
 nSeg<- ifelse(is.null(object$segment$coord),0 ,nrow(object$segment$coord))
 if(nseg>0) {
-nSeg <- min(nSeg,nseg)
-   printC(object$segment$coord,"Coordinates of the repeated segments", nSeg , nEig, 1)
-   printC(object$segment$cos2,"Squared cosinus of the repeated segments", nSeg , nEig, 1)
+cat("\n\nREPEATED SEGMENTS\n")
+nS <- min(nSeg,nseg)
+   printC(object$segment$coord,"Coordinates", nS , nEig, 1)
+   printC(object$segment$cos2,"Square cosinus", nS , nEig, 1)
  }
 
 
+
 if(nsup!=0) {
+
 if(!is.null(object$row.sup)) {
   if(nsup=="ALL") nDsup<-nrow(object$row.sup$coord) 
      else nDsup <- min(nrow(object$row.sup$coord),nsup)} else {nDsup<-0}
@@ -111,39 +113,47 @@ if(!is.null(object$row.sup)) {
 nWsup<- ifelse(is.null(object$col.sup$coord),0 ,nrow(object$col.sup$coord)-nSeg)
 if(nWsup>0) {if(nsup!="ALL") nWsup<- min(nWsup,nsup)} 
 
+
 if(!is.null(object$quali.sup)) {
   nQsup<- nrow(object$quali.sup$coord)
   if(nsup!="ALL") nQsup<- min(nQsup,nsup)}else {nQsup<-0}
 if(!is.null(object$quanti.sup)) nQQsup<- nrow(object$quanti.sup$coord) else nQQsup<-0
 if(nDsup + nWsup+ nQsup + nQQsup>0) {
-cat("\n\nSUPPLEMENTARY ELEMENTS\n")
+
 
 if(nDsup>0){
- printC(object$row.sup$coord,"Coordinates of the supplementary documents", nDsup, nEig,1)
- printC(object$row.sup$cos2,"Squared cosinus of the supplementary documents",
-  nDsup, nEig,1)}
+ cat("\n\nSUPPLEMENTARY DOCUMENTS\n")
+ printC(object$row.sup$coord,"Coordinates", nDsup, nEig,1)
+ printC(object$row.sup$cos2,"Square cosinus", nDsup, nEig,1)}
 
 if(nWsup>0) {
- printC(object$col.sup$coord,"Coordinates of the supplementary words", nWsup,nEig,1)
- printC(object$col.sup$cos2,"Squared cosinus of the supplementary words", nWsup, nEig,1)}
+ cat("\n\nSUPPLEMENTARY WORDS\n")
+ printC(object$col.sup$coord,"Coordinates", nWsup,nEig,1)
+ printC(object$col.sup$cos2,"Square cosinus", nWsup, nEig,1)}
+
 
 if(nQsup>0) {
- printC(object$quali.sup$coord,"Coordinates of the supplementary categories",nQsup, nEig,1)
- printC(object$quali.sup$cos2,"Squared cosinus of the supplementary categories", 
+ cat("\n\nSUPPLEMENTARY CATEGORIES\n")
+ printC(object$quali.sup$coord,"Coordinates",nQsup, nEig,1)
+ printC(object$quali.sup$cos2,"Square cosinus", 
   nQsup, nEig,1)
  if(!is.null(object$quali.sup$v.test)) {
  printC(object$quali.sup$v.test,"v.test of the supplementary categories", 
    nQsup, nEig,1)}}
+
+
 if(nQQsup>0) {
-   cat("\n\nCoordinates of the supplementary quantitative variables\n")
+cat("\n\nSUPPLEMENTARY QUANTITATIVE VARIABLES\n")
+   cat("\nCoordinates\n")
    cat("\nEqual to the correlations of the variable with the axes\n")
    print(data.frame(round(object$quanti.sup$coord[,1:nEig,drop=FALSE],nb.dec),
       row.names=rownames(object$quanti.sup$coord)))
-   cat("\nSquared cosinus of the supplementary quantitative variables\n")
+   cat("\nSquare cosinus\n")
    print(data.frame(round(object$quanti.sup$cos2[,1:nEig,drop=FALSE],nb.dec),
       row.names=rownames(object$quanti.sup$cos2)))}
 }
 }
+
 
 if(file!=""){
   sink()

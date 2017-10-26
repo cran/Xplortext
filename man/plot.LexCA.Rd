@@ -14,7 +14,8 @@ Plots textual correspondence analysis (CA) graphs from a LexCA object.
   title=NULL, axes=c(1,2), col.doc="blue", col.word="red", col.doc.sup="darkblue", 
   col.word.sup="darkred", col.quanti.sup = "blue", col.quali.sup="darkgreen", 
   col.seg="cyan4", col="grey", cex=1, xlim=NULL, ylim=NULL, shadowtext=FALSE,
-  habillage="none", unselect=1, autoLab=c("auto", "yes", "no"), plot.new=TRUE, ...)
+  habillage="none", unselect=1, label="all", autoLab=c("auto", "yes", "no"), 
+  plot.new=TRUE, ...)
 }
 \arguments{
   \item{x}{object of LexCA class}
@@ -43,6 +44,7 @@ Plots textual correspondence analysis (CA) graphs from a LexCA object.
   \item{shadowtext}{if TRUE, shadow on the labels (rectangles are written under the labels which may lead to difficulties to modify the graph with another program) (by default FALSE)}
   \item{habillage}{index or name of the categorical variable used to differentiate the documents by colors given according to the category; by default "none")}
   \item{unselect}{either a value between 0 and 1 or a color. In the first case, transparency level of the unselected objects (if unselect=1 the transparency is total and the elements are not represented; if unselect=0 the elements are represented as usual but without any label); in the case of a color (e.g. unselect="grey60"), the non-selected points are given this color (by default 1)}
+  \item{label}{a list of character for the variables which are labelled (by default NULL and all the drawn variables are labelled). You can label all the active variables by putting "var" and/or all the supplementary variables by putting "quanti.sup" and/or a list with the names of the variables which should be labelled. Value should be one of "all", "none", "row", "row.sup", "col", "col.sup", "quali.sup" or NULL.}
   \item{autoLab}{if autoLab="auto", autoLab turns to be equal to "yes" if there are less than 50 elements and equal to "no" otherwise; if "yes", the labels are moved, as little as possible, to avoid overlapping (time-consuming if many elements); if "no" the labels are placed quickly but may overlap}
   \item{plot.new}{if TRUE, a new graphical device is created (by default TRUE)}
   \item{\dots}{further arguments passed from other methods...}

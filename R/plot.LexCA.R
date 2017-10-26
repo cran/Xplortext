@@ -4,9 +4,9 @@ plot.LexCA <- function(x, selDoc="ALL",selWord="ALL", selSeg=NULL,
   selDocSup=NULL, selWordSup=NULL, quanti.sup=NULL, quali.sup=NULL, maxDocs=20,  
   eigen=FALSE, title=NULL, axes=c(1,2), col.doc="blue", col.word="red",
   col.doc.sup="darkblue", col.word.sup="darkred", col.quanti.sup = "blue",
-  col.quali.sup="darkgreen", col.seg="cyan4",
-  col="grey", cex=1, xlim=NULL, ylim=NULL, shadowtext=FALSE, 
-  habillage="none", unselect=1, autoLab=c("auto", "yes", "no"), plot.new=TRUE, ...) 
+  col.quali.sup="darkgreen", col.seg="cyan4",col="grey", cex=1, 
+  xlim=NULL, ylim=NULL, shadowtext=FALSE, habillage="none", unselect=1,
+  label="all", autoLab=c("auto", "yes", "no"), plot.new=TRUE, ...) 
 
 {
  if (!inherits(x, "LexCA"))  stop("x object should be LexCA class")
@@ -219,11 +219,14 @@ if(!is.null(x$quali.sup$coord)) {
 if(is.null(selDocSup)){ 
     x$row.sup$coord <- x$quali.sup$coord
      selDocSup <- rownames(x$quali.sup$coord)
+    col.doc.sup <- col.quali.sup
   } else {
  colnames(x$quali.sup$coord) <- colnames(x$row$coord)
  x$row.sup$coord <- rbind(x$row.sup$coord, x$quali.sup$coord)
  selDocSup <- c(selDocSup, rownames(x$quali.sup$coord))
- col.doc.sup <- c(rep(col.doc.sup,nrowsup), rep(col.quali.sup,nrow(x$quali.sup$coord)))}
+ col.doc.sup <- c(rep(col.doc.sup,nrowsup), rep(col.quali.sup,nrow(x$quali.sup$coord)))
+}
+
  if(length(selDocSup)==0) selDocSup <- NULL
 }
 if(is.null(selDocSup)) invisib <- c(invisib,"row.sup")
@@ -236,8 +239,6 @@ else selDoc <- c(selDoc,selDocSup)
 nsegm <-0; nwordsup <-0
  if(!is.null(x$segment$coord)) nsegm <- nrow(x$segment$coord)
  if(!is.null(x$col.sup$coord)) nwordsup <- (nrow(x$col.sup$coord))-nsegm
-
-
 
 
 if(!is.null(selSeg)) {
@@ -283,10 +284,11 @@ invisib <- unique(invisib)
 if(length(invisib)==6) stop("No selected elements to plot")
 
 
+
 if(plot.new==TRUE){if(dev.interactive()) dev.new()}
  plot.CA(x, axes=axes, invisible=invisib,
     choix=c("CA"), title= title, cex=cex, selectCol=selWord, selectRow=selDoc, 
     xlim=xlim, ylim=ylim, shadowtext=shadowtext,habillage=habillage, unselect=unselect,
-    autoLab=autoLab, col.row=col.doc, col.row.sup=col.doc.sup, col.col=col.word,
-    col.col.sup=col.word.sup)
+    autoLab=autoLab, col.row=col.doc, col.row.sup=col.doc.sup, label=label, 
+    col.col=col.word, col.col.sup=col.word.sup)
 }}}

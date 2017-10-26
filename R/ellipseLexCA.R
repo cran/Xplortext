@@ -1,7 +1,7 @@
 #' @importFrom graphics lines
 #' @export
  ellipseLexCA <- function (object, selWord="ALL",selDoc="ALL", 
-    nbsample = 100, axes = c(1, 2), xlim = NULL, ylim = NULL, 
+    nbsample = 100, axes = c(1, 2), xlim = NULL, ylim = NULL, title=NULL,
     col.doc = "blue", col.word = "red", col.doc.ell = col.doc, 
     col.word.ell = col.word, cex=1) 
 {
@@ -158,12 +158,12 @@ if ( (length(selDoc) + length(selWord))  == 0)
         }
     }
     if (  (!is.null(selWord)) & (!is.null(selDoc))  )
- plot.LexCA(object, axes = axes, selWord=selWord,selDoc=selDoc,xlim = xlim, ylim = ylim, col.doc = col.doc, col.word = col.word,cex=cex)
+ plot.LexCA(object, axes = axes, selWord=selWord,selDoc=selDoc,xlim = xlim, ylim = ylim, col.doc = col.doc, col.word = col.word,cex=cex,title=title)
     else {
           if (!is.null(selWord))  
-         plot.LexCA(object, axes = axes, selWord=selWord,selDoc=NULL,xlim = xlim, ylim = ylim, col.word = col.word,,cex=cex) 
+         plot.LexCA(object, axes = axes, selWord=selWord,selDoc=NULL,xlim = xlim, ylim = ylim, col.word = col.word,,cex=cex,title=title) 
           if (!is.null(selDoc)) 
-         plot.LexCA(object, axes = axes, selWord=NULL,selDoc=selDoc,xlim = xlim, ylim = ylim,  col.doc = col.doc,,cex=cex)
+         plot.LexCA(object, axes = axes, selWord=NULL,selDoc=selDoc,xlim = xlim, ylim = ylim,  col.doc = col.doc,,cex=cex,title=title)
          }
 
     if (!is.null(selDoc)) {

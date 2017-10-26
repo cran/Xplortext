@@ -23,13 +23,13 @@ only the non-empty nodes are included}
 
 \references{
 Bécue-Bertaut, M., Kostov, B., Morin, A., & Naro, G. (2014). Rhetorical Strategy in Forensic Speeches: 
-Multidimensional Statistics-Based Methodology. Journal of Classification,31,85--106.
+Multidimensional Statistics-Based Methodology. Journal of Classification,31,85-106. <doi:10.1007/s00357-014-9148-9>.
 
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
 }
 
 \author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton 
-Sánchez-Espigares}
+Sánchez-Espigares, Belchin Kostov}
 
 \seealso{ \code{\link{LexHCca}}, \code{\link{LexCA}}}
 

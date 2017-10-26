@@ -11,8 +11,8 @@ Draws confidence ellipses around documents and/or words on a textual CA graph.
 
 \usage{
 ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, axes=c(1, 2),
-    xlim=NULL, ylim=NULL, col.doc="blue", col.word="red", col.doc.ell=col.doc, 
-    col.word.ell=col.word, cex=1) 
+    xlim=NULL, ylim=NULL, title=NULL, col.doc="blue", col.word="red", 
+    col.doc.ell=col.doc, col.word.ell=col.word, cex=1) 
 }
 
 \arguments{
@@ -23,6 +23,7 @@ ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, axes=c(1, 2),
  \item{axes}{length 2 vector specifying the dimensions to plot}
  \item{xlim}{range for the plotted 'x' values, defaulting to the range of the finite values of 'x' (by default NULL)}
  \item{ylim}{range for the plotted 'y' values, defaulting to the range of the finite values of 'y' (by default NULL)}
+ \item{title}{title of the graph (by default NULL and the title is automatically assigned)}
  \item{col.doc}{color for the documents-points (by default "blue")}
  \item{col.word}{color for words-points (by default "red")}
  \item{col.doc.ell}{color for the ellipses around documents-points (by default the same as col.doc)}
@@ -63,11 +64,11 @@ selDoc ="meta 3": documents/words with a contribution over 3 times the average d
 }
 
 \references{
-Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC.
+Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. <doi:10.1080/02664763.2012.657409>.
 
 Lebart, L., Piron, M., & Morineau, A. (2006). Statistique exploratoire multidimensionnelle. (Dunod, Ed.).
 
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (Kluwer, Ed.).
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
 }
 
 \author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Antón Sánchez-Espigares}
@@ -89,7 +90,7 @@ ellipseLexCA(res.LexCA, selWord="cos2 0.2", selDoc=NULL, col.word="brown")
 }
 \dontrun{
 data(open.question)
-res.TD<-TextData(open.question, var.text=c(9,10), var.agg="Gen_Age", Fmin=10, Dmin=10,
+res.TD<-TextData(base, var.text=c(9,10), var.agg="Sexe_Age", Fmin=10, Dmin=10,
   remov.number=TRUE, stop.word.tm=TRUE)
 res.LexCA<-LexCA(res.TD, graph=FALSE)
 ellipseLexCA(res.LexCA, selWord=NULL, col.doc="black")

@@ -10,10 +10,10 @@ Creates a textual and contextual working-base (TextData format) from a source-ba
 
 \usage{
 TextData(base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= NULL,
- selDoc="ALL", lower=TRUE, remov.number=TRUE,lminword=1, Fmin=1,Dmin=1, Fmax=Inf,
+ selDoc="ALL", lower=TRUE, remov.number=TRUE,lminword=1, Fmin=Dmin,Dmin=1, Fmax=Inf,
  stop.word.tm=FALSE, idiom="en", stop.word.user=NULL, segment=FALSE,
  sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", seg.nfreq=10, seg.nfreq2=10,
- seg.nfreq3=10)
+ seg.nfreq3=10, graph=FALSE)
 }
 \arguments{
  \item{base}{source data frame with at least one textual column}
@@ -25,7 +25,7 @@ TextData(base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= 
  \item{lower}{if TRUE, the corpus is converted into lowercase (by default TRUE)}
  \item{remov.number}{if TRUE, numbers are removed (by default TRUE)}  
  \item{lminword}{minimum length of a word to be selected (by default 1)}
- \item{Fmin}{minimum frequency of a word to be selected (by default 1)}
+ \item{Fmin}{minimum frequency of a word to be selected (by default Dmin)}
  \item{Dmin}{a word has to be used in at least Dmin source-documents to be selected (by default 1)}
  \item{Fmax}{maximum frequency of a word to be selected (by default Inf)}
  \item{stop.word.tm}{if TRUE, stoplist automatically provided in accordance with the idiom (by default FALSE)}
@@ -36,6 +36,7 @@ TextData(base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= 
  \item{seg.nfreq}{minimum frequency of a more-than-three-words-long repeated segment (by default 10)}
  \item{seg.nfreq2}{minimum frequency of a two-words-long repeated segment (by default 10)}
  \item{seg.nfreq3}{minimum frequency of a three-words-long repeated segment (by default 10)}
+ \item{graph}{if TRUE, documents, words and repeated segments barcharts are displayed; use plot.TextData to use more options (by default FALSE)}
 }
 
 
@@ -103,7 +104,7 @@ If var.agg is NON-NULL:
 
 
 \references{
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
 }
 
 \author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}

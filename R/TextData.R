@@ -1,10 +1,20 @@
 #' @import slam stats stringr tm graphics gridExtra utils
+#' @importFrom utils "packageDescription
 #' @export
 TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= NULL, 
-    selDoc="ALL", lower=TRUE, remov.number=TRUE, lminword=1, Fmin=1,Dmin=1, Fmax=Inf,
+    selDoc="ALL", lower=TRUE, remov.number=TRUE, lminword=1, Fmin=Dmin, Dmin=1, Fmax=Inf,
     stop.word.tm=FALSE, idiom="en", stop.word.user=NULL, segment=FALSE, 
-    sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", seg.nfreq=10, seg.nfreq2=10, seg.nfreq3=10)
+    sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", seg.nfreq=10, seg.nfreq2=10, seg.nfreq3=10,
+    graph=FALSE)
 {
+
+
+#---------------------------------------------------
+plotTextData <- function()
+{
+# if(dev.interactive()) dev.new()
+plot.TextData(y)
+}
 
 #---------------------------------------------------
 # Count occurrences		
@@ -82,7 +92,7 @@ midiom <- list(idiom, "idiom of the corpus, (by default en)")
 mlminword <- list(lminword, "minimum length of a word (by default 1)")					
 mlower <- list(lower, "converting the corpus into lowercase (by default TRUE)")					
 mremnum <- list(remov.number, "removing the numbers (by default TRUE)")            					
-mFmin <- list(Fmin, "minimum frequency of a word (by default 1)")					
+mFmin <- list(Fmin, "minimum frequency of a word (by default Dmin)")					
 if(is.null(Fmax)) Fmax <- Inf					
 mFmax <- list(Fmax, "maximum frequency of a word (by default Inf)")					
 mDmin <-  list(Dmin, "minimum number of documents using a word (by default 1)")		
@@ -342,16 +352,41 @@ if(!is.null(var.agg)){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+#corpus$doc_id <- c(1:11); rownames(corpus)
+#corpus$text2 <- corpus$text 
+#corpus$text <- NULL
+#colnames(corpus)[1] <- "text"
+#str(corpus)
+
+
+if(packageDescription("tm")$Version >"0.7-1") {
+ colnames(corpus)[1] <- "text"
+ corpus$doc_id <- rownames(corpus)}
+
+
+
+
 #--------- Read texts -------------------
-dtmCorpus <- Corpus(DataframeSource(corpus), readerControl = list(language = idiom))
+# dtmCorpus <- Corpus(DataframeSource(corpus), readerControl = list(language = idiom))
+ dtmCorpus <- VCorpus(DataframeSource(corpus), readerControl = list(language = idiom)) 
 filt = "(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+"
 dtmCorpus <- tm_map(dtmCorpus, content_transformer(function(x) gsub(filt, " ", x)))
 dtmCorpus <- tm_map(dtmCorpus, stripWhitespace)
 dtm <- DocumentTermMatrix(dtmCorpus, control = list(tolower = lower, wordLengths = c(lminword, Inf)))
 rownames(dtm) <- rownames(base)
-
-
-
 
 
 if(!is.null(var.agg)) SourceTerm <- dtm
@@ -716,7 +751,7 @@ if(!is.null(qualincat)){
  qualitable <- t(qualitable)
   rownames(qualitable) <- coltmp	
 } else {qualitable <- NULL; qualivar <- NULL}
- quali <- list(qualitable=qualitable, qualivar=qualivar)		
+ quali <- list(qualitable=qualitable, qualivar=qualivar)	
  context <- list(quali=quali ,quanti=quantivar)		
 } else {	
   context <- list(quali=data.frame(base[,context.quali,drop=FALSE]) ,quanti=data.context.quanti)		
@@ -761,6 +796,7 @@ if(segment==TRUE) {
 
 y$info <- info
 
+
 if(!is.null(var.agg)) { 
  y$SourceTerm <- SourceTerm 
  y$var.agg <- var.agg.seg[rownames(y$SourceTerm),,drop=FALSE]
@@ -769,20 +805,27 @@ if(!is.null(var.agg)) {
 }
  y$remov.docs <- remov.docs
 
-if(is.null(var.agg))
-if(!is.null(remov.docs)){
+if(is.null(var.agg)) { 
+ if(!is.null(context$quanti))  {
+   if(length(remov.docs)==0) {y$context$quanti <- context$quanti}
+   else {
+  pos <- which(rownames(context$quanti) %in% remov.docs)
+  y$context$quanti <- context$quanti[-pos,,drop=FALSE] 
+        } 
+ } # Final !is.null(context$quanti)
 
-if(!is.null(context$quali))  {
- pos <- which(rownames(context$quali) %in% remov.docs)	
- y$context$quali <- context$quali[-pos,,drop=FALSE] 
-}
-if(!is.null(context$quanti))  {
- pos <- which(rownames(context$quanti) %in% remov.docs)	
- y$context$quanti <- context$quanti[-pos,,drop=FALSE] 
-}
-}
+ if(!is.null(context$quali))  {
+   if(length(remov.docs)==0) {y$context$quali <- context$quali}
+   else {
+  pos <- which(rownames(context$quali) %in% remov.docs)
+  y$context$quali <- context$quali[-pos,,drop=FALSE] 
+        } 
+ } # Final !is.null(context$quali)  
+} # Final if(is.null(var.agg))
 
  class(y) <- c("TextData", "list")
 if(blongErr==TRUE) warning("Only repeated segments < 20 words have been computed")	
+
+if(graph==TRUE) plotTextData() 
 return(y)
 }
