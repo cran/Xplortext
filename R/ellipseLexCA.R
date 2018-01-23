@@ -161,7 +161,7 @@ if ( (length(selDoc) + length(selWord))  == 0)
  plot.LexCA(object, axes = axes, selWord=selWord,selDoc=selDoc,xlim = xlim, ylim = ylim, col.doc = col.doc, col.word = col.word,cex=cex,title=title)
     else {
           if (!is.null(selWord))  
-         plot.LexCA(object, axes = axes, selWord=selWord,selDoc=NULL,xlim = xlim, ylim = ylim, col.word = col.word,,cex=cex,title=title) 
+         plot.LexCA(object, axes = axes, selWord=selWord,selDoc=NULL,xlim = xlim, ylim = ylim, col.word = col.word,cex=cex,title=title) 
           if (!is.null(selDoc)) 
          plot.LexCA(object, axes = axes, selWord=NULL,selDoc=selDoc,xlim = xlim, ylim = ylim,  col.doc = col.doc,,cex=cex,title=title)
          }

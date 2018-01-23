@@ -17,8 +17,8 @@ CaGalt() helps to explore the relationships between lexical choices and contextu
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.1.0\cr
-Date: \tab 2017-10-26\cr
+Version: \tab 1.1.1\cr
+Date: \tab 2018-01-23\cr
 License: GPL (>=2.0)
 }
 }
@@ -33,6 +33,3 @@ Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, E
 
 A website \url{http://www.xplortext.org}
 }
-
-
-

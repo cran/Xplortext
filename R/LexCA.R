@@ -240,16 +240,6 @@ if(context=="ALL") {
    context.quali <- checkcontext(context,object$context$quali)
    context.quali <- colnames(object$context$quali)[context.quali]
 
-
-
-
-
-
-
-
-
-
-
    if(length(context.quali)==0) context.quali<-NULL
 } else { context.quali<- NULL}
 } # Final if(!is.null(context))
@@ -395,9 +385,18 @@ if(nquali >0){ quali.sup <- c((ncoltemp+1):(ncoltemp+nquali)); ncoltemp <- ncolt
 if(nquanti >0){ quanti.sup <- c((ncoltemp+1):(ncoltemp+nquanti)); ncoltemp <- ncoltemp+nquanti}
 
 
+
+
+
+
+
+
 res <- CA(LT, ncp, row.sup=row.sup, col.sup=word.sup, quali.sup=quali.sup, quanti.sup=quanti.sup, graph=FALSE)
  res$meta <- Keys(res,lmd,lmw,naxes, axes)
- res$VCr <- round(sqrt(sum(res$eig[, 1])/ (minrowcol-1) ), 4)
+#################################
+############ Modificada la siguiente:
+##### res$VCr <- round(sqrt(sum(res$eig[, 1])/ (minrowcol-1) ), 4)
+ res$VCr <- round(sqrt(sum(res$eig[, 1])/ minrowcol ), 4)
  res$Inertia <- round(sum(res$eig[, 1]), 4)
  res$info <- info
 
@@ -646,7 +645,10 @@ if((ndocsup+nquali)>0) doc.sup <- c((ndocact+1):(ndocact+ndocsup+nquali))
 res <- CA(LT, ncp, row.sup=doc.sup, col.sup=word.sup, quanti.sup=quanti.sup.q, graph=FALSE)
 res$var.agg <- var.agg
 res$meta <- Keys(res,lmd,lmw,naxes, axes)
-res$VCr <- round(sqrt(sum(res$eig[, 1])/ (minrowcol-1) ), 4)
+####### Modificar lo siguiente
+############################
+######res$VCr <- round(sqrt(sum(res$eig[, 1])/ (minrowcol-1) ), 4)
+res$VCr <- round(sqrt(sum(res$eig[, 1])/ minrowcol ), 4)
 res$Inertia <- round(sum(res$eig[, 1]), 4)
 res$info <- info
 

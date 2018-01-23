@@ -332,7 +332,42 @@ for(i in 1:(nvcheck -1)) {
   repetij <- levi[(which(levi %in% levj))]
   nrep <- length(repetij)
     if(nrep>0){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Revisar a partir de aquí cuando etiquetas duplicadas
      missrep <- which("Missing" %in% repetij)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if(missrep==1) nrep <- nrep-1
       if(nrep>0){
         levels(base[,strnamei]) <- paste0(strnamei,"_",levi)
