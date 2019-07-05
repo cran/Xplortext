@@ -1,7 +1,6 @@
 #' @export
 print.LexCA <- function (x, file = NULL, sep = ";", ...) 
 {
-
 sink.reset <- function(){
     for(i in seq_len(sink.number())){
         sink()}}
@@ -57,7 +56,7 @@ if(is.null(x$var.agg)) {
 
  cat("\nSquared Cosinus ", msg1)
  write.table(msg2, quote=FALSE, sep=sep, col.names=FALSE, row.names=FALSE)
- write.table(x$row$contrib, quote=FALSE, sep = sep, col.names=FALSE)
+ write.table(x$row$cos2, quote=FALSE, sep = sep, col.names=FALSE)
 
  cat("\nInertia ", msg1)
  x$row$inertia <- data.frame(x$row$inertia)
@@ -206,5 +205,8 @@ if(!is.null(x$segment$coord)){
 }
 
  sink()}
-       	print(paste("All the results are in file", file))
+    
+    if (!is.null(file)) {	
+      print(paste("All the results are in the file", file))
     }
+}

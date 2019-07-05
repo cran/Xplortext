@@ -1,5 +1,5 @@
 \name{LexCA}
-\encoding{latin1}
+\encoding{UTF-8}
 \alias{LexCA}
 
 \title{Correspondence Analysis of a Lexical Table from a TextData object (LexCA)}
@@ -61,16 +61,16 @@ In the case of a direct CA, DocTerm is a non-aggregate table and:
 }
 
 \references{
-Benzecri, J, P. (1981). Pratique de l'analyse des donnees. Linguistique & lexicologie (Vol.3). (P. Dunod., Ed).
+Benzécri, J, P. (1981). Pratique de l'analyse des donnees. Linguistique & lexicologie (Vol.3). (P. Dunod., Ed).
 
-Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. <doi:10.1080/02664763.2012.657409>.
+Husson F., Lê S., Pagès J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. \doi{10.1201/b10345}.
 
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). \doi{10.1007/978-94-017-1525-6}.
 
-Murtagh F. (2005). Correspondence Analysis and Data Coding with R and Java. Chapman & Hall/CRC. <doi:10.1201/9781420034943>.
+Murtagh F. (2005). Correspondence Analysis and Data Coding with R and Java. Chapman & Hall/CRC. \doi{10.1201/9781420034943}.
 }
-\author{Ram�n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica B�cue-Bertaut, Josep-Anton 
-  S�nchez-Espigares\cr}
+\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Mónica Bécue-Bertaut, Josep-Anton 
+  Sánchez-Espigares\cr}
 
 \seealso{ \code{\link{TextData}}, \code{\link{print.LexCA}},  \code{\link{plot.LexCA}}, \code{\link{summary.LexCA}}, \code{\link{ellipseLexCA}}}
 

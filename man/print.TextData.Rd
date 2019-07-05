@@ -1,5 +1,5 @@
-\name{print.TextData}
-\encoding{latin1}
+ï»¿\name{print.TextData}
+\encoding{UTF-8}
 \alias{print.TextData}
 
 \title{Print TextData objects}
@@ -20,7 +20,7 @@ the results are not printed in a file}
   \item{\dots}{further arguments passed to or from other methods}
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
 
 \seealso{ \code{\link{TextData}}, \code{\link{plot.TextData}},  \code{\link{summary.TextData}}}
 

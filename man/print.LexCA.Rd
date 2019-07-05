@@ -1,12 +1,11 @@
 \name{print.LexCA}
-\encoding{latin1}
+\encoding{UTF-8}
 \alias{print.LexCA}
 
 \title{Print LexCA objects}
 
 \description{
 Prints the Textual Correspondence Analysis (CA) results from a LexCA object
-
 }
 
 \usage{
@@ -15,14 +14,16 @@ Prints the Textual Correspondence Analysis (CA) results from a LexCA object
 
 \arguments{
   \item{x}{object of LexCA class}
-  \item{file}{a connection, or a character string giving the name od the file to print to (in csv format). If NULL (the default), the results are not printed in a file}
+  \item{file}{a connection, or a character string giving the name of the file to print to (in csv format). If NULL (the default), the results are not printed in a file}
   \item{sep}{character to insert between the objects to print (if the argument file is non-NULL) (by default ";")}
-  \item{\dots}{further arguments passed from other methods}
+  \item{\dots}{further arguments passed to or from other methods}
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
 
-\seealso{ \code{\link{LexCA}}, \code{\link{plot.LexCA}},  \code{\link{summary.LexCA}}}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, MÃ³nica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
+
+\seealso{ \code{\link{LexCA}}, \code{\link{plot.LexCA}}, \code{\link{summary.LexCA}}, \code{\link{TextData}}}
+
 
 \examples{
 data(open.question)
@@ -33,3 +34,4 @@ print(res.LexCA)
 }
 
 \keyword{print}
+

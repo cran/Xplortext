@@ -1,5 +1,5 @@
 \name{LexCHCca}
-\encoding{latin1} 
+\encoding{UTF-8} 
 \alias{LexCHCca}
 
 \title{Chronogically Constrained Agglomerative Hierarchical Clustering on Correspondence Analysis Components (LexCHCca)}
@@ -51,10 +51,9 @@ The tree is plotted jointly with a barchart of the successive values of the aggr
 
 
 \references{
-BÈcue-Bertaut, M., Kostov, B., Morin, A., & Naro, G. (2014). Rhetorical Strategy in Forensic Speeches: 
-Multidimensional Statistics-Based Methodology. Journal of Classification,31, 85-106. <doi:10.1007/s00357-014-9148-9>.
+B√©cue-Bertaut, M., Kostov, B., Morin, A., & Naro, G. (2014). Rhetorical Strategy in Forensic Speeches: Multidimensional Statistics-Based Methodology. Journal of Classification,31, 85-106. \doi{10.1007/s00357-014-9148-9}.
 
-Lebart L. (1978). Programme d'agrÈgation avec contraintes. Les Cahiers de l'Analyse des DonnÈes, 3, pp. 275--288.
+Lebart L. (1978). Programme d'agr√©gation avec contraintes. Les Cahiers de l'Analyse des Donn√©es, 3, pp. 275--288.
 
 Legendre, P. & Legendre, L. (1998), Numerical Ecology (2nd ed.), Amsterdam: Elsevier Science.
 
@@ -62,7 +61,7 @@ Murtagh F. (1985). Multidimensional Clustering Algorithms. Vienna: Physica-Verla
 
 }
 
-\author{Monica BÈcue-Bertaut, RamÛn Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton S·nchez-Espigares, 
+\author{Monica B√©cue-Bertaut, Ram√≥n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Ant√≥n S√°nchez-Espigares, 
 Belchin Kostov\cr}
 
 \seealso{\code{\link{plot.LexCHCca}}, \code{\link{LabelTree}}, \code{\link{LexCA}}}

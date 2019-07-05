@@ -1,5 +1,5 @@
 \name{plot.LexCA}
-\encoding{latin1}
+\encoding{UTF-8}
 \alias{plot.LexCA}
 
 \title{Plot of LexCA objects}
@@ -15,7 +15,7 @@ Plots textual correspondence analysis (CA) graphs from a LexCA object.
   col.word.sup="darkred", col.quanti.sup = "blue", col.quali.sup="darkgreen", 
   col.seg="cyan4", col="grey", cex=1, xlim=NULL, ylim=NULL, shadowtext=FALSE,
   habillage="none", unselect=1, label="all", autoLab=c("auto", "yes", "no"), 
-  plot.new=TRUE, ...)
+  new.plot=TRUE, ...)
 }
 \arguments{
   \item{x}{object of LexCA class}
@@ -46,7 +46,7 @@ Plots textual correspondence analysis (CA) graphs from a LexCA object.
   \item{unselect}{either a value between 0 and 1 or a color. In the first case, transparency level of the unselected objects (if unselect=1 the transparency is total and the elements are not represented; if unselect=0 the elements are represented as usual but without any label); in the case of a color (e.g. unselect="grey60"), the non-selected points are given this color (by default 1)}
   \item{label}{a list of character for the variables which are labelled (by default NULL and all the drawn variables are labelled). You can label all the active variables by putting "var" and/or all the supplementary variables by putting "quanti.sup" and/or a list with the names of the variables which should be labelled. Value should be one of "all", "none", "row", "row.sup", "col", "col.sup", "quali.sup" or NULL.}
   \item{autoLab}{if autoLab="auto", autoLab turns to be equal to "yes" if there are less than 50 elements and equal to "no" otherwise; if "yes", the labels are moved, as little as possible, to avoid overlapping (time-consuming if many elements); if "no" the labels are placed quickly but may overlap}
-  \item{plot.new}{if TRUE, a new graphical device is created (by default TRUE)}
+  \item{new.plot}{if TRUE, a new graphical device is created (by default TRUE)}
   \item{\dots}{further arguments passed from other methods...}
 }
 
@@ -81,7 +81,7 @@ quali.sup=c(1:5,7): categories 1 to 5 and 7 are plotted. The numbering of the
 selDoc="coord 10": only the 10 documents with the highest coordinates, as globally
    computed on the 2 axes, are plotted.
 selWord="contrib 10": the words with a contribution to the inertia, of any of 
-   the 2 axes, over 10\% of the axis inertia are plotted.
+   the 2 axes.
 selWord="meta 3": the words with a contribution over 3 times the average word 
    contribution on any of the two axes are plotted. Only active words or documents 
    can be selected.
@@ -96,12 +96,11 @@ selWord="char 0.05": only the characteristic words of the documents selected in
 
 
 \references{
-Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC.
-
+Husson F., LÃª S., PagÃ©s J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. \doi{10.1201/b10345}.
 
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, MÃ³nica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
 
 \seealso{\code{\link{LexCA}}, \code{\link{print.LexCA}}, \code{\link{summary.LexCA}}}
 
@@ -109,8 +108,8 @@ Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example 
 data(open.question)
 res.TD<-TextData(open.question,var.text=c(9,10), var.agg="Age_Group", Fmin=10, Dmin=10,
         remov.number=TRUE, stop.word.tm=TRUE)
-resCA <- LexCA(res.TD, graph=FALSE)
-plot(resCA, selDoc="contrib 30", selWord="coord 20")
+res.CA <- LexCA(res.TD, graph=FALSE)
+plot(res.CA, selDoc="contrib 30", selWord="coord 20")
 }
 
 

@@ -1,9 +1,14 @@
 #' @importFrom graphics abline layout legend locator par plot text
 #' @importFrom grDevices palette
 #' @export
+
+
+######### Mínimo en 3
+######### Ver para y dist con marginales nuevas.. y descripciones
 LexCHCca = function (object, nb.clust=0, min=3, 
     max=NULL, nb.par=5, graph=TRUE, proba=0.05) 
 {
+#### Esta se repite después
 if (!inherits(object,"LexCA")) stop("Object should be LexCA class")
 
 ###  
@@ -28,6 +33,8 @@ hcclust= function(X)
     Mcont[nrow(Mcont),nrow(Mcont)-1]<-1
     rownames(Mcont)<-rownames(Msim)
     colnames(Mcont)<-colnames(Msim)
+
+
 
 ###   Introduction of the constriction into the similarity and distance matrices
     MSimCont<-Msim*Mcont
@@ -90,6 +97,9 @@ hcclust= function(X)
 	 indice<-indice-1
 	 i<-i+1
     }   # endwhile # endwhile 
+
+
+
  
 # ############################################################################################################################################
 # The hierarchy is completed, the "type hclust" has to be built
@@ -97,6 +107,7 @@ hcclust= function(X)
 #    hccc<-list()
     height<-Critagreg
     order<-as.integer(1:nrow(X))
+
 
 #### begin of grups_blocs
     grups_blocs<-list()
@@ -106,6 +117,8 @@ hcclust= function(X)
 	grups_blocs[[i+1]][c(clust[[i]][[1]],clust[[i]][[2]])]<-i
                                    }
      merge<-matrix(nrow=(ndoc-1),ncol=2,0)
+
+
 ### begin of the loop of type for that builds merge
     for(i in 1:(ndoc-1)) {
       if (length(clust[[i]][[1]])==1&length(clust[[i]][[2]])==1)  {
@@ -125,6 +138,7 @@ hcclust= function(X)
                                                                  } 	  
                                       }
 ### end for
+
     hcccall<-call("hcclust",match.call()$res)		
     hcc<-structure(list(merge = merge,height=height,
 		       order=order, 
@@ -133,6 +147,8 @@ hcclust= function(X)
 
     return(hcc)
 }
+
+
 ######
     auto.cut.constree = function(res, min, max) 
     {
@@ -197,13 +213,16 @@ hcclust= function(X)
    metric="euclidean"
    method="complete"
    if (min <= 1) min<-2
+
+
+
 ### PCA equivalent to CA
       aux <- res.ca$eig
       weight=row.w = res.ca$call$marge.row * sum(res.ca$call$X)
       res <- PCA(res.ca$row$coord, scale.unit = FALSE, ncp = Inf, graph = FALSE, 
       row.w = row.w)
       res$eig <- aux
- 
+
 ###
    if (is.null(max)) 
         max <- min(10, round(nrow(res$ind$coord)/2))
@@ -211,9 +230,12 @@ hcclust= function(X)
 ###
    t <- auto.cut.constree(res=res,min = min, max = max) 
    nb.ind <- nrow(t$res$ind$coord)
+
+
    auto.haut <- ((t$tree$height[length(t$tree$height) - 
             t$nb.clust + 2]) + (t$tree$height[length(t$tree$height) - 
             t$nb.clust + 1]))/2
+
 
    if (graph) {
             if (!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) 
@@ -258,6 +280,8 @@ hcclust= function(X)
                 2] + t$tree$height[length(t$tree$height) - nb.clust + 
                 1])/2
         }
+
+t$tree$height[t$tree$height < 0.0000000000001]<- 0
     clust <- cutree(as.hclust(t$tree), h = y)
     nb.clust <- max(clust)
 

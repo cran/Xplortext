@@ -1,13 +1,19 @@
-#' @import slam stats stringr tm graphics gridExtra utils
-#' @importFrom utils "packageDescription
+#' @import FactoMineR slam stringr tm graphics gridExtra utils stringi
+#' @rawNamespace import(stats, except = c(hclust))
+#' @importFrom utils packageDescription
 #' @export
 TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= NULL, 
     selDoc="ALL", lower=TRUE, remov.number=TRUE, lminword=1, Fmin=Dmin, Dmin=1, Fmax=Inf,
     stop.word.tm=FALSE, idiom="en", stop.word.user=NULL, segment=FALSE, 
-    sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", seg.nfreq=10, seg.nfreq2=10, seg.nfreq3=10,
+    sep.weak="(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+",
+    sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", 
+    seg.nfreq=10, seg.nfreq2=10, seg.nfreq3=10,
     graph=FALSE)
 {
-
+# library(SnowballC)   docs <- tm_map(docs, stemDocument)
+## REvisar el print algunas palabras tienen sin cabecera
+# filt = "(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+"
+filt=sep.weak
 
 #---------------------------------------------------
 plotTextData <- function()
@@ -130,8 +136,8 @@ blongErr <- FALSE
 								
 if(segment==TRUE) {					
 # auxiliary functions
-REPWEAK <-function(chaine,sep.weak) res<-str_replace_all(chaine,sep.weak, " ")					
-REPSTRONG <-function(chaine,sep.strong) res<-str_replace_all(chaine,sep.strong, " zzwwxxyystr ")					
+REPWEAK <-function(chaine,sep.weak) res<-stringr::str_replace_all(chaine,sep.weak, " ")					
+REPSTRONG <-function(chaine,sep.strong) res<-stringr::str_replace_all(chaine,sep.strong, " zzwwxxyystr ")					
 PROCHE <-function(ideb,ifin,ITEX,ITDR,ITRE,nfreq,nfreq2,nfreq3,long,nxlon,nbseg)					
  {   					
 # the function proche detects the first sublist of adresses in ITDR corresponding a same successor					
@@ -212,15 +218,18 @@ dfold <- deparse(substitute(base))
 
 if(!is.null(var.agg)){
   if(is.numeric(base[,var.agg])) base[,var.agg] <- as.factor(base[,var.agg])
-  var.agg.seg <- data.frame(base[,var.agg,drop=FALSE])}
-
-remov.docs <- rownames(base)
+# Añadida la siguiente el 10/01/2019 para eliminar niveles de factores no utilizados en variable de agrupación
+  base[,var.agg] <- factor(base[,var.agg])
+  var.agg.seg <- data.frame(base[,var.agg,drop=FALSE])
+   }
+  remov.docs <- rownames(base)
+  
 #--------- Selecting docs by rownumber or rowname -------------------					
 if(selDoc!="ALL") {					
  if (!is.character(selDoc)) 					
   selDoc <- rownames(base)[selDoc]					
   selDoc <- which(rownames(base) %in% selDoc)					
-base <- base[selDoc,]}					
+  base <- base[selDoc,]}					
 					
 #--------- Save corpus var.text  -------------------					
  if(!is.character(var.text)) var.text <- colnames(base)[var.text]
@@ -231,7 +240,7 @@ base <- base[selDoc,]}
  if(length(var.text) > 1) {					
    for (i in 2:length(var.text)){					
       corpus <- paste(corpus, base[, var.text[i]], sep = ".")}}					
- corpus <- data.frame(corpus, stringsAsFactors = FALSE)					
+   corpus <- data.frame(corpus, stringsAsFactors = FALSE)					
  rownames(corpus) <- rownames(base)					
 
 #--------- Save context.quanti  -------------------
@@ -265,7 +274,7 @@ if(!is.null(context.quanti)){
         colnames(data.context.quanti)[ncol(data.context.quanti)] <- context.quanti[i]	
 }}}} 
 if(!is.null(data.context.quanti)) rownames(data.context.quanti) <- rownames(base)
-}
+ }
 
 var.check <- NULL
 
@@ -333,42 +342,9 @@ for(i in 1:(nvcheck -1)) {
   nrep <- length(repetij)
     if(nrep>0){
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Revisar a partir de aqu� cuando etiquetas duplicadas
+# Revisar a partir de aqui cuando etiquetas duplicadas
      missrep <- which("Missing" %in% repetij)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    if(missrep==1) nrep <- nrep-1
+   if(missrep==1) nrep <- nrep-1
       if(nrep>0){
         levels(base[,strnamei]) <- paste0(strnamei,"_",levi)
         levels(base[,strnamej]) <- paste0(strnamej,"_",levj)
@@ -388,28 +364,12 @@ if(!is.null(var.agg)){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-#corpus$doc_id <- c(1:11); rownames(corpus)
-#corpus$text2 <- corpus$text 
-#corpus$text <- NULL
-#colnames(corpus)[1] <- "text"
-#str(corpus)
-
-
-if(packageDescription("tm")$Version >"0.7-1") {
+#if(packageDescription("tm")$Version >"0.7-1") {
  colnames(corpus)[1] <- "text"
- corpus$doc_id <- rownames(corpus)}
+ corpus$doc_id <- rownames(corpus)
+#}
+
+
 
 
 
@@ -417,11 +377,15 @@ if(packageDescription("tm")$Version >"0.7-1") {
 #--------- Read texts -------------------
 # dtmCorpus <- Corpus(DataframeSource(corpus), readerControl = list(language = idiom))
  dtmCorpus <- VCorpus(DataframeSource(corpus), readerControl = list(language = idiom)) 
-filt = "(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+"
 dtmCorpus <- tm_map(dtmCorpus, content_transformer(function(x) gsub(filt, " ", x)))
 dtmCorpus <- tm_map(dtmCorpus, stripWhitespace)
 dtm <- DocumentTermMatrix(dtmCorpus, control = list(tolower = lower, wordLengths = c(lminword, Inf)))
 rownames(dtm) <- rownames(base)
+
+#stop(context.quali)
+# stop(colnames(dtm))
+
+
 
 
 if(!is.null(var.agg)) SourceTerm <- dtm
@@ -429,11 +393,12 @@ if(!is.null(var.agg)) SourceTerm <- dtm
 # ---------------- If aggregation ---------
 if(!is.null(var.agg)){
 # To build a data frame with 3 columns (rows, columns and frequency)
-# This is a compressed table
+  # This is a compressed table
  agg <- data.frame(base[dtm$i,var.agg], dtm$j,dtm$v)
  agg <-aggregate(agg[,3], by=list(agg[,1], agg[,2]),FUN=sum, na.rm=TRUE)
  agg <- agg[order(agg[,1],agg[,2]),]
  dtmagg <- dtm
+ 
  agg[,1] <- droplevels(agg[,1])
  dtmagg$nrow <- length(levels(agg[,1]))
  dtmagg$i <- as.numeric(agg[,1])
@@ -441,7 +406,7 @@ if(!is.null(var.agg)){
  dtmagg$v <- agg[,3]
  dtmagg$dimnames$Docs <- levels(agg[,1])
  detOccAgg <- occurrFunc(dtmagg, "before",NULL, TRUE) 
-}
+ }
 #--------- ------------------			
 Nfreqword<-tapply(dtm$v,dtm$j,sum)			
 Ndocword<-tapply(dtm$v>0,dtm$j,sum)			
@@ -471,7 +436,9 @@ if(!is.null(var.agg)){
   detOccAgg$PctLength.before <- round(detOccAgg$PctLength.before,2)			
 }			
 
+
 if(!is.null(var.agg)) {	
+if(!is.null(corpus$doc_id)) corpus$doc_id <- NULL
  corpusSeg <- corpus
  corpus <- cbind(corpus,base[,var.agg]) 		
  corpus <- corpus[order(corpus[,2]), ]		
@@ -490,7 +457,7 @@ if(segment==TRUE) {
  if (nfreq3<nfreq) nfreq3<-nfreq		
  if (nfreq3>nfreq2)nfreq3<-nfreq2	
  text1<-apply(as.matrix(apply(as.matrix(corpus),1,FUN=REPSTRONG,sep.strong)),1,FUN=REPWEAK,sep.weak)						
- text3<-apply(matrix(text1),1,str_c,"zzwwxxyyendrep",sep=" ") 						
+ text3<-apply(matrix(text1),1,(stringr::str_c),"zzwwxxyyendrep",sep=" ") 						
  nrep<-NROW(text3)						
  listrep<-strsplit(as.character(text3),split=" ") 						
  ITEX <- unlist(listrep)						
@@ -630,8 +597,9 @@ if(remov.number == TRUE) {
   Nfreqword <- Nfreqword[sel.words]}}						
 						
 #--------- Removing words with low length lminword ------------------						
-if (lminword > 1) {						
- sel.words <- which(nchar(dtm$dimnames$Terms) > (lminword-1)) 						
+if (lminword > 1) {
+#  sel.words <- which(nchar(dtm$dimnames$Terms) > (lminword-1)) 										
+ sel.words <- which(stringi::stri_length(dtm$dimnames$Terms) > (lminword-1)) 
  if(length(sel.words)>0){						
   dtm <- selectFunc(dtm,sel.words)						
   Nfreqword <- Nfreqword[sel.words] }}						
@@ -643,7 +611,7 @@ if (Fmin > 1) {
    dtm <- selectFunc(dtm,sel.words)						
    Nfreqword <- Nfreqword[sel.words] }}						
 						
-#--------- Selecting words words appearing with a minimum frequency of "Fmin" times 						
+#--------- Selecting words appearing with a minimum frequency of "Fmin" times 						
 #--------- in a minimum of "Dmin" documents											
 Ndocword <-tapply(dtm$v>0,dtm$j,sum)						
 if(Fmin>1 | Dmin>1) {						
@@ -688,15 +656,36 @@ if(!is.null(var.agg)){
  agg <-aggregate(agg[,3], by=list(agg[,1], agg[,2]),FUN=sum, na.rm=TRUE)				
  agg <- agg[order(agg[,1],agg[,2]),]				
  dtmagg <- dtm				
- agg[,1] <- droplevels(agg[,1])				
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+# Modificada la siguiente el 10/1/2019. Si había documentos agregados vacíos daba un error
+#  agg[,1] <- droplevels(agg[,1])				
  dtmagg$nrow <- length(levels(agg[,1]))				
  dtmagg$i <- as.numeric(agg[,1])				
  dtmagg$j <- agg[,2]				
  dtmagg$v <- agg[,3]				
  dtmagg$dimnames$Docs <- levels(agg[,1])				
  detOccAgg <- occurrFunc(dtmagg, "after",detOccAgg, TRUE) 				
- detOcc <- detOccAgg				
-} else {  detOcc <- occurrFunc(dtm, "after",detOcc, FALSE)}				
+ detOcc <- detOccAgg			
+
+ # Modificada las siguientes el 10/1/2019. Si había documentos agregados vacíos daba un error
+ if(length(levels(droplevels(agg[,1])))!= dtmagg$nrow){
+   agg[,1] <- droplevels(agg[,1])				
+   dtmagg$nrow <- length(levels(agg[,1]))				
+   dtmagg$i <- as.numeric(agg[,1])				
+   dtmagg$j <- agg[,2]				
+   dtmagg$v <- agg[,3]				
+   dtmagg$dimnames$Docs <- levels(agg[,1])				
+   }
+ 
+ 
+  } else {  detOcc <- occurrFunc(dtm, "after",detOcc, FALSE)}				
 
 #--------- If there is aggregation with supplementary variables			
 if (!is.null(var.agg)) {  			
@@ -858,7 +847,10 @@ if(is.null(var.agg)) {
  } # Final !is.null(context$quali)  
 } # Final if(is.null(var.agg))
 
- class(y) <- c("TextData", "list")
+ df <- y$summDoc[,2,drop=FALSE]
+ rownames(df) <- y$summDoc[,1]
+ y$rowINIT <- df
+  class(y) <- c("TextData", "list")
 if(blongErr==TRUE) warning("Only repeated segments < 20 words have been computed")	
 
 if(graph==TRUE) plotTextData() 

@@ -1,5 +1,5 @@
-\name{plot.LexChar}
-\encoding{latin1}
+ï»¿\name{plot.LexChar}
+\encoding{UTF-8}
 \alias{plot.LexChar}
 
 \title{Plot LexChar objects}
@@ -29,7 +29,7 @@ max.posit=15, max.negat=15, ...)
   \item{\dots}{further arguments passed to or from other methods...}
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Anton Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica BÃ©cue-Bertaut, Josep-Anton SÃ¡nchez-Espigares}
 
 \seealso{ \code{\link{LexChar}}, \code{\link{print.LexChar}}}
 

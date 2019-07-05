@@ -1,7 +1,7 @@
 #' @importFrom graphics lines
 #' @export
  ellipseLexCA <- function (object, selWord="ALL",selDoc="ALL", 
-    nbsample = 100, axes = c(1, 2), xlim = NULL, ylim = NULL, title=NULL,
+    nbsample = 100, level.conf = 0.95, axes = c(1, 2), xlim = NULL, ylim = NULL, title=NULL,
     col.doc = "blue", col.word = "red", col.doc.ell = col.doc, 
     col.word.ell = col.word, cex=1) 
 {
@@ -126,14 +126,14 @@ if ( (length(selDoc) + length(selWord))  == 0)
         rownames(aux3) = paste("r", 1:nrow(aux3), sep = "")
         aux1 = cbind.data.frame(paste("word", 1:ncol(X), sep = ""), 
             aux3)
-        ellCol = coord.ellipse(aux1, level.conf = 0.95)$res
+        ellCol = coord.ellipse(aux1, level.conf = level.conf)$res
     }
     if (!is.null(selDoc)) {
         rowCA = CA(concRow, row.sup = (nrow(X) + 1):nrow(concRow), 
             graph = FALSE)
         aux2 = cbind.data.frame(paste("doc", 1:nrow(X), sep = ""), 
             rowCA$row.sup$coord[, axes])
-        ellRow = coord.ellipse(aux2, level.conf = 0.95)$res
+        ellRow = coord.ellipse(aux2, level.conf = level.conf)$res
     }
     if (is.null(xlim)) {
         if (  (!is.null(selWord)) & (!is.null(selDoc))  ) 

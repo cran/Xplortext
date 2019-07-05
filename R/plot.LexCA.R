@@ -1,4 +1,5 @@
 #' @importFrom graphics barplot
+#' @importFrom methods hasArg
 #' @export
 plot.LexCA <- function(x, selDoc="ALL",selWord="ALL", selSeg=NULL,
   selDocSup=NULL, selWordSup=NULL, quanti.sup=NULL, quali.sup=NULL, maxDocs=20,  
@@ -6,8 +7,7 @@ plot.LexCA <- function(x, selDoc="ALL",selWord="ALL", selSeg=NULL,
   col.doc.sup="darkblue", col.word.sup="darkred", col.quanti.sup = "blue",
   col.quali.sup="darkgreen", col.seg="cyan4",col="grey", cex=1, 
   xlim=NULL, ylim=NULL, shadowtext=FALSE, habillage="none", unselect=1,
-  label="all", autoLab=c("auto", "yes", "no"), plot.new=TRUE, ...) 
-
+  label="all", autoLab=c("auto", "yes", "no"), new.plot=TRUE, ...) 
 {
  if (!inherits(x, "LexCA"))  stop("x object should be LexCA class")
 
@@ -131,10 +131,34 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
 
 
 if(eigen) {
-if(plot.new==TRUE){if(dev.interactive()) dev.new()}
+if(new.plot==TRUE){if(dev.interactive()) dev.new()}
  if(is.null(title)) titleE <- "Eigenvalues" else titleE <- title
+
+  args <- list(...)
+  exist <- "names.arg" %in% names(args)
+ 
+
+ if(hasArg(names.arg)) {
+     valarg <- args$names.arg
+     if(length(valarg)==1) {
+      if(valarg=="") names.arg <- rep(valarg,nrow(x$eig))
+      else names.arg <- paste0(valarg,1:nrow(x$eig))
+       }
+          else names.arg <- args$names.arg
+ } else  names.arg <- paste("dim",1:nrow(x$eig))
+
  barplot(x$eig[, 1], main = titleE, col=col,
-     names.arg = paste("dim",1:nrow(x$eig)))
+     names.arg = names.arg)
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
  stemp <- c(selDoc, selWord,selSeg,selDocSup,selWordSup,quanti.sup,quali.sup)
  stemp <- unique(stemp)
  if(!is.null(stemp)) {
@@ -285,7 +309,7 @@ if(length(invisib)==6) stop("No selected elements to plot")
 
 
 
-if(plot.new==TRUE){if(dev.interactive()) dev.new()}
+if(new.plot==TRUE){if(dev.interactive()) dev.new()}
  plot.CA(x, axes=axes, invisible=invisib,
     choix=c("CA"), title= title, cex=cex, selectCol=selWord, selectRow=selDoc, 
     xlim=xlim, ylim=ylim, shadowtext=shadowtext,habillage=habillage, unselect=unselect,

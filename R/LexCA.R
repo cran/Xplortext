@@ -1,4 +1,5 @@
 #' @import FactoMineR
+#' @importFrom methods hasArg
 #' @export
 LexCA <- function(object,ncp=5, context.sup="ALL", doc.sup=NULL, word.sup=NULL, 
  segment=FALSE, graph=TRUE, axes=c(1, 2), lmd=3, lmw=3)
@@ -426,24 +427,8 @@ if(!is.null(res$quali.sup$coord)) {
   res$quali.sup$cos2 <- cos2 / disto2
 }
 
+res$rowINIT <- object$rowINIT 
  class(res) <- c("LexCA","CA", "list")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if(graph==TRUE) plotLexCA()
 return(res)
@@ -684,7 +669,7 @@ if(nquali >0) {
  res$row.sup$coord  <- res$row.sup$coord[(1:ndocsup),,drop=FALSE]
  res$row.sup$cos2  <- res$row.sup$cos2[(1:ndocsup),,drop=FALSE]}
 }
-
+res$rowINIT <- object$rowINIT 
  class(res) <- c("LexCA","CA", "list")
 
  if(graph==TRUE) plotLexCA()

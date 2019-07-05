@@ -1,5 +1,5 @@
-\name{ellipseLexCA}
-\encoding{latin1} 
+ï»¿\name{ellipseLexCA}
+\encoding{UTF-8} 
 \alias{ellipseLexCA}
 
 \title{Confidence ellipses on textual correspondence analysis graphs}
@@ -10,9 +10,9 @@ Draws confidence ellipses around documents and/or words on a textual CA graph.
 
 
 \usage{
-ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, axes=c(1, 2),
-    xlim=NULL, ylim=NULL, title=NULL, col.doc="blue", col.word="red", 
-    col.doc.ell=col.doc, col.word.ell=col.word, cex=1) 
+ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, level.conf=0.95,
+    axes=c(1, 2), xlim=NULL, ylim=NULL, title=NULL, col.doc="blue",
+    col.word="red", col.doc.ell=col.doc, col.word.ell=col.word, cex=1) 
 }
 
 \arguments{
@@ -20,6 +20,7 @@ ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, axes=c(1, 2),
  \item{selWord}{selected words (indexes or names; by default "ALL"); see the details section}
  \item{selDoc}{selected docs (indexes or names; by default "ALL"); see the details section}
  \item{nbsample}{number of samples drawn to evaluate the stability of the points}
+ \item{level.conf}{confidence level used to construct the ellipses (by default 0.95)}
  \item{axes}{length 2 vector specifying the dimensions to plot}
  \item{xlim}{range for the plotted 'x' values, defaulting to the range of the finite values of 'x' (by default NULL)}
  \item{ylim}{range for the plotted 'y' values, defaulting to the range of the finite values of 'y' (by default NULL)}
@@ -64,14 +65,14 @@ selDoc ="meta 3": documents/words with a contribution over 3 times the average d
 }
 
 \references{
-Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. <doi:10.1080/02664763.2012.657409>.
+Husson F., LÃª S., PagÃ¨s J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. \doi{10.1201/b10345}.
 
 Lebart, L., Piron, M., & Morineau, A. (2006). Statistique exploratoire multidimensionnelle. (Dunod, Ed.).
 
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (Kluwer, Ed.). \doi{10.1007/978-94-017-1525-6}.
 }
 
-\author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Antón Sánchez-Espigares}
+\author{Monica BÃ©cue-Bertaut, RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-AntÃ³n SÃ¡nchez-Espigares}
 
 \seealso{ \code{\link{LexCA}}, \code{\link{print.LexCA}},  \code{\link{plot.LexCA}}, \code{\link{summary.LexCA}}}
 
@@ -90,7 +91,7 @@ ellipseLexCA(res.LexCA, selWord="cos2 0.2", selDoc=NULL, col.word="brown")
 }
 \dontrun{
 data(open.question)
-res.TD<-TextData(base, var.text=c(9,10), var.agg="Sexe_Age", Fmin=10, Dmin=10,
+res.TD<-TextData(open.question, var.text=c(9,10), var.agg="Gen_Age", Fmin=10, Dmin=10,
   remov.number=TRUE, stop.word.tm=TRUE)
 res.LexCA<-LexCA(res.TD, graph=FALSE)
 ellipseLexCA(res.LexCA, selWord=NULL, col.doc="black")

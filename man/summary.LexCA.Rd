@@ -1,5 +1,5 @@
-\name{summary.LexCA}
-\encoding{latin1}
+ï»¿\name{summary.LexCA}
+\encoding{UTF-8}
 \alias{summary.LexCA}
 
 \title{Summary LexCA object}
@@ -36,7 +36,7 @@ Summarizes LexCA objects
  \item{\dots}{further arguments passed from other methods}
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
 \seealso{ \code{\link{LexCA}}, \code{\link{print.LexCA}},  \code{\link{plot.LexCA}}}
 
 \examples{
@@ -46,4 +46,5 @@ res.LexCA<-LexCA(res.TD, lmd=1, lmw=1)
 summary(res.LexCA)
 }
 
+\keyword{summary}
 

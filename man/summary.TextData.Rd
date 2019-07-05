@@ -1,5 +1,5 @@
-\name{summary.TextData}
-\encoding{latin1}
+ï»¿\name{summary.TextData}
+\encoding{UTF-8}
 \alias{summary.TextData}
 
 \title{Summary of TextData objects}
@@ -23,14 +23,14 @@ Summarizes TextData objects.
   \item{nseg}{index of the nfirst nseg repeated segments (by default 50). 
    Use nseg="ALL" to have the complete list of segments. Use 
    nseg=0 or nseg=NULL if the results on the segments are not wanted } 
-  \item{ordFreq}{if ordFreq=TRUE, both glossaries, of words and repeated segments, are listed in alphabetic order; 
-if ordFreq=FALSE both glossaries are listed  in frequency order (by default TRUE)}
+  \item{ordFreq}{if ordFreq=TRUE, glossaries of words and repeated segments, are listed in frequency order; 
+if ordFreq=FALSE, glossaries are listed  in alphabetic order (by default TRUE)}
   \item{file}{a connection, or a character string naming the file to print to in csv format. If NULL (the default), the results are not printed in a file}
   \item{sep}{character string to insert between the objects to print (if the argument file is not NULL) (by default ";")}
   \item{\dots}{further arguments passed to or from other methods,...}
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
 
 \seealso{ \code{\link{TextData}}, \code{\link{print.TextData}},  \code{\link{plot.TextData}}}
 

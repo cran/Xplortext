@@ -1,7 +1,6 @@
-\name{Xplortext-package}
-\encoding{latin1}
+﻿\name{Xplortext-package}
+\encoding{UTF-8}
 \alias{Xplortext-package}
-\alias{Xplortext}
 \docType{package}
 \title{Textual Analysis}
 \description{
@@ -11,25 +10,29 @@ Chronologically constrained agglomerative hierarchical clustering enriched with 
 Given a division of the corpus into parts, their characteristic words and documents are identified.
 Further, accessing to 'FactoMineR' functions is very easy. Two of them are relevant in textual domain.
 MFA() addresses multiple lexical table allowing applications such as dealing with multilingual corpora as well as simultaneously analyzing both open-ended and closed questions in surveys. 
-CaGalt() helps to explore the relationships between lexical choices and contextual variables. See <http://www.Xplortext.org> for examples.
+See \url{http://www.xplortext.org} for examples.
 }
 \details{
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.1.1\cr
-Date: \tab 2018-01-23\cr
+Version: \tab 1.2.1\cr
+Date: \tab 2019-07-04\cr
 License: GPL (>=2.0)
 }
 }
-\author{Monica B�cue-Bertaut, Ram�n Alvarez-Esteban, Josep-Anton S�nchez-
-    Espigares\cr
+\author{Mónica Bécue-Bertaut, Ramón Alvarez-Esteban, Josep-Anton Sánchez-
+    Espigares, Belchin Kostov\cr
 Maintainer: \email{ramon.alvarez@unileon.es}
 }
-\references{
-Husson F., Le S., Pages J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. <doi:10.1080/02664763.2012.657409>.
 
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
+
+\references{
+Husson F., Lê S., Pagès J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. \doi{10.1201/b10345}.
+
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).
+ \doi{10.1007/978-94-017-1525-6}.
 
 A website \url{http://www.xplortext.org}
+
 }

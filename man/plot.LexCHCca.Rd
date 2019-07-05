@@ -1,5 +1,5 @@
 \name{plot.LexCHCca}
-\encoding{latin1}
+\encoding{UTF-8}
 \alias{plot.LexCHCca}
 \title{Plots for Chronological Constrained Hierarchical Clustering from LexCHCca Objects}
 
@@ -31,7 +31,7 @@
 Returns the chosen plot
 }
 
-\author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton Sánchez-Espigares}
+\author{MÃ³nica BÃ©cue-Bertaut, RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton SÃ¡nchez-Espigares}
 \seealso{\code{\link{LexCHCca}} }
 
 
@@ -42,9 +42,9 @@ res.TD<-TextData(open.question,var.text=c(9,10), var.agg="Age_Group", Fmin=10, D
         stop.word.tm=TRUE)
 res.LexCA<-LexCA(res.TD, graph=FALSE)
 res.chcca<-LexCHCca(res.LexCA, nb.clust=4, min=3, graph=FALSE)
-plot(res.chc, choice="tree")
-plot(res.chc, choice="map")
-plot(res.chc, choice="bar", max.plot=5)
+plot(res.chcca, choice="tree")
+plot(res.chcca, choice="map")
+plot(res.chcca, choice="bar", max.plot=5)
 }
 }
 

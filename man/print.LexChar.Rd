@@ -1,11 +1,11 @@
 \name{print.LexChar}
-\encoding{latin1}
+\encoding{UTF-8}
 \alias{print.LexChar}
 
 \title{Print LexChar objects}
 
 \description{
-Prints characteristic words and documents from LexChar objects.
+Prints characteristic words and documents from LexChar objects
 }
 
 \usage{
@@ -19,7 +19,7 @@ Prints characteristic words and documents from LexChar objects.
   \item{\dots}{further arguments passed to or from other methods}
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Mónica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, MÃ³nica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
 
 \seealso{ \code{\link{LexChar}}, \code{\link{plot.LexChar}}}
 

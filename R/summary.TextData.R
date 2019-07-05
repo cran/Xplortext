@@ -8,6 +8,8 @@ summary.TextData <- function(object,ndoc=10, nword=50, nseg=50, ordFreq = TRUE, 
 if(is.null(ndoc)) ndoc<-0
 if(is.null(nword)) nword<-0
 
+
+
 # if(ndoc=="ALL") ndoc <- object$info$Ndoc[[1]]
 if(ndoc=="ALL") ndoc <- nrow(object$summDoc)
 
@@ -31,6 +33,7 @@ if(!is.null(object$DocSeg)) {
 if(!is.null(file)) sink(file)
 cat("\nTextData summary\n\n")
 
+
 if(is.null(file)) print(object$summGen)  else {
   out1 <- t(c("","Before", "After",sep="\t"))
   write.table(out1, quote=FALSE, sep = sep,col.names=FALSE, row.names=FALSE)
@@ -47,17 +50,30 @@ if(var.agg=="") {
  name2 <- c("", rep("before",5), rep("after",4))
 }
 A1 <- data.frame(nameF,name2)
-colnames(A1) <- NULL
-A2 <- cbind(A1,t(object$summDoc[c(1:ndoc),]))
+
+
+
+
+# A3 7 para ordenar  
+if(ordFreq==TRUE) {
+  datDoc <- object$summDoc[with(object$summDoc, order(-object$summDoc$Occurrences.after)), ]
+  } else {datDoc <-object$summDoc  }
+
+# colnames(A1) <- NULL
+A2 <- cbind(A1,t(datDoc[c(1:ndoc),]))
+
 colnames(A2) <- NULL
 A3 <- data.frame(t(A2)) 
-colnames(A3) <- NULL
+
 rownames(A3) <- c(""," ",c(1:(nrow(A3)-2)))
+colnames(A3) <- NULL
+
 
 if(ndoc>0){
 if(ndoc== object$info$Ndoc[[1]]) cat("\nStatistics for the documents\n")
  else cat("\nStatistics for the ", ndoc, " first docs\n")
-if(is.null(file))  print(A3[1:(ndoc+2),],na.print = "") else
+
+  if(is.null(file))  print(A3[1:(ndoc+2),],na.print = "") else
    write.table(A3[1:(ndoc+2),], quote=FALSE, sep = sep)}
 
 if(nword>0){

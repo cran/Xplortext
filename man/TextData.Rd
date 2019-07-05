@@ -1,5 +1,5 @@
-\name{TextData}
-\encoding{latin1}
+ï»¿\name{TextData}
+\encoding{UTF-8}
 \alias{TextData}
 
 \title{Building textual and contextual tables (TextData)}
@@ -12,6 +12,7 @@ Creates a textual and contextual working-base (TextData format) from a source-ba
 TextData(base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= NULL,
  selDoc="ALL", lower=TRUE, remov.number=TRUE,lminword=1, Fmin=Dmin,Dmin=1, Fmax=Inf,
  stop.word.tm=FALSE, idiom="en", stop.word.user=NULL, segment=FALSE,
+ sep.weak="(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+",
  sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", seg.nfreq=10, seg.nfreq2=10,
  seg.nfreq3=10, graph=FALSE)
 }
@@ -32,7 +33,8 @@ TextData(base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= 
  \item{idiom}{declared idiom for the textual column(s) (by default English "en", see IETF language in package NLP)}
  \item{stop.word.user}{stoplist provided by the user}
  \item{segment}{if TRUE, the repeated segments are identified (by default FALSE)}
- \item{sep.strong}{string with the characters marking out the repeated segments (by default "[()¿?./:¡!=+;{}-]\")}
+ \item{sep.weak}{string with the characters marking out the terms (by default punctuation characters, space and control). See details}
+ \item{sep.strong}{string with the characters marking out the repeated segments (by default "[()??./:?!=+;{}-]\")}
  \item{seg.nfreq}{minimum frequency of a more-than-three-words-long repeated segment (by default 10)}
  \item{seg.nfreq2}{minimum frequency of a two-words-long repeated segment (by default 10)}
  \item{seg.nfreq3}{minimum frequency of a three-words-long repeated segment (by default 10)}
@@ -60,6 +62,14 @@ this data structure, in slam package compressed format}
 \details{
 Each row of the source-base is considered as a source-document.
 TextData function builds the working-documents-by-words table, submitted to the analysis.
+
+sep.weak contains the string with the characters marking out the terms (by default punctuation characters, space and control).
+Backslash or double backslash are used to start an escape sequence defining special characters. Each special character must by separated the symbol | (or) in sep.weak and sep.strong.
+For example:
+\verb{
+sep.weak = "[[space]]|Â¡|!|;|\\,|\\.|\\-|\\(|\\)|\\#|:|Â¿|\\'|\%|_|\u0022"
+}
+Some special characters can be introduced as unicode characters.
 
 Information related to context.quanti and context.quali arguments:
   \enumerate{
@@ -91,7 +101,7 @@ If var.agg is NON-NULL:
  \tab as many rows as as categories the aggregation variable has\cr
  \tab as many columns as words are selected.
   }
-\item context$quali$qualitable: juxtaposes as many supplementary aggregate tables as categorical contextual variables. Each table has 
+\item context$quali$qualitable: juxtaposes as many supplementary aggregate tables as categorical contextual variables. Each table has: 
  \tabular{ll}{
  \tab as many rows as categories the contextual categorical variable has\cr
  \tab as many columns as selected words, i.e. as many columns as DocTerm has.
@@ -104,14 +114,15 @@ If var.agg is NON-NULL:
 
 
 \references{
-Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). <doi:10.1007/978-94-017-1525-6>.
+Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). \doi{10.1007/978-94-017-1525-6}.
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{RamÃ³n Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica BÃ©cue-Bertaut, Josep-AntÃ³n SÃ¡nchez-Espigares}
 
 \seealso{ \code{\link{print.TextData}}, \code{\link{summary.TextData}},  \code{\link{plot.TextData}}}
 
 \examples{
+
 # Non aggregate analysis
 data(open.question)
 res.TD<-TextData(open.question, var.text=c(9,10), remov.number=TRUE, Fmin=10, Dmin=10,  

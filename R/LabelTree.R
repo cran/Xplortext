@@ -2,7 +2,8 @@
 
 LabelTree<-function(object,proba=0.05){
 
-    if (!inherits(object, "LexCHCca"))  stop("Object should be LexCHCca class")
+    if (!inherits(object, "LexHCca") & !inherits(object, "LexCHCca"))
+      stop("Object should be LexHCca or LexCHCca class")
 mots.h=function(LTab){
 	if (length(LTab)==0) stop("No hierarchical words are identified")
 	table=NULL
@@ -18,10 +19,8 @@ mots.h=function(LTab){
 	
 	nam=factor(table[,7],levels=1:length(LTab),labels=names(LTab))
       b=split(as.data.frame(table[,1:6]),nam,drop=F)
-      lisa<-lapply(b, function(el) if(nrow(el)==0) NULL else el[order(el[,6],decreasing=TRUE),])
-      
+      lisa<-lapply(b, function(el) if(nrow(el)==0) NULL else el[order(el[,6],decreasing=TRUE),])    
       for(i in sort(which(unlist(lapply(lisa,is.null))),decreasing=T)) lisa[[i]]<-NULL
-     
       return(lisa) 
 }
        
@@ -51,6 +50,7 @@ for (inode in 1:(nodt-2))
                               } 
    }
 res<-descfreq(DocTerm,proba=proba)
+
 for (inode in 1:nodt) {                         
 
    label.node<-rownames(DocTerm)[inode]
@@ -61,9 +61,9 @@ for (inode in 1:nodt) {
                                   }    
                         }                 
 #  only the non-doubled are kept
-   res=mots.h(lista_tabmots)
-   return(res)
+res<-NULL
+   res$words <- mots.h(lista_tabmots)
+   res$clust <- object
+   class(res) = c("LabelTree")
+      return(res)
 }
-
-
-
