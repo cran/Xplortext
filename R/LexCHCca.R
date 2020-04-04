@@ -10,7 +10,8 @@ LexCHCca = function (object, nb.clust=0, min=3,
 {
 #### Esta se repite después
 if (!inherits(object,"LexCA")) stop("Object should be LexCA class")
-
+  options(stringsAsFactors = FALSE)
+  
 ###  
 hcclust= function(X)  
   {

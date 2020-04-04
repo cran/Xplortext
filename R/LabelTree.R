@@ -1,7 +1,8 @@
 #' @export
 
 LabelTree<-function(object,proba=0.05){
-
+  options(stringsAsFactors = FALSE)
+  
     if (!inherits(object, "LexHCca") & !inherits(object, "LexCHCca"))
       stop("Object should be LexHCca or LexCHCca class")
 mots.h=function(LTab){

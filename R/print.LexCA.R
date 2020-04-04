@@ -1,6 +1,6 @@
-#' @export
 print.LexCA <- function (x, file = NULL, sep = ";", ...) 
 {
+  options(stringsAsFactors = FALSE)
 sink.reset <- function(){
     for(i in seq_len(sink.number())){
         sink()}}
@@ -205,8 +205,5 @@ if(!is.null(x$segment$coord)){
 }
 
  sink()}
-    
-    if (!is.null(file)) {	
-      print(paste("All the results are in the file", file))
+       	print(paste("All the results are in file", file))
     }
-}

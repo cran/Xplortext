@@ -1,4 +1,4 @@
-#' @export
+###' @export
 print.LexChar <- function (x,file = NULL, sep = ";", ...) 
 {
 

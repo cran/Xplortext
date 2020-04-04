@@ -1,7 +1,8 @@
-#' @export
+###' @export
 summary.TextData <- function(object,ndoc=10, nword=50, nseg=50, ordFreq = TRUE, file = NULL, sep=";",
       ...) 
 {
+  options(stringsAsFactors = FALSE)
  if (!inherits(object, "TextData")) 
  stop("Object should be TextData class")
 
@@ -9,26 +10,20 @@ if(is.null(ndoc)) ndoc<-0
 if(is.null(nword)) nword<-0
 
 
-
-# if(ndoc=="ALL") ndoc <- object$info$Ndoc[[1]]
 if(ndoc=="ALL") ndoc <- nrow(object$summDoc)
 
 
 if(nword=="ALL") nword <- object$info$Nword[[1]]
  nword <- min(nword, object$info$Nword[[1]])
-# ndoc <- min(ndoc, object$info$Ndoc[[1]])
  ndoc <- min(ndoc, nrow(object$summDoc))
 
-
  var.agg <- as.character(object$info$name.var.agg[[1]])
-
 
 if(!is.null(object$DocSeg)) {
  if(nseg=="ALL") nseg <- ncol(object$DocSeg)
  if(is.null(nseg)) nseg<-0
  nseg <- min(nseg, ncol(object$DocSeg))
 } else { nseg <-0}
-# for(i in seq_len(sink.number())){sink(NULL)}
 
 if(!is.null(file)) sink(file)
 cat("\nTextData summary\n\n")
@@ -52,15 +47,14 @@ if(var.agg=="") {
 A1 <- data.frame(nameF,name2)
 
 
-
-
 # A3 7 para ordenar  
 if(ordFreq==TRUE) {
   datDoc <- object$summDoc[with(object$summDoc, order(-object$summDoc$Occurrences.after)), ]
-  } else {datDoc <-object$summDoc  }
+} else {datDoc <-object$summDoc  }
 
-# colnames(A1) <- NULL
+colnames(A1) <- NULL
 A2 <- cbind(A1,t(datDoc[c(1:ndoc),]))
+
 
 colnames(A2) <- NULL
 A3 <- data.frame(t(A2)) 
@@ -107,19 +101,12 @@ if(nseg>0) {
   cat("\nNumber of repeated segments\n")
   cat(" ", ncol(object$DocSeg),"\n") 
 if (ordFreq) {
-
-# A1 <- cbind(format(as.data.frame(rownames(object$indexS$segOrderFreq[1:nseg,])), justify = "l"),
-#      object$indexS$segOrderFreq[1:nseg,])
-#Nuevo inicio
  df <- data.frame(object$indexS$segOrderFreq[,])
-# colnames(df)[1] <- "rsegment"
  df <- df[with(df, order(-frequency,segment)), ]
  row.has.na <- apply(df, 1, function(z){any(is.na(z))})
  A1 <- df[!row.has.na,]
  A1 <- A1[c(1:nseg),]
  nseg <- min(nseg, nrow(A1))
-
-#   colnames(A1) <- c("Number", format("Segment",justify = "l"), "Frequency", "Long")
    colnames(A1) <- c(format("Segment",justify = "l"), "Frequency", "Long")
  if(nseg== ncol(object$DocSeg)) cat("\nIndex of the repeated segments\n")
  else cat("\nIndex of the ", nseg, " most frequent repeated segments\n")

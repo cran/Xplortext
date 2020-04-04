@@ -10,10 +10,14 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
     seg.nfreq=10, seg.nfreq2=10, seg.nfreq3=10,
     graph=FALSE)
 {
+  
 # library(SnowballC)   docs <- tm_map(docs, stemDocument)
 ## REvisar el print algunas palabras tienen sin cabecera
 # filt = "(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+"
 filt=sep.weak
+
+if(!is.null(var.agg)) if(is.character(base[,var.agg])) base[,var.agg] <- as.factor(base[,var.agg] ) # version 1.3.1	
+
 
 #---------------------------------------------------
 plotTextData <- function()
@@ -194,7 +198,7 @@ PROCHE <-function(ideb,ifin,ITEX,ITDR,ITRE,nfreq,nfreq2,nfreq3,long,nxlon,nbseg)
    { 					
     for (i in 1:long){					
         te.segment<-paste(te.segment,ITEX[ITDR[ideb]+(i-1)],sep=" ")				
-               te.segment<-str_trim(te.segment)}					
+               te.segment<-stringr::str_trim(te.segment)}					
    lo.segment<-long				
    fr.segment<-mfrec
    nr.segment<-nbseg+1					
@@ -341,8 +345,6 @@ for(i in 1:(nvcheck -1)) {
   repetij <- levi[(which(levi %in% levj))]
   nrep <- length(repetij)
     if(nrep>0){
-
-# Revisar a partir de aqui cuando etiquetas duplicadas
      missrep <- which("Missing" %in% repetij)
    if(missrep==1) nrep <- nrep-1
       if(nrep>0){
@@ -363,30 +365,18 @@ if(!is.null(var.agg)){
 }
 
 
-
 #if(packageDescription("tm")$Version >"0.7-1") {
  colnames(corpus)[1] <- "text"
  corpus$doc_id <- rownames(corpus)
 #}
 
-
-
-
-
-
-#--------- Read texts -------------------
+#--------- Read texts from tm -------------------
 # dtmCorpus <- Corpus(DataframeSource(corpus), readerControl = list(language = idiom))
- dtmCorpus <- VCorpus(DataframeSource(corpus), readerControl = list(language = idiom)) 
+dtmCorpus <- VCorpus(DataframeSource(corpus), readerControl = list(language = idiom)) 
 dtmCorpus <- tm_map(dtmCorpus, content_transformer(function(x) gsub(filt, " ", x)))
 dtmCorpus <- tm_map(dtmCorpus, stripWhitespace)
 dtm <- DocumentTermMatrix(dtmCorpus, control = list(tolower = lower, wordLengths = c(lminword, Inf)))
 rownames(dtm) <- rownames(base)
-
-#stop(context.quali)
-# stop(colnames(dtm))
-
-
-
 
 if(!is.null(var.agg)) SourceTerm <- dtm
 
@@ -408,8 +398,8 @@ if(!is.null(var.agg)){
  detOccAgg <- occurrFunc(dtmagg, "before",NULL, TRUE) 
  }
 #--------- ------------------			
-Nfreqword<-tapply(dtm$v,dtm$j,sum)			
-Ndocword<-tapply(dtm$v>0,dtm$j,sum)			
+Nfreqword <-tapply(dtm$v,dtm$j,sum)			
+Ndocword  <-tapply(dtm$v>0,dtm$j,sum)			
 Table <- cbind(Nfreqword,Ndocword)			
 rownames(Table) <- dtm$dimnames$Terms			
 colnames(Table) <- c("Frequency", "N.Documents")			
@@ -658,13 +648,7 @@ if(!is.null(var.agg)){
  dtmagg <- dtm				
 
  
- 
- 
- 
- 
- 
-
-# Modificada la siguiente el 10/1/2019. Si había documentos agregados vacíos daba un error
+# Changed 10/Jan/2019. When aggregated documents are wide, showed
 #  agg[,1] <- droplevels(agg[,1])				
  dtmagg$nrow <- length(levels(agg[,1]))				
  dtmagg$i <- as.numeric(agg[,1])				
@@ -674,7 +658,7 @@ if(!is.null(var.agg)){
  detOccAgg <- occurrFunc(dtmagg, "after",detOccAgg, TRUE) 				
  detOcc <- detOccAgg			
 
- # Modificada las siguientes el 10/1/2019. Si había documentos agregados vacíos daba un error
+ # Changed 10/Jan/2019. When aggregated documents are wide, showed
  if(length(levels(droplevels(agg[,1])))!= dtmagg$nrow){
    agg[,1] <- droplevels(agg[,1])				
    dtmagg$nrow <- length(levels(agg[,1]))				
@@ -710,7 +694,8 @@ if (!is.null(var.agg)) {
   qcolname <- c(qcolname,colnames(data.context.quanti[i]))	
      if(any(is.na(data.context.quanti[,i])))
        warning("\n", colnames(data.context.quanti[i]), 
-         " variable has missing values.\n They will be replaced by the mean of the category\n") 
+         " variable has missing values.\n They will be replaced by the mean of the category\n
+         \n Consider to use missMDA R package") 
   qcateg <- aggregate(data.context.quanti[,i], by=list(base[,var.agg]), FUN=mean, na.rm=TRUE)		
   acpos <- which(qcateg[,1]%in% dtmagg$dimnames$Docs)		
   qcateg <- qcateg[acpos,]		
@@ -765,10 +750,11 @@ if(!is.null(var.agg)) {
  dfvaragg <- dfvaragg[rownamesdocs.no.empty,,drop=FALSE]
 }
 
+ 
 if(!is.null(var.agg)) { 	
 if(!is.null(qualincat)){	
  qualincat <- data.frame(qualincat, row.names=NULL)	
- qualivar <- data.frame(qualivar)		
+ qualivar <- data.frame(qualivar)
  rownames(qualincat) <- rownames(qualivar)		
  qualivar <- cbind(qualivar, qualincat)
  coltmp <- colnames(qualitable) 
@@ -778,8 +764,10 @@ if(!is.null(qualincat)){
  quali <- list(qualitable=qualitable, qualivar=qualivar)	
  context <- list(quali=quali ,quanti=quantivar)		
 } else {	
-  context <- list(quali=data.frame(base[,context.quali,drop=FALSE]) ,quanti=data.context.quanti)		
+  context <- list(quali=data.frame(base[,context.quali,drop=FALSE]), quanti=data.context.quanti)		
 }		
+
+ 
 
 #--------- Compute results for the total of docs  ------------------				
 seqDoc <- c(N, sum(detOcc[,2]), wordsafter, round(sum(detOcc[,2])/N,2))				
@@ -811,11 +799,12 @@ seqDoc <- c(seqDoc, seqDocAf)
  colnames(mTfreqdoc) <- c("Before", "After")	
  info <- infoNew()		
 
+ attr(dtm, "language") <- info$idiom[[1]] # Version 1.3.1
 y <- list(summGen=mTfreqdoc,summDoc=detOcc, indexW = TFreq, DocTerm =dtm) 
 
 if(segment==TRUE) {
   y$indexS <- Index.segments
-  y$DocSeg <- as.simple_triplet_matrix(tab.seg)
+  y$DocSeg <- slam::as.simple_triplet_matrix(tab.seg)
 }
 
 y$info <- info
@@ -843,10 +832,15 @@ if(is.null(var.agg)) {
    else {
   pos <- which(rownames(context$quali) %in% remov.docs)
   y$context$quali <- context$quali[-pos,,drop=FALSE] 
-        } 
+  
+   } 
+   i <- sapply(y$context$quali, is.character)
+   if(length(i)>0) y$context$quali[i] <- lapply(y$context$quali[i], as.factor) # version 1.3.1
+   
  } # Final !is.null(context$quali)  
 } # Final if(is.null(var.agg))
 
+ 
  df <- y$summDoc[,2,drop=FALSE]
  rownames(df) <- y$summDoc[,1]
  y$rowINIT <- df

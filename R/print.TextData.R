@@ -1,6 +1,8 @@
-#' @export
+###' @export
 print.TextData <- function (x, file = NULL, sep = ";", ...) 
 {
+  options(stringsAsFactors = FALSE)
+  
     res.TextData <- x
   if (!inherits(res.TextData, "TextData")) 
         stop("non convenient data")

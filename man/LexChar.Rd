@@ -7,7 +7,8 @@
 
 \description{Characteristic words of documents from TextData objects.}
 
-\usage{LexChar(object, proba=0.05, maxDocs=20, maxCharDoc=10, maxPrnDoc=100)}
+\usage{LexChar(object, proba=0.05, maxDocs=20, maxCharDoc=10, maxPrnDoc=100, 
+              marg.doc="before")}
 
 \arguments{
  \item{object}{TextData object}
@@ -15,6 +16,7 @@
  \item{maxDocs}{maximum number of documents in the working lexical table (by default 20). See details}
  \item{maxCharDoc}{maximum number of characteristic source-documents to extract (by default 10). See details}
  \item{maxPrnDoc}{maximum length to be printed for a characteristic document (by default 100 characters)}
+ \item{marg.doc}{if before, frequencies before TextData selection are used as document weighting; if after, frequencies after TextData selection (by default before)}
 }
 
 \value{

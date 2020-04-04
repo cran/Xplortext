@@ -16,8 +16,8 @@ See \url{http://www.xplortext.org} for examples.
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.2.1\cr
-Date: \tab 2019-07-04\cr
+Version: \tab 1.3.1\cr
+Date: \tab 2020-04-04\cr
 License: GPL (>=2.0)
 }
 }
@@ -28,6 +28,8 @@ Maintainer: \email{ramon.alvarez@unileon.es}
 
 
 \references{
+Bécue, M. (2019). Textual Data Science with R. Chapman & Hall/CRC. \doi{10.1201/9781315212661}.
+
 Husson F., Lê S., Pagès J. (2011). Exploratory Multivariate Analysis by Example Using R. Chapman & Hall/CRC. \doi{10.1201/b10345}.
 
 Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).

@@ -6,9 +6,11 @@ plot.TextData <- function (x, ndoc=25, nword=25, nseg=25, sel=NULL,
   stop.word.tm=FALSE, stop.word.user=NULL, theme=theme_bw(), title=NULL, xtitle=NULL,
   col.fill="grey", col.lines="black", text.size=12, freq=NULL, vline=NULL,...)
 {
+  options(stringsAsFactors = FALSE)
   
 if (!inherits(x, "TextData")) 
  stop("Object x should be TextData class")
+  pdoc <- pword <- pseg <- NULL 
 
 idiom <- x$info$idiom[[1]]
 theme$text$size <- text.size
@@ -85,9 +87,6 @@ ylab(txtitle) + xlab("") + ggtitle(ttitle) + theme + theme(plot.title = element_
    pword <- pword+ geom_hline(yintercept=vlineword, linetype="dashed", color = "red")
  }
  
- 
- 
- 
   if (dev.interactive()) dev.new()
   print(pword)
 }
@@ -124,9 +123,14 @@ if(!is.null(freq))
    pdoc <- pdoc+ geom_hline(yintercept=vlinedoc, linetype="dashed", color = "red")
 }
 
-if (dev.interactive()) dev.new()
-print(pdoc)
+
+ if (dev.interactive()) dev.new()
+ print(pdoc)
 }
 
+# pword, pdoc, pseg
 theme_set(theme)
+if(!is.null(pdoc))if(is.null(pword))if(is.null(pseg)) return(pdoc)
+if(is.null(pdoc))if(!is.null(pword))if(is.null(pseg)) return(pword)
+if(is.null(pdoc))if(is.null(pword))if(!is.null(pseg)) return(pseg)
 }

@@ -1,16 +1,18 @@
-#' @importFrom graphics barplot
-#' @importFrom methods hasArg
-#' @export
+###' @importFrom methods hasArg
+###' @importFrom graphics barplot
+###' @export
 plot.LexCA <- function(x, selDoc="ALL",selWord="ALL", selSeg=NULL,
   selDocSup=NULL, selWordSup=NULL, quanti.sup=NULL, quali.sup=NULL, maxDocs=20,  
   eigen=FALSE, title=NULL, axes=c(1,2), col.doc="blue", col.word="red",
   col.doc.sup="darkblue", col.word.sup="darkred", col.quanti.sup = "blue",
   col.quali.sup="darkgreen", col.seg="cyan4",col="grey", cex=1, 
   xlim=NULL, ylim=NULL, shadowtext=FALSE, habillage="none", unselect=1,
-  label="all", autoLab=c("auto", "yes", "no"), new.plot=TRUE, ...) 
+  label="all", autoLab=c("auto", "yes", "no"), new.plot=TRUE, 
+  graph.type = c("classic", "ggplot"),...) 
 {
  if (!inherits(x, "LexCA"))  stop("x object should be LexCA class")
-
+  options(stringsAsFactors = FALSE)
+  
 if(eigen==TRUE) {selDoc=selWord=NULL}
 if(!is.null(quali.sup)) {
  if(!is.null(x$var.agg)) { 
@@ -150,15 +152,6 @@ if(new.plot==TRUE){if(dev.interactive()) dev.new()}
  barplot(x$eig[, 1], main = titleE, col=col,
      names.arg = names.arg)
 
-
- 
- 
- 
- 
- 
- 
- 
-
  stemp <- c(selDoc, selWord,selSeg,selDocSup,selWordSup,quanti.sup,quali.sup)
  stemp <- unique(stemp)
  if(!is.null(stemp)) {
@@ -187,7 +180,7 @@ colnames(coord.qs) <- dcol
 x$quanti.sup$coord <- coord.qs
  if(is.null(title)) titleS <- "Supplementary quantitative variables on the CA map"
  else titleS <- title
- plot.CA(x, axes=axes, choix = c("quanti.sup"), col.quanti.sup =col.quanti.sup, title= titleS, cex=cex)
+ plot.CA(x, axes=axes, choix = c("quanti.sup"), col.quanti.sup =col.quanti.sup, title= titleS, cex=cex,graph.type =graph.type )
  stemp <- c(selDoc, selWord,selSeg,selDocSup,selWordSup,quali.sup)
  stemp <- unique(stemp)
  if(!is.null(stemp)) {
@@ -314,5 +307,5 @@ if(new.plot==TRUE){if(dev.interactive()) dev.new()}
     choix=c("CA"), title= title, cex=cex, selectCol=selWord, selectRow=selDoc, 
     xlim=xlim, ylim=ylim, shadowtext=shadowtext,habillage=habillage, unselect=unselect,
     autoLab=autoLab, col.row=col.doc, col.row.sup=col.doc.sup, label=label, 
-    col.col=col.word, col.col.sup=col.word.sup)
+    col.col=col.word, col.col.sup=col.word.sup, graph.type =graph.type)
 }}}

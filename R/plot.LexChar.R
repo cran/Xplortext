@@ -4,19 +4,21 @@
 plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.negat="red",
   col.lines="black", theme=theme_bw(), text.size=12,numr=1,numc=2, top=NULL, max.posit=15, max.negat=15,...) 
 {
-
-marrangeGrob2<- function (grobs, ncol, nrow, ..., top ) 
+  options(stringsAsFactors = FALSE)
+  
+  marrangeGrob2<- function (grobs, ncol, nrow, ..., top ) 
 {
     n <- length(grobs)
     nlay <- nrow * ncol
     pages <- n%/%nlay + as.logical(n%%nlay)
     groups <- split(seq_along(grobs), gl(pages, nlay, n))
     pl <- vector(mode = "list", length = pages)
+
     for (page in seq_along(groups)) {
         g <- page
         params <- modifyList(list(...), list(top = eval(top), 
             nrow = nrow, ncol = ncol))
-        pl[[g]] <- do.call(arrangeGrob, c(grobs[groups[[g]]],params))
+        pl[[g]] <- do.call(gridExtra::arrangeGrob, c(grobs[groups[[g]]],params))
     }
     class(pl) <- c("arrangelist", class(pl))
     pl
@@ -58,6 +60,7 @@ icont<-0
      colorXX <- c(rep(col.char.negat,nrow(df)- numposit),rep(col.char.posit,numposit)) 
      title <- names(x$CharWord[idoc]) 
 icont <- icont+1
+
      pword[[icont]] <- ggplot(df) + geom_bar(aes(x=words,y=vtest),stat = "identity", color = col.lines, fill = colorXX)+ coord_flip() +
          ylab("vtest") + xlab("") + ggtitle(title) + theme
      }}

@@ -1,4 +1,4 @@
-﻿\name{plot.TextData}
+\name{plot.TextData}
 \encoding{UTF-8}
 \alias{plot.TextData}
 
@@ -32,14 +32,22 @@ Draws the barcharts of the longest documents, most frequent words and segments f
   \item{\dots}{further arguments passed to or from other methods...}
 }
 
+
+
 \details{
 freq adds frequencies to barplot (by default NULL). If "YES" or TRUE displays the frequencies at the right of the bars at +5 position.
 Numerical values display the frequencies at the right positions (positive values) or at the left (negative values).
 
 vline adds a vertical line to barplot (by default NULL). If TRUE a vertical line is added at mean level. If "median" a vertical line is added at median level.
+If a number a vertical line is added at the number frequency level.
+
+By default barchart selected in sel argument (doc, word and/ord repeated segments) in ggplot format. 
+Barchart is used with geom_bar function of ggplot package. If it is only one element in sel argument the plot can
+be saved in ggplot format:  newobject <- plot(TextDataObject,sel="word")
+
 }
 
-\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
+\author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Mónica Bécue-Bertaut, Josep-Antón Sánchez-Espigares}
 
 \seealso{ \code{\link{TextData}}, \code{\link{print.TextData}},  \code{\link{summary.TextData}}}
 

@@ -1,4 +1,4 @@
-﻿\name{ellipseLexCA}
+\name{ellipseLexCA}
 \encoding{UTF-8} 
 \alias{ellipseLexCA}
 
@@ -11,7 +11,7 @@ Draws confidence ellipses around documents and/or words on a textual CA graph.
 
 \usage{
 ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, level.conf=0.95,
-    axes=c(1, 2), xlim=NULL, ylim=NULL, title=NULL, col.doc="blue",
+    axes=c(1, 2), ncp=NULL, xlim=NULL, ylim=NULL, title=NULL, col.doc="blue",
     col.word="red", col.doc.ell=col.doc, col.word.ell=col.word, cex=1) 
 }
 
@@ -21,7 +21,8 @@ ellipseLexCA(object, selWord="ALL", selDoc="ALL", nbsample=100, level.conf=0.95,
  \item{selDoc}{selected docs (indexes or names; by default "ALL"); see the details section}
  \item{nbsample}{number of samples drawn to evaluate the stability of the points}
  \item{level.conf}{confidence level used to construct the ellipses (by default 0.95)}
- \item{axes}{length 2 vector specifying the dimensions to plot}
+  \item{axes}{length 2 vector specifying the dimensions to plot}
+ \item{ncp}{maximum number of dimension to draw (by default NULL and ncp is the number of dimensions from LexCA object)}
  \item{xlim}{range for the plotted 'x' values, defaulting to the range of the finite values of 'x' (by default NULL)}
  \item{ylim}{range for the plotted 'y' values, defaulting to the range of the finite values of 'y' (by default NULL)}
  \item{title}{title of the graph (by default NULL and the title is automatically assigned)}

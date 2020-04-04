@@ -1,9 +1,10 @@
-#' @export
+###' @export
 summary.LexCA <- function (object, ncp=5, nb.dec = 3, ndoc=10, nword=10, nseg=10, 
   nsup=10, metaDocs=FALSE, metaWords=FALSE, file = NULL, ...) 
 {
 if (!inherits(object, "LexCA")) stop("non convenient object")
-
+  options(stringsAsFactors = FALSE)
+  
 printE <- function(mat, file = "") {
             mat <- cbind(format(rownames(mat)), mat)
             mat <- rbind(colnames(mat), mat)
