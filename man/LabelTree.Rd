@@ -31,7 +31,7 @@ Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, E
 \author{Monica Bécue-Bertaut, Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Josep-Anton 
 Sánchez-Espigares, Belchin Kostov}
 
-\seealso{ \code{\link{LexCA}}, \code{\link{LexCHCca}}, \code{\link{LexCHCca}}}
+\seealso{ \code{\link{LexCA}}, \code{\link{LexCHCca}}}
 
 
 \examples{

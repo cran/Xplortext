@@ -820,19 +820,26 @@ if(nb.clust>0) if(kk!=Inf) stop("For k-means nb.clust must be 0 (user selection)
       ############ Final cualitativas suplementarias         
       
       
+      
+
     ############# Inicio cuantitativas suplementarias
     if(!is.null(res.save$quanti.sup$coord)) {
       if(cluster.CA=="docs") {
         a1 <- res.save$call$Xtot[rownames(res.save$call$X), rownames(res.save$quanti.sup$coord),drop=FALSE]
         a2 <- cbind(a1, clust_=clust[rownames(a1)])
-        descquanti <- FactoMineR::catdes(a2, num.var=ncol(a2), proba = proba, row.w=doc.w.before[rownames(a2)])
+ #       descquanti <- catdes.New(a2, num.var=ncol(a2), proba = proba, row.w=doc.w.before[rownames(a2)])
+#     return(descquanti)
+        
+          descquanti <- FactoMineR::catdes(a2, num.var=ncol(a2), proba = proba, row.w=doc.w.before[rownames(a2)])
+
+          
+      if(!is.null(descquanti$quanti)>0)  
         names(descquanti$quanti) <-paste("cluster",1:length(descquanti$quanti),sep="_")
       }}
     ############# Final cuantitativas suplementarias
 
       
-      
-      
+ 
       
       
       
@@ -892,7 +899,7 @@ if(nb.clust>0) if(kk!=Inf) stop("For k-means nb.clust must be 0 (user selection)
           class(descaxes) <- NULL
           newres$description$desc.axes <- descaxes
         }
-          
+  
   
       if(cluster.CA =="docs") {
         if(!is.null(descword)) 
@@ -906,8 +913,6 @@ if(nb.clust>0) if(kk!=Inf) stop("For k-means nb.clust must be 0 (user selection)
       #   newres$wordslabels <- desc.ind   # antes $desc.word
       }
   
-    
-    
     
 
     if(nb.desc>0){ 

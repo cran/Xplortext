@@ -16,8 +16,8 @@ See \url{http://www.xplortext.org} for examples.
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.3.1\cr
-Date: \tab 2020-04-04\cr
+Version: \tab 1.3.2\cr
+Date: \tab 2020-05-09\cr
 License: GPL (>=2.0)
 }
 }

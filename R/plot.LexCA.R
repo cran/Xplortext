@@ -1,7 +1,7 @@
 ###' @importFrom methods hasArg
 ###' @importFrom graphics barplot
 ###' @export
-plot.LexCA <- function(x, selDoc="ALL",selWord="ALL", selSeg=NULL,
+plot.LexCA <- function(x, selDoc="ALL", selWord="ALL", selSeg=NULL,
   selDocSup=NULL, selWordSup=NULL, quanti.sup=NULL, quali.sup=NULL, maxDocs=20,  
   eigen=FALSE, title=NULL, axes=c(1,2), col.doc="blue", col.word="red",
   col.doc.sup="darkblue", col.word.sup="darkred", col.quanti.sup = "blue",
@@ -59,7 +59,7 @@ if(is.null(sel1)) return(sel1)
    xx <- gregexpr(pattern =' ',sel1)[[1]][1]-1
    xx <- substr(sel1, 1, xx)
   }
-
+ 
 
 if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char") 
  { 
@@ -67,7 +67,9 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
    if(xx=="coord") {
  # Selection by coordinates"
  sel1 <- as.numeric(substr(sel1, 7, nc))
+ # dft Coordinates for elements x two selected dimensions
  dft <- data.frame(xobj$coord[,c(axx,axy),drop=FALSE])
+ # fval maximum value of element from two dimensions
  fval <- apply(dft, 1, function(z) max(abs(z)))
  ordmax <- rank(fval)
  posic <- which(ordmax > (length(fval)-sel1))
@@ -80,11 +82,12 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
  fval <- apply(dft, 1, function(z) sum(z))
  posic <- which(fval>= sel1)
  sel1 <- rownames(xobj$cos2)[posic]
-  }
+   }
    if(xx=="contrib") {
  # Selection by contrib
  if(bType=="Seg") stop("Segments can not be selected by contribution")
  if(bType=="Quali") stop("Contextual categorical variables can not be selected by contribution")
+ if(bType=="Quanti") stop("Contextual quantitaive variables can not be selected by contribution")
  if(bType=="Dsup") stop("Supplementary documents can not be selected by contribution")
  if(bType=="Wsup") stop("Supplementary words can not be selected by contribution")
  sel1 <- as.numeric(substr(sel1, 9, nc))
@@ -96,6 +99,7 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
  if(xx=="meta") {
  if(bType=="Seg") stop("Segments can not be selected by meta")
  if(bType=="Quali") stop("Contextual categorical variables can not be selected by meta")
+ if(bType=="Quanti") stop("Contextual quantitative variables can not be selected by meta")
  if(bType=="Dsup") stop("Supplementary documents can not be selected by meta")
  if(bType=="Wsup") stop("Supplementary words can not be selected by meta")
  sel1 <- as.numeric(substr(sel1, 5, nc))
@@ -126,7 +130,7 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
  sel1 <- rownames(xobj$coord)[sel1]
  sel1  <- sel1[!is.na(sel1)]
 }
- return(sel1)
+  return(sel1)
 }
 # Final functions
 
@@ -161,26 +165,30 @@ if(new.plot==TRUE){if(dev.interactive()) dev.new()}
 } else {
 invisib <- c("quali.sup")
 
+
 if(!is.null(quanti.sup))
  {
   if (is.null(x$quanti.sup)) 
     stop("No quantitative supplementary variables in LexCA")
- qsn <- rownames(x$quanti.sup$coord)
-if(length(quanti.sup)==1){ if(quanti.sup=="ALL") quanti.sup <- qsn}
- sel1 <- which(qsn %in% quanti.sup)
+  qsn <- rownames(x$quanti.sup$coord)
+  if(is.numeric(quanti.sup))   quanti.sup <-  na.omit(qsn[quanti.sup])
+  sel1 <- selection(quanti.sup,x$quanti.sup,"Quanti",axes[1],axes[2])
+  sel1  <- which(sel1 %in% qsn)
 if(length(sel1)==0)
     stop("No quantitative supplementary variables in plot.LexCA")
+ 
 objqs <- x$quanti.sup
 drow <- unlist(dimnames(objqs[[1]])[1])
 dcol <- unlist(dimnames(objqs[[1]])[2])
 coord.qs <- matrix(x$quanti.sup[[1]],length(drow),length(dcol))
-coord.qs <- matrix(coord.qs[sel1,],length(sel1),length(dcol))
-rownames(coord.qs) <- drow[sel1]
+rownames(coord.qs) <- drow
 colnames(coord.qs) <- dcol
+coord.qs <- coord.qs[sel1,,drop=FALSE]
 x$quanti.sup$coord <- coord.qs
  if(is.null(title)) titleS <- "Supplementary quantitative variables on the CA map"
  else titleS <- title
- plot.CA(x, axes=axes, choix = c("quanti.sup"), col.quanti.sup =col.quanti.sup, title= titleS, cex=cex,graph.type =graph.type )
+ plot.CA(x, axes=axes, choix = c("quanti.sup"), col.quanti.sup =col.quanti.sup, title= titleS, 
+         cex=cex,graph.type =graph.type)
  stemp <- c(selDoc, selWord,selSeg,selDocSup,selWordSup,quali.sup)
  stemp <- unique(stemp)
  if(!is.null(stemp)) {
@@ -205,14 +213,13 @@ if(!is.null(quali.sup)) {
   if(!is.null(x$quali.sup)) 
     quali.sup <- selection(quali.sup,x$quali.sup,"Quali", axes[1],axes[2])
     else stop("No categorical supplementary variables in LexCA object")}
-
 if(!is.null(quali.sup)) {
   if(!is.null(x$var.agg)) 
    x$quali.sup$coord <- data.frame(x$quali.sup$coord[,,drop=FALSE])
-
-   posic <- which(rownames(x$quali.sup$coord) %in% quali.sup)
+  posic <- which(rownames(x$quali.sup$coord) %in% quali.sup)
    x$quali.sup$coord <- x$quali.sup$coord[posic,,drop=FALSE]
-   x$quali.sup$coord <- x$quali.sup$coord[apply(!is.na(x$quali.sup$coord), 1, any), ] 
+   x$quali.sup$coord <- x$quali.sup$coord[apply(!is.na(x$quali.sup$coord), 1, any),,drop=FALSE ] 
+
 }
 
 # Supplementary documents
