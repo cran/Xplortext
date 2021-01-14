@@ -10,14 +10,14 @@ Chronologically constrained agglomerative hierarchical clustering enriched with 
 Given a division of the corpus into parts, their characteristic words and documents are identified.
 Further, accessing to 'FactoMineR' functions is very easy. Two of them are relevant in textual domain.
 MFA() addresses multiple lexical table allowing applications such as dealing with multilingual corpora as well as simultaneously analyzing both open-ended and closed questions in surveys. 
-See \url{http://www.xplortext.org} for examples.
+See \url{https://xplortext.unileon.es} for examples.
 }
 \details{
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.3.2\cr
-Date: \tab 2020-05-09\cr
+Version: \tab 1.4.1\cr
+Date: \tab 2021-01-14\cr
 License: GPL (>=2.0)
 }
 }
@@ -35,6 +35,6 @@ Husson F., Lê S., Pagès J. (2011). Exploratory Multivariate Analysis by Exampl
 Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.).
  \doi{10.1007/978-94-017-1525-6}.
 
-A website \url{http://www.xplortext.org}
+A website \url{https://xplortext.unileon.es}
 
 }

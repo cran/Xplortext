@@ -8,10 +8,18 @@
 LexCHCca = function (object, nb.clust=0, min=3, 
     max=NULL, nb.par=5, graph=TRUE, proba=0.05) 
 {
-#### Esta se repite después
+
 if (!inherits(object,"LexCA")) stop("Object should be LexCA class")
   options(stringsAsFactors = FALSE)
+
+  ## Type selection number of clusters
+  if(is.character(nb.clust))
+    nb.clust <- ifelse(nb.clust == "auto", -1,0)
+  # if(nb.clust=="click") nb.clust<- 0
+  #  if(nb.clust=="auto") nb.clust<- -1
+  if(nb.clust==0) graph<-TRUE  
   
+    
 ###  
 hcclust= function(X)  
   {
@@ -45,8 +53,8 @@ hcclust= function(X)
     groups<-list()                           
     for (i in 1:nrow(Msim)) groups[[i]]<-i
 ###    Critagreg will file the successive values of the agregation criterium
-    Critagreg<-numeric()                     # valor of the distance in the (n-1) fusions of nodes
-###  clust will archiv the successive pairs of nodes that are merged
+    Critagreg<-numeric()                     # value of the distance in the (n-1) fusions of nodes
+###  clust will archive the successive pairs of nodes that are merged
     clust<-list()
 ###    Building the hierarchy: (n-1) intermediate nodes have to be created
     i<-1
@@ -142,8 +150,7 @@ hcclust= function(X)
 
     hcccall<-call("hcclust",match.call()$res)		
     hcc<-structure(list(merge = merge,height=height,
-		       order=order, 
-                   labels = attr(d, "Labels"), method = "complete", 
+		       order=order, labels = attr(d, "Labels"), method = "complete", 
                    call = hcccall, dist.method = "euclidean",clust=clust),class="hclust")
 
     return(hcc)
@@ -220,8 +227,7 @@ hcclust= function(X)
 ### PCA equivalent to CA
       aux <- res.ca$eig
       weight=row.w = res.ca$call$marge.row * sum(res.ca$call$X)
-      res <- PCA(res.ca$row$coord, scale.unit = FALSE, ncp = Inf, graph = FALSE, 
-      row.w = row.w)
+      res <- PCA(res.ca$row$coord, scale.unit = FALSE, ncp = Inf, graph = FALSE, row.w = row.w)
       res$eig <- aux
 
 ###
@@ -234,8 +240,7 @@ hcclust= function(X)
 
 
    auto.haut <- ((t$tree$height[length(t$tree$height) - 
-            t$nb.clust + 2]) + (t$tree$height[length(t$tree$height) - 
-            t$nb.clust + 1]))/2
+            t$nb.clust + 2]) + (t$tree$height[length(t$tree$height) - t$nb.clust + 1]))/2
 
 
    if (graph) {
@@ -277,9 +282,7 @@ hcclust= function(X)
                   xlab = "", sub = "")
             if (nb.clust < 0) 
                 y = auto.haut
-            else y = (t$tree$height[length(t$tree$height) - nb.clust + 
-                2] + t$tree$height[length(t$tree$height) - nb.clust + 
-                1])/2
+            else y = (t$tree$height[length(t$tree$height) - nb.clust +2] + t$tree$height[length(t$tree$height) - nb.clust + 1])/2
         }
 
 t$tree$height[t$tree$height < 0.0000000000001]<- 0
@@ -288,27 +291,28 @@ t$tree$height[t$tree$height < 0.0000000000001]<- 0
 
     X = as.data.frame(t$res$ind$coord)
     ordColo = unique(clust[t$tree$order])
-    if (graph) {
-        rect <- rect.hclust(t$tree, h = y, border = ordColo)
-        clust <- NULL
-        for (j in 1:nb.clust) clust <- c(clust, rep(j, length(rect[[j]])))
-        clust <- as.factor(clust)
-        belong <- cbind.data.frame(t$tree$order, clust)
-        belong <- belong[do.call("order", belong), ]
-        clust <- as.factor(belong$clust)
-        if (nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) 
-            layout(matrix(nrow = 1, ncol = 1, 1), respect = TRUE)
-    }
+    
+#    if (graph) {
+#        rect <- rect.hclust(t$tree, h = y, border = ordColo)
+#        clust <- NULL
+#        for (j in 1:nb.clust) clust <- c(clust, rep(j, length(rect[[j]])))
+#        clust <- as.factor(clust)
+#        belong <- cbind.data.frame(t$tree$order, clust)
+#        belong <- belong[do.call("order", belong), ]
+#        clust <- as.factor(belong$clust)
+#        if (nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) 
+#            layout(matrix(nrow = 1, ncol = 1, 1), respect = TRUE)
+#    }
+
     aux <- names(clust) <- rownames(X)
     names(clust) <- aux
     clust <- as.factor(clust)
 
     X <- cbind.data.frame(X, clust)
-    data.clust <- cbind.data.frame(res.sauv$call$Xtot[rownames(t$res$call$X), 
-                  ], clust)
+    data.clust <- cbind.data.frame(res.sauv$call$Xtot[rownames(t$res$call$X),], clust)
     data.clust <- data.clust[rownames(res.sauv$row$coord), ]
-    desc.var <- descfreq(data.clust[, -which(sapply(data.clust, 
-        is.factor))], data.clust[, ncol(data.clust)], proba = proba)
+    desc.var <- descfreq(data.clust[, -which(sapply(data.clust,is.factor))], 
+                         data.clust[, ncol(data.clust)], proba = proba)
     desc.axe <- catdes(X, ncol(X), proba = proba)
     tabInd <- cbind.data.frame(res.sauv$row$coord, data.clust[rownames(res.sauv$row$coord), 
             ncol(data.clust)])
@@ -317,8 +321,7 @@ t$tree$height[t$tree$height < 0.0000000000001]<- 0
 
     list.centers <- by(tabInd[, -ncol(tabInd), drop = FALSE], 
         tabInd[, ncol(tabInd)], colMeans)
-    centers <- matrix(unlist(list.centers), ncol = ncol(tabInd) - 
-        1, byrow = TRUE)
+    centers <- matrix(unlist(list.centers), ncol = ncol(tabInd) - 1, byrow = TRUE)
     colnames(centers) = colnames(tabInd)[-ncol(tabInd)]
     cluster <- tabInd[, ncol(tabInd), drop = FALSE]
     para <- by(tabInd, cluster, simplify = FALSE, select, default.size = nb.par, 
@@ -343,8 +346,7 @@ t$tree$height[t$tree$height < 0.0000000000001]<- 0
     title = "CA map"
     Y = X[, -ncol(X)]
     leg.map = NULL
-    for (p in 1:nrow(X)) leg.map[p] = paste("cluster", 
-                X$clust[p], " ", sep = " ")
+    for (p in 1:nrow(X)) leg.map[p] = paste("cluster",X$clust[p], " ", sep = " ")
     Y = cbind.data.frame(Y, as.factor(leg.map))
     res2 = PCA(Y, quali.sup = ncol(Y), scale.unit = FALSE, 
                 row.w = res$call$t$res$call$row.w, ncp = Inf, 
@@ -356,6 +358,10 @@ t$tree$height[t$tree$height < 0.0000000000001]<- 0
                   palette = palette())
  
     class(res.LexCHCca) = "LexCHCca"
+
+    if(graph){
+      plot(res.LexCHCca)
+    }
     if (graph) par(mar = old.mar)
     return(res.LexCHCca)
 }

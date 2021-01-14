@@ -5,7 +5,11 @@ LexCA <- function(object,ncp=5, context.sup="ALL", doc.sup=NULL, word.sup=NULL,
  segment=FALSE, graph=TRUE, axes=c(1, 2), lmd=3, lmw=3)
 {
 if(is.null(object)) stop("Missing argument for object")
-if (!inherits(object,"TextData")) stop("Object should be TextData class")
+  
+  
+# if (!inherits(object,"TextData")) stop("Object should be TextData class")
+  if (!inherits(object,"TextData") & !inherits(object,"DocumentTermMatrix")) stop("Object should be TextData class or DocumentTermMatrix")
+  bDT <- ifelse (inherits(object,"DocumentTermMatrix"), TRUE,FALSE)
  options(stringsAsFactors = FALSE)
  
 # Starting CA_New  
@@ -30,7 +34,7 @@ if (!inherits(object,"TextData")) stop("Object should be TextData class")
    
    if (is.null(colnames(X))) colnames(X) <- colnames(X, do.NULL = FALSE, prefix = "V")
    
-   X <- as.data.frame(X)
+   if(bDT) X <- as.data.frame(as.matrix(X))  else  X <- as.data.frame(X)
    is.quali <- which(!unlist(lapply(X, is.numeric)))
    
    X[, is.quali] <- lapply(X[, is.quali, drop = FALSE], as.factor)
@@ -477,6 +481,48 @@ keysR <- list(Word=dfW, Doc = dfD, lmd=lmd, lmw=lmw)
  
  # End Functions -------------------------
 
+ if (bDT) {
+
+   context.sup=NULL; doc.sup=NULL; word.sup=NULL; segment=FALSE
+  res <-  CA_New(object, ncp = 5, row.sup = NULL, col.sup = NULL, quanti.sup = NULL, 
+                       quali.sup = NULL, graph = graph, axes = c(1, 2), row.w = NULL, 
+                       excl = NULL)  
+
+  naxes <- ncp
+  minrowcol <- min(ncol(object),nrow(object))-1
+  res$VCr <- round(sqrt(sum(res$eig[, 1])/ minrowcol ), 4)
+  res$Inertia <- round(sum(res$eig[, 1]), 4)
+  res$meta <- Keys(res,lmd,lmw,naxes, axes)
+  
+  X <- as.data.frame(as.matrix(object)) 
+  res$rowINIT <- data.frame(rowSums(X))
+  rownames(res$rowINIT) <- rownames(X)
+  res$row.sup <- NULL
+  res$col.sup <- NULL
+  res$quanti.sup <- NULL
+  res$quali.sup <- NULL
+  res$segment <- NULL
+  res$var.agg <- NULL
+  class(res) <- c("LexCA","CA", "list")
+  return(res)
+  
+ } # End DocumentTermMatrix
+   
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  var.text <- object$info$var.text[[1]]
  str.base <- object$info$base[[1]]
  str.envir <- object$info$menvir[[1]]

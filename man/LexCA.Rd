@@ -67,7 +67,7 @@ Husson F., Lê S., Pagès J. (2011). Exploratory Multivariate Analysis by Exampl
 
 Lebart, L., Salem, A., & Berry, L. (1998). Exploring textual data. (D. Kluwer, Ed.). \doi{10.1007/978-94-017-1525-6}.
 
-Murtagh F. (2005). Correspondence Analysis and Data Coding with R and Java. Chapman & Hall/CRC. \doi{10.1201/9781420034943}.
+Murtagh F. (2005). Correspondence Analysis and Data Coding with R and Java. Chapman & Hall/CRC.
 }
 \author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Mónica Bécue-Bertaut, Josep-Anton 
   Sánchez-Espigares\cr}

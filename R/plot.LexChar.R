@@ -1,12 +1,15 @@
 #' @import gridExtra
+#' @import stringr 
 #' @importFrom utils modifyList
 #' @export
 plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.negat="red",
-  col.lines="black", theme=theme_bw(), text.size=12,numr=1,numc=2, top=NULL, max.posit=15, max.negat=15,...) 
+  col.lines="black", theme=theme_bw(), text.size=12,numr=1,numc=2, top=NULL, max.posit=15, max.negat=15, 
+  type=c("CharWord","quanti","quali"),context.sup=NULL, ...) 
 {
   options(stringsAsFactors = FALSE)
+  type <- match.arg(type[1], c("CharWord", "quanti", "quali"))
   
-  marrangeGrob2<- function (grobs, ncol, nrow, ..., top ) 
+  marrangeGrob2<- function(grobs, ncol, nrow, ..., top ) 
 {
     n <- length(grobs)
     nlay <- nrow * ncol
@@ -26,43 +29,176 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
 
  if (!inherits(x, "LexChar"))  stop("x object should be LexChar class")
 
-words <-vtest <- NULL
- ldoc<-names(x$CharWord)
- ntdoc<-length(ldoc)
- pword <-list()
- proba<-x$Proba
-if(is.null(top)) top <- paste0("Characteristic words. Proba= ",proba)
-theme$text$size <- text.size
 
-icont<-0
- for (idoc in 1:ntdoc)
-    {
-    if(!is.null(x$CharWord[[idoc]])) {
-     df <- data.frame(x$CharWord[idoc])
-     df[,1] <- rownames(df)
-     df[,2] <- df[,6] 
-     df[,3:6] <- NULL
-     rownames(df) <- NULL
-     colnames(df) <- c("words", "vtest")
-     df$words <- reorder(df$words,df$vtest)
-     if(!(char.negat)) df <- df[-df$vtest<0,,drop=FALSE]
-     numposit<-nrow(df[df$vtest>0,])
-     numnegat <- nrow(df[df$vtest<0,])
+ words <-vtest <- NULL
+ 
+ 
+ 
+ 
+ fCharWord <- function(x, top)  {
+   icont<-0
+   ldoc<-names(x)
+   ntdoc<-length(ldoc)
+   pword <-list()
+ #  proba<-Proba
 
-     if(numposit > max.posit) {
-       df <- df[-((max.posit+1):numposit),,drop=FALSE]
-       numposit <- max.posit
+   theme$text$size <- text.size
+   for (idoc in 1:ntdoc)
+   {
+     if(!is.null(x[[idoc]])) {
+       df <- data.frame(x[idoc])
+       df[,1] <- rownames(df)
+       df[,2] <- df[,6] 
+       df[,3:6] <- NULL
+       rownames(df) <- NULL
+       colnames(df) <- c("words", "vtest")
+       df$words <- reorder(df$words,df$vtest)
+       
+       if(!char.negat) df <- df[-df$vtest<0,,drop=FALSE]
+       numposit<-nrow(df[df$vtest>0,])
+       numnegat <- nrow(df[df$vtest<0,])
+       
+       if(numposit > max.posit) {
+         df <- df[-((max.posit+1):numposit),,drop=FALSE]
+         numposit <- max.posit
+       }
+       if(numnegat > max.negat) {
+         df <- df[-((max.posit+1):(nrow(df)-max.negat)),,drop=FALSE]
+         numnegat <- max.negat
+       }
+       
+       colorXX <- c(rep(col.char.posit,numposit),rep(col.char.negat,nrow(df)- numposit)) 
+       
+       subtitle <- names(x[idoc]) 
+       icont <- icont+1
+       
+       pword[[icont]] <- ggplot(df) + geom_bar(aes(x=words,y=vtest),stat = "identity", color = col.lines,
+                                               fill = colorXX)+ coord_flip() +
+         labs(title = subtitle)+ ylab("vtest") + xlab("") + 
+         # ggtitle(title) + 
+         theme(axis.text = element_text(size = text.size))+ theme
+
      }
-     if(numnegat > max.negat) {
-       df <- df[-((max.posit+1):(nrow(df)-max.negat)),,drop=FALSE]
-     }
+   }
+   return(pword)
+ }
+   
+if(type=="CharWord")  {
+  if(is.null(top)) top <- paste0("Characteristic words. Proba= ", x$Proba)
+ pword <- fCharWord(x$CharWord,  top)
+} # End CharWord
+ 
+ 
 
-     colorXX <- c(rep(col.char.negat,nrow(df)- numposit),rep(col.char.posit,numposit)) 
-     title <- names(x$CharWord[idoc]) 
-icont <- icont+1
+ 
+ fChar<- function(x)  {
+   tac <- NULL
+   strcolnames<- c("GlobalAverage", "AverageWord","Difer.", "pvalue", "Word", "Variable")
+   for(i in 1:length(x)) {
+     t1<- as.data.frame(x[i,drop=FALSE])
+     t2 <- data.frame(t1,rep(names(x)[i],length(x[i])), rownames(t1))
+     colnames(t2) <- strcolnames
+     if(is.null(tac)) tac <- t2 else  tac <- rbind(tac,t2)
+    }
+     
+     SP <- split(tac,f=tac$Variable, drop=FALSE)
+     str.colnames<- c("Word", "GlobalAverage", "AverageWord","Differ.", "pvalue")
+     empty_list = structure(vector(mode = "list", length = length(SP)), names = names(SP))			
+     for(i in 1:length(SP)) {
+       t1<- as.data.frame(SP[i,drop=FALSE])
+       t2.pos <- t1[t1[,3]>0, ,drop=FALSE]
+       t2.neg <- t1[t1[,3]<0, ,drop=FALSE]
 
-     pword[[icont]] <- ggplot(df) + geom_bar(aes(x=words,y=vtest),stat = "identity", color = col.lines, fill = colorXX)+ coord_flip() +
-         ylab("vtest") + xlab("") + ggtitle(title) + theme
-     }}
+         if(nrow(t2.pos)>0) {
+         t2.pos <- t2.pos[order(-t2.pos[,3]),,drop=FALSE]
+         rownames(t2.pos) <- paste0("P", c(1:nrow(t2.pos)))
+         t3.pos <- t2.pos[,c(5,1:4)]
+         colnames(t3.pos) <- str.colnames
+         empty_list[[i]]$posit <- t3.pos
+                             }
+       if(nrow(t2.neg)>0) {
+         t2.neg <- t2.neg[order(t2.neg[,3]),,drop=FALSE]
+         rownames(t2.neg) <- paste0("N", c(1:nrow(t2.neg)))
+         t3.neg <- t2.neg[,c(5,1:4)]
+         colnames(t3.neg) <- str.colnames
+         empty_list[[i]]$negat <- t3.neg
+       }
+     } # End for
+  
+   return(empty_list)
+ }
+ 
+ if(type=="quanti")  {
+   res <- fChar(x$Vocab$quanti$CharWord)
+   ldoc<-names(res)
+   ntdoc<-length(ldoc)
+   pword <-list()
+   proba<-x$Proba
+   
+   
+   
+   if(is.null(top)) top <- paste0("Characteristic words. Proba= ",proba)
+   theme$text$size <- text.size
+   icont<-0
+
+
+   for (idoc in 1:ntdoc)
+   {
+     if(!is.null(res[[idoc]])) {
+       t1<- res[idoc,drop=FALSE][[1]]
+
+       if(!is.null(t1$posit)) numposit<-nrow(t1$posit) else numposit <- 0
+       if(!is.null(t1$negat)) numnegat<-nrow(t1$negat) else numnegat <- 0
+       
+        df<-NULL
+       if(numposit > max.posit) {
+         t1$posit <- t1$posit[-((max.posit+1):numposit),,drop=FALSE]
+         numposit <- max.posit
+        }
+
+       if(numnegat > max.negat) {
+         t1$negat <- t1$negat[-((max.negat+1):numnegat),,drop=FALSE]
+         
+         numnegat <- max.negat
+       }
+  if(!is.null(t1$posit)) df <- rbind(df,t1$posit)
+  if(!is.null(t1$negat)) df <- rbind(df,t1$negat)
+     #  colorXX <- c(rep(col.char.negat,numnegat),rep(col.char.posit,numposit)) 
+       colorXX <- c(rep(col.char.posit,numposit),rep(col.char.negat,nrow(df)- numposit))     
+      # title <- names(res[idoc])
+
+       df <- df[order(df[,"Differ."]),c("Word", "Differ."),drop=FALSE]     
+       colnames(df) <- c("Word", "Difference")
+       df$Word <- reorder(df$Word,df$Difference)
+       
+       subtitle <- ldoc[idoc]
+       icont  <- icont+1
+
+    pword[[icont]] <- ggplot(df) + geom_bar(aes(x=df$Word,y=df$Difference),stat = "identity", 
+                                               color = col.lines, fill = colorXX)+ coord_flip() +
+        labs(title = subtitle)+ 
+           ylab("Difference over the average") + xlab("") +
+        theme(axis.text = element_text(size = text.size))+ theme
+     } # End if
+   
+     } # End for
+# return(pword)
+ }
+
+ 
+ if(type=="quali") {
+   if(is.null(x$Vocab$quali$CharWord)) stop("There are not qualitative variables in LexChart object")
+   if(is.null(context.sup)) stop("You must write one qualitative variable in context.sup argument")
+      xnames <- names(x$Vocab$quali$CharWord)
+      if(length(xnames)==1) context.sup <- xnames
+      rdonames <- xnames[which(xnames %in% context.sup)]
+
+      if(length(rdonames)>1) stop("Please select only one qualitative variable in context.sup")
+      my_list <- x$Vocab$quali$CharWord[[rdonames]]
+      pword <- fCharWord(my_list , top)
+ } # End Type quali
+
+  
+
  suppressWarnings(marrangeGrob2(grobs=pword, nrow = numr, ncol = numc, top=top))
 }

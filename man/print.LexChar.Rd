@@ -9,13 +9,14 @@ Prints characteristic words and documents from LexChar objects
 }
 
 \usage{
-\method{print}{LexChar}(x, file = NULL, sep=";", ...) 
+\method{print}{LexChar}(x, file = NULL, sep=";", dec=".",  ...) 
 }
 
 \arguments{
   \item{x}{object of LexChar class}
   \item{file}{a connection, or a character string giving the name of the file to print to (in csv format). If NULL (the default), the results are not printed in a file}
   \item{sep}{character to insert between the objects to print (if the argument file is non-NULL) (by default ";")}
+  \item{dec}{decimal point (by default ".")}
   \item{\dots}{further arguments passed to or from other methods}
 }
 

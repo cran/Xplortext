@@ -11,13 +11,15 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
     graph=FALSE)
 {
   
+  dfold <- deparse(substitute(base))
+
+  
 # library(SnowballC)   docs <- tm_map(docs, stemDocument)
 ## REvisar el print algunas palabras tienen sin cabecera
 # filt = "(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+"
 filt=sep.weak
 
 if(!is.null(var.agg)) if(is.character(base[,var.agg])) base[,var.agg] <- as.factor(base[,var.agg] ) # version 1.3.1	
-
 
 #---------------------------------------------------
 plotTextData <- function()
@@ -48,19 +50,19 @@ return(dOcc)}
 
 #---------------------------------------------------			
 aggreg <- function(text.var, grouping.var){			
-G <- as.character(substitute(grouping.var))			
-grouping <- unlist(grouping.var)			
-y <- rle(as.character(as.vector(grouping)))			
-lens <- y$lengths			
-group <- y$values			
-x <- cumsum(lens)			
-st <- c(1, x[-length(x)] + 1)			
-end <- c(x)			
-L1 <- invisible(lapply(seq_along(st), function(i) {			
+ G <- as.character(substitute(grouping.var))			
+ grouping <- unlist(grouping.var)			
+ y <- rle(as.character(as.vector(grouping)))			
+ lens <- y$lengths			
+ group <- y$values			
+ x <- cumsum(lens)			
+ st <- c(1, x[-length(x)] + 1)			
+ end <- c(x)			
+ L1 <- invisible(lapply(seq_along(st), function(i) {			
 	pasteagg(text.var[st[i]:end[i]], sep = " . ")}))			
-names(L1) <- group			
-DF <- data.frame(x = names(L1), text.var = unlist(L1), row.names = NULL)			
-colnames(DF)[1] <- "Group"			
+ names(L1) <- group			
+ DF <- data.frame(x = names(L1), text.var = unlist(L1), row.names = NULL)			
+ colnames(DF)[1] <- "Group"			
 return(DF)}			
 
 #---------------------------------------------------
@@ -120,7 +122,8 @@ mbsegm <- list(segment, "searching repeated segments (by default FALSE)")
 zinfo <- list(base=mbase,menvir=menvir, var.text=mvartext, idiom = midiom, lminword=mlminword, lower=mlower,remov.number=mremnum, Fmin=mFmin,
 Fmax=mFmax,Dmin=mDmin,Ndoc=mndoc, LengthW= mnlength, Nword=mnWord,
 name.var.agg=mndocsagg ,stop.word.tm=mSwtm, stop.word.user =mSwuser, segment.searched = mbsegm)
-				
+
+
 if(segment==TRUE) { 
  mNseg <- list( nbseg, "number of segments")
  mseg.nfreq <- list(nfreq, "minimum frequency of a more-than-3-words repeated segment (by default 10)")			
@@ -217,8 +220,12 @@ ORD.EXT<-function(ICRIT,ADR,long1)
  }					
 }					
 ##### Final internal functions
+# dfold <- deparse(substitute(base))  # Movido al principio 15/06/2020
 
-dfold <- deparse(substitute(base))
+
+
+
+
 
 if(!is.null(var.agg)){
   if(is.numeric(base[,var.agg])) base[,var.agg] <- as.factor(base[,var.agg])
@@ -246,6 +253,7 @@ if(selDoc!="ALL") {
       corpus <- paste(corpus, base[, var.text[i]], sep = ".")}}					
    corpus <- data.frame(corpus, stringsAsFactors = FALSE)					
  rownames(corpus) <- rownames(base)					
+
 
 #--------- Save context.quanti  -------------------
 data.context.quanti <- NULL
@@ -312,7 +320,6 @@ if(!is.null(context.quali)) {
   var.check <- c(context.quali, var.agg)			
 }}		
 
-
 if(!is.null(context.quali)) var.check <- context.quali
 if(!is.null(var.agg)) var.check <- c(context.quali, var.agg)
 if(length(var.agg)>1) stop("Only one variable for aggregation")
@@ -352,6 +359,7 @@ for(i in 1:(nvcheck -1)) {
         levels(base[,strnamej]) <- paste0(strnamej,"_",levj)
 }}}}}
 
+
 # Rename "Missing" to "Missing" & variable name
 for(i in 1:(nvcheck)) {
   strnamei <- var.check[i]
@@ -363,7 +371,6 @@ for(i in 1:(nvcheck)) {
 if(!is.null(var.agg)){
   dfvaragg <- data.frame(base[,var.agg,drop=FALSE])
 }
-
 
 #if(packageDescription("tm")$Version >"0.7-1") {
  colnames(corpus)[1] <- "text"
@@ -384,11 +391,11 @@ if(!is.null(var.agg)) SourceTerm <- dtm
 if(!is.null(var.agg)){
 # To build a data frame with 3 columns (rows, columns and frequency)
   # This is a compressed table
- agg <- data.frame(base[dtm$i,var.agg], dtm$j,dtm$v)
+ agg <- data.frame(base[dtm$i,var.agg], dtm$j,dtm$v,drop=FALSE)
  agg <-aggregate(agg[,3], by=list(agg[,1], agg[,2]),FUN=sum, na.rm=TRUE)
  agg <- agg[order(agg[,1],agg[,2]),]
  dtmagg <- dtm
- 
+
  agg[,1] <- droplevels(agg[,1])
  dtmagg$nrow <- length(levels(agg[,1]))
  dtmagg$i <- as.numeric(agg[,1])
@@ -415,6 +422,8 @@ detOcc$PctLength.before <- 100*detOcc[,2]/sum(detOcc[,2])
 detOcc$MeanLength100.before <- round(N*100*detOcc[,2]/sum(detOcc[,2]),2)
 detOcc$PctLength.before <- round(detOcc$PctLength.before,2)				
 wordsafter <- dtm$ncol			
+
+Docs.before <- detOcc[,c("DocName", "Occurrences.before")]
 
 if(!is.null(var.agg)){			
   numberdocs <- table(base[,var.agg])			
@@ -536,7 +545,7 @@ while(ltrou)
 						
  tab.seg<-matrix(0,nrow=nrep,ncol=nbseg)						
  rownames(tab.seg)<-rownames(dtm$DocTerm)						
- if (nbseg==0) print ("no segments fullfil the conditions")						
+ if (nbseg==0) print ("\nno segments fullfil the conditions\n")						
 						
 if (nbseg>0)						
      {						
@@ -576,7 +585,9 @@ colnames(tab.seg) = paste(numSeg, namesSeg, sep=":")
 rownames(tab.seg)<-rownames(dtm$DocTerm)						
 }  # Final segments						
 
-					
+
+
+
 #--------- Remove the numbers  ------------------						
 # To Detect if the colname is a number and remov.number=TRUE we must remove the column						
 if(remov.number == TRUE) {						
@@ -643,7 +654,7 @@ remov.docs <- docsbefore[-dseldoc]
 # ---------------- If aggregation ---------				
 if(!is.null(var.agg)){				
  agg <- data.frame(base[dtm$i,var.agg], dtm$j,dtm$v)				
- agg <-aggregate(agg[,3], by=list(agg[,1], agg[,2]),FUN=sum, na.rm=TRUE)				
+ agg <- aggregate(agg[,3], by=list(agg[,1], agg[,2]),FUN=sum, na.rm=TRUE)				
  agg <- agg[order(agg[,1],agg[,2]),]				
  dtmagg <- dtm				
 
@@ -732,7 +743,10 @@ if(segment==TRUE) {
   colnames(tab.seg) <- tcoln
     }
 } 
-			
+
+ 
+ 
+ 			
 if(!is.null(var.agg)) { 
 # Remove words in SourceTerm supressed in DocTerm
   wordsafteragg <- dtm$dimnames$Terms
@@ -747,7 +761,8 @@ if(!is.null(var.agg)) {
   dsel <- which(SourceTerm$dimnames$Docs %in% rownamesdocs.no.empty) 		
   SourceTerm$dimnames$Docs <- SourceTerm$dimnames$Docs[dsel]		
   SourceTerm$i<- as.numeric(factor(SourceTerm$i,labels=c(1:length(SourceTerm$dimnames$Docs))))		
- dfvaragg <- dfvaragg[rownamesdocs.no.empty,,drop=FALSE]
+  dfvaragg <- dfvaragg[rownamesdocs.no.empty,,drop=FALSE]
+  SourceTerm.freq <- Docs.before[rownames(SourceTerm),]
 }
 
  
@@ -768,6 +783,8 @@ if(!is.null(qualincat)){
 }		
 
  
+ 
+ 
 
 #--------- Compute results for the total of docs  ------------------				
 seqDoc <- c(N, sum(detOcc[,2]), wordsafter, round(sum(detOcc[,2])/N,2))				
@@ -782,6 +799,11 @@ if(is.null(var.agg)){
 }				
  detOcc$PctLength.after <- round(detOcc$PctLength.after,2)				
 				
+ 
+ 
+ 
+ 
+ 
 # ------------------------   Print summary for Tfreqdoc	
 seqDocAf <- c(dtm$nrow, sum(detOcc[,"Occurrences.after"]), dtm$ncol, round(sum(detOcc[,"Occurrences.after"])
    /dtm$nrow,2))				
@@ -798,6 +820,7 @@ seqDoc <- c(seqDoc, seqDocAf)
  rownames(mTfreqdoc) <- rwnDoc		
  colnames(mTfreqdoc) <- c("Before", "After")	
  info <- infoNew()		
+ 
 
  attr(dtm, "language") <- info$idiom[[1]] # Version 1.3.1
 y <- list(summGen=mTfreqdoc,summDoc=detOcc, indexW = TFreq, DocTerm =dtm) 
@@ -809,9 +832,15 @@ if(segment==TRUE) {
 
 y$info <- info
 
-
 if(!is.null(var.agg)) { 
+
+  
+  
  y$SourceTerm <- SourceTerm 
+ y$SourceTerm.freq <- SourceTerm.freq
+if(!is.null(context.quali)) y$SourceTerm.qual <- base[,context.quali]
+ 
+
  y$var.agg <- var.agg.seg[rownames(y$SourceTerm),,drop=FALSE]
  if(!is.null(context$quali)) y$context$quali <- context$quali
  if(!is.null(context$quanti)) y$context$quanti <- context$quanti
@@ -832,7 +861,6 @@ if(is.null(var.agg)) {
    else {
   pos <- which(rownames(context$quali) %in% remov.docs)
   y$context$quali <- context$quali[-pos,,drop=FALSE] 
-  
    } 
    i <- sapply(y$context$quali, is.character)
    if(length(i)>0) y$context$quali[i] <- lapply(y$context$quali[i], as.factor) # version 1.3.1
@@ -840,13 +868,16 @@ if(is.null(var.agg)) {
  } # Final !is.null(context$quali)  
 } # Final if(is.null(var.agg))
 
- 
+
  df <- y$summDoc[,2,drop=FALSE]
  rownames(df) <- y$summDoc[,1]
  y$rowINIT <- df
+ 
+ 
   class(y) <- c("TextData", "list")
 if(blongErr==TRUE) warning("Only repeated segments < 20 words have been computed")	
 
 if(graph==TRUE) plotTextData() 
+
 return(y)
 }

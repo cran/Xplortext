@@ -1,4 +1,4 @@
-﻿\name{plot.LexChar}
+\name{plot.LexChar}
 \encoding{UTF-8}
 \alias{plot.LexChar}
 
@@ -11,7 +11,7 @@ Draws the characteristic and anti-characteristic words of documents from a LexCh
 \usage{
 \method{plot}{LexChar}(x, char.negat=TRUE, col.char.posit="blue", col.char.negat="red",
 col.lines="black", theme=theme_bw(), text.size=12, numr=1, numc=2, top=NULL, 
-max.posit=15, max.negat=15, ...)
+max.posit=15, max.negat=15, type=c("CharWord","quanti","quali"),context.sup=NULL, ...) 
 }
 \arguments{
   \item{x}{object of LexChar class}
@@ -26,12 +26,14 @@ max.posit=15, max.negat=15, ...)
   \item{top}{title of the graph (by default NULL)}
   \item{max.posit}{maximum number of characteristic words (by default 15)}
   \item{max.negat}{maximum number of anti-characteristic words (by default 15)}
+  \item{type}{CharWord and draws the characteristic and anti-characteristic words; quanti draws characteristic words for all quantitative variables; quali draws only the words for one qualitative variable  (by default CharWord)}
+   \item{context.sup}{number or index of qualitative contextual variable to be plotted (only one at a time) (by default NULL)}
   \item{\dots}{further arguments passed to or from other methods...}
 }
 
 \author{Ramón Alvarez-Esteban \email{ramon.alvarez@unileon.es}, Monica Bécue-Bertaut, Josep-Anton Sánchez-Espigares}
 
-\seealso{ \code{\link{LexChar}}, \code{\link{print.LexChar}}}
+\seealso{ \code{\link{LexChar}}, \code{\link{print.LexChar}}, \code{\link{summary.LexChar}}}
 
 
 \examples{
@@ -39,7 +41,7 @@ data(open.question)
 res.TD<-TextData(open.question, var.text=c(9,10), var.agg="Gen_Edu", Fmin=10, Dmin=10,
         remov.number=TRUE, stop.word.tm=TRUE)
 LD<-LexChar(res.TD,maxCharDoc = 0)
-plot(LD)
+#  plot(LD)
 }
 
 \keyword{plot}
