@@ -8,13 +8,13 @@
 }
 
 \usage{
-\method{plot}{LexCHCca}(x, axes=c(1, 2), choice="tree", rect=TRUE, title=NULL, ind.names=TRUE,
+\method{plot}{LexCHCca}(x, axes=c(1, 2), type=c("tree","map","bar"), rect=TRUE, title=NULL, ind.names=TRUE,
     new.plot=FALSE, max.plot=15, tree.barplot=TRUE,...)  
 }
 \arguments{
   \item{x}{object of LexCHCca class}
   \item{axes}{length-2 vector defining the axes of the CA map to plot (by default (1,2))}
-  \item{choice}{type of graph. "tree" plots the tree; "bar" plots the barplot of the successive 
+  \item{type}{type of graph. "tree" plots the tree; "bar" plots the barplot of the successive 
     values of the aggregation criterion (downward reading of the tree); "map" plots the CA map where the individuals 
     are colored in accordances with the cluster of belonging (by default "tree")}
   \item{rect}{if TRUE, when choice="tree" rectangles are drawn around the clusters (by default TRUE)}

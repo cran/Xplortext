@@ -44,7 +44,7 @@ Vocab$quali$stats provides statistics for vocabulary and quantitative variables.
 data(open.question)
 res.TD<-TextData(open.question, var.text=c(9,10), var.agg="Gen_Edu", Fmin=10, Dmin=10, 
         remov.number=TRUE, stop.word.tm=TRUE)
-res.LexChar <-LexChar(res.TD)
+res.LexChar <- LexChar(res.TD)
 summary(res.LexChar)
 
 }

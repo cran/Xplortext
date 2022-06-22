@@ -1,41 +1,55 @@
 #' @import stringr
 #' @export
-LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc=100, marg.doc="before", correct=TRUE,
-                  context.sup="ALL", nbsample=500, seed=12345)
+LexChar <- function(object,  proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc=100, marg.doc="before",
+                    context=NULL, correct=TRUE,  nbsample=500, seed=12345, ...)
  {
   set.seed(seed)
   options(stringsAsFactors = FALSE)
-# maxDocs: Maximum number of input documents or aggregate categories
-# maxCharDoc: Maximum number of characteristic documents to show
-# correct = TRUE and Correction for pvalue of Characteristic words (FactoMineR, Agresti...)
+  # maxDocs: Maximum number of input documents or aggregate categories
+  # maxCharDoc: Maximum number of characteristic documents to show
+  # correct = TRUE and Correction for pvalue of Characteristic words (FactoMineR, Agresti...)
+  # marg.doc; after/before/before.RW
 
+  # Version 1.4.1 used context.sup, version 1.4.2. use context argument
+  varnames<- lapply(substitute(list(...))[-1], deparse)
+  if(!is.null(varnames$context.sup)) {
+    context <- gsub("[[:punct:]]", "", varnames$context.sup)   # Only for Compatibility version 1.4.1
+    warning("Xplortext Versions > 1.4.1 use context, no context.sup argument") 
+  }
+  ###################################################################
+  
+  # Checking object type, proba limits and maxCharDoc values
   if (!inherits(object,"TextData") & !inherits(object,"DocumentTermMatrix") & !inherits(object,"matrix")
       & !inherits(object,"data.frame"))
     stop("Object should be TextData, DocumentTermMatrix, matrix or data frame")
   if(proba<0|proba>1) stop("proba should be between 0 and 1")
   
-  if(is.null(maxCharDoc) |  maxCharDoc <0) maxCharDoc <-0 
- 
+  if(is.null(maxCharDoc) |  maxCharDoc <0) maxCharDoc <- 0 
+
+  
+  ###################################################################
+  ## Functions
   ############### descfreq_New function #############################################
   descfreq_NewChar <- function (data, proba = 0.05, marge.li, marge.col) 				
   {
     lab.sauv <- lab <- colnames(data)				
     for (i in 1:length(lab)) lab[i] = gsub(" ", ".", lab[i])				
-    colnames(data) = lab				
-  
-    old.warn = options("warn")				
-    options(warn = -1)			# suppress warnings globally
+    colnames(data) <- lab
     
-    nom = tri = structure(vector(mode = "list", length = nrow(data)), names = rownames(data))				
-    marge.li <- as.vector(marge.li)
-    marge.col <- as.vector(marge.col)
+    old.warn = options("warn")			
+    options(warn = -1)			# suppress warnings globally
+
+    nom <- tri <- structure(vector(mode = "list", length = nrow(data)), names = rownames(data))		
+    if(is.data.frame(marge.li)) marge.li <- as.vector(marge.li[,1]) else marge.li <- as.vector(marge.li)
+    if(is.data.frame(marge.col)) marge.col <- as.vector(marge.col[,1]) else marge.col <- as.vector(marge.col)
+    
+
     SumTot<-sum(marge.li)				
     nr <- nrow(data)  				
     nc <- ncol(data) 				
-    
-    
-    for (j in 1:nr) {				
-      aux3 <- marge.li[j]/SumTot				# % Ocurrences before or after
+
+    for (j in 1:nr) {
+      aux3 <- marge.li[j]/SumTot				# % Occurrences before or after
       
       for (k in 1:nc) {
         aux2 <- data[j, k]/marge.col[k]
@@ -57,7 +71,7 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
       }
     }
     
-  
+    
     for (j in 1:nr) {				
       if (!is.null(tri[[j]])) {				
         oo = rev(order(tri[[j]][, 6]))				
@@ -78,69 +92,73 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
     class(res) <- c("descfreq", "list ")				
     return(res)				
   }		  # End   descfreq_New
-  ######################################################
-  ##################  main function  ##################
-  ###      Step 1. Verifying the correctness of the arguments
-  bTextData <- ifelse(inherits(object,"TextData"),TRUE,FALSE)
-  ###### Contextual data
-    
-  
-  
-##############  Function to compute Vocab$quali$stats  
+ 
+   ##############  Function to compute Vocab$quali$stats  
   chi.quali<- function(X, QL)  {
-
     list.Agg <- lapply(seq_along(QL),FUN=function(i) t(t(as.matrix(X))%*% as.matrix(QL[[i]])))
-
     
     Nq <- sum(X)
+    
     dfq<-NULL
     old.warn = options("warn")				
     options(warn = -1)			# suppress warnings globally
-    
     for(i in 1:length(list.Agg)) {
       ch <- chisq.test(list.Agg[[i]], correct=FALSE)[1:3]
-      ph <- sqrt(ch$statistic/Nq)
-      d <- data.frame(ch,ph)
+      ph2 <- ch$statistic/Nq
+      ph <- sqrt(ph2)
+      minrowcol <- min(ncol(list.Agg[[i]]),nrow(list.Agg[[i]]))-1
+      VCr <-sqrt(ph2/ minrowcol )
+      d <- data.frame(ch,ph,VCr)
       dfq <- rbind(dfq,d)
     }
-    colnames(dfq) <- c("Chi.Squared", "df", "p.value", "phi")
+    colnames(dfq) <- c("Chi.Squared", "df", "p.value", "phi", "Cramer's V")
     rownames(dfq) <-  names(QL)
     options(old.warn)	
     return(dfq)
-  }
-##########################################
+  }  
   chi.quali.single <- function(X)  {
     old.warn = options("warn")				
     options(warn = -1)			# suppress warnings globally
     ch <- chisq.test(X, correct=FALSE)[1:3]
-    ph <- sqrt(ch$statistic/sum(X))
-    d <- data.frame(ch,ph)
-    colnames(d) <- c("Chi.Squared", "df", "p.value", "phi")
+    ph2 <- ch$statistic/sum(X)
+    ph <- sqrt(ph2)
+    minrowcol <- min(ncol(X),nrow(X))-1
+    VCr <-sqrt(ph2/ minrowcol )
+    d <- data.frame(ch,ph,VCr)    
+    colnames(d) <- c("Chi.Squared", "df", "p.value", "phi", "Cramer's V")
     rownames(d) <-  "LexicalTable"
     options(old.warn)	
     return(d)
   }
- 
+
+  ##############  Function to compute Vocab$quanti$stats    
+  mean.p <- function(V,poids) res<-sum(V*poids,na.rm=TRUE)/sum(poids[!is.na(V)])
+  var.p <- function(V,poids) res<-sum(V^2*poids,na.rm=TRUE)/sum(poids[!is.na(V)])
+  
   
   vocabQuanti <- function(vdt,vX, vrow.INIT ) {
+    vrow.INIT <- vrow.INIT[,1]
     vX <- as.data.frame(vX)
-    
+
     for(i in 1:ncol(vX)){
       if(any(is.na(vX[,i]))) warning("\n", names(vX)[i], " variable has missing values. They will be replaced by the mean\n") 
       vX[is.na(vX[,i]), i] <- mean(vX[,i], na.rm = TRUE)
     }
+    
     # Weight documents
     Wi <- vrow.INIT/sum(vrow.INIT)
     col.INIT <- colSums(vdt)
     y <- sum(col.INIT)
     #  Weighted average of quantitative variables  (1 x 2 variables)
-
-    Aver.X <- apply(X,2,mean.p,Wi)
+    
+    Aver.X <- apply(vX,2,mean.p,Wi)
     Var.X<-apply(sweep(vX,2,Aver.X,"-"),2,var.p,Wi)
+
     #Average of quantitative variables for each word
     Wij.cj <- as.matrix(sweep(vdt,2,col.INIT ,"/"))
-    MeanWord <- t(vX) %*% Wij.cj 
     
+    MeanWord <- t(vX) %*% Wij.cj 
+
     # Variance of words
     coef <- as.matrix((y/col.INIT-1)/(y-1))
     Var.Y <- coef %*% Var.X
@@ -152,36 +170,39 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
     
     ### Permutations
     # Doing list with vocabulary elements
-    nWords <- ncol(vdt)                                                           # 1090 words
-    nDocs <- nrow(vdt)                                                            # 11 discourses
+    nWords <- ncol(vdt)                                                       
+    nDocs <- nrow(vdt)                                                          
     
     relcq.perm <-vector(mode='list',length=nWords)
-    for (i in 1:nWords) relcq.perm[[i]]<-matrix(nrow=nbsample,ncol=ncol(vX),0) 	  # 500 x (1090*2varcuanti)
-        relcq.SS.perm <-vector(mode='list',length=ncol(vX))
-    for (i in 1:ncol(vX)) relcq.SS.perm[[i]]<- matrix(nrow=nbsample,ncol=1,0) 	 # vX matriz de variables cuantitat, 500x2
-        
-    for (i in 1:nbsample){                                                       # nbsample, 500 by default
-      X.perm <- X[sample(1:nDocs),,drop=FALSE]
+    for (i in 1:nWords) relcq.perm[[i]]<-matrix(nrow=nbsample,ncol=ncol(vX),0) 
+    relcq.SS.perm <-vector(mode='list',length=ncol(vX))
+    for (i in 1:ncol(vX)) relcq.SS.perm[[i]]<- matrix(nrow=nbsample,ncol=1,0) 	 
+    
+
+    for (i in 1:nbsample){                                                      
+      X.perm <- vX[sample(1:nDocs),,drop=FALSE]
       Aver.X.perm<-apply(X.perm,2,mean.p,Wi)
       MeanWord.perm <- t(X.perm) %*% Wij.cj
       Var.X.perm<-apply(sweep(X.perm,2,Aver.X.perm,"-"),2,var.p,Wi)
       Var.Y.perm <- coef %*% Var.X.perm
       # dj words x variables
-      dj.perm <- t(sweep(MeanWord.perm,1,Aver.X.perm,"-")) / sqrt(Var.Y.perm)    # 1090 words x 2 average variables
+      dj.perm <- t(sweep(MeanWord.perm,1,Aver.X.perm,"-")) / sqrt(Var.Y.perm)   
+      
+
       for (iw in 1:nWords) 
         relcq.perm[[iw]][i,]<-dj.perm[iw,]    
       sc.inter.perm <-   apply(sweep(t(sweep(t(MeanWord.perm), 2, Aver.X.perm,"-")^2),2,col.INIT,"*"),1,sum)/y
       pct.expl.perm <- sc.inter.perm/Var.X.perm
+      
       for (iw in 1:ncol(vX)) relcq.SS.perm[[iw]][i,] <- pct.expl.perm[iw] # /  SC.X.perm[iw]
     }
- 
-           
-      #  names(relcq.perm) <- colnames(vdt)
- 
-        
-        
+  
+    
+    #  names(relcq.perm) <- colnames(vdt)
     a <- matrix(nrow=ncol(vdt),ncol=ncol(vX),0)
     b <- matrix(nrow=1,ncol=ncol(vX),0)
+    
+
     for (k in 1:ncol(vX)){
       for (i in 1:ncol(vdt)){
         if (dj[i,k]>0) a[i,k] <- sum(relcq.perm[[i]][,k]>dj[i,k])/nbsample
@@ -189,14 +210,14 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
       }
       b[1,k] <- sum(relcq.SS.perm[[k]]> pct.expl[k]) /nbsample
     }
+    
+
+    
+    
     res.mat <- matrix(nrow=ncol(vX),ncol=4,0) 	
     rownames(res.mat)<-colnames(vX)
-    colnames(res.mat )<- c("GlobalAverage","AverageWord","Difer.","pvalue")
-  
-  
-    
-#    names(relcq.perm) <- colnames(vdt)
-
+    colnames(res.mat )<- c("GlobalAverage","AverageWord","Differ.","pvalue")
+    #    names(relcq.perm) <- colnames(vdt)
     for (i in 1:nWords) {
       relcq.perm[[i]]<-res.mat
       relcq.perm[[i]][,1] <- t(Aver.X)
@@ -205,12 +226,9 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
       relcq.perm[[i]][,4] <-  t(a[i,])
       names(relcq.perm)[[i]] <- colnames(vdt)[i]
       relcq.perm[[i]] <- subset(relcq.perm[[i]], proba > relcq.perm[[i]][,4])
-     }
-
+    }
+    
     relcq.perm <- relcq.perm[sapply(relcq.perm, function(x) ifelse(nrow(x)==0,F,T))]
-    
-    
-    
     res.mat.SS <- matrix(nrow=ncol(vX),ncol=4,0) 	
     rownames(res.mat.SS)<-colnames(vX)
     colnames(res.mat.SS)<- c("TotSumSquares","BetweenSquares","%Explained","pvalue")
@@ -221,18 +239,17 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
       res.mat.SS[i,4] <- b[1,i]
     }
     
-   quanti <- list(CharWord=relcq.perm, stats=res.mat.SS)
+    quanti <- list(CharWord=relcq.perm, stats=res.mat.SS)
     return(quanti)
- #   res$Vocab$quanti$CharWord <- relcq.perm
- #   res$Vocab$quanti$stats <- res.mat.SS
   }
+  ##### End of functions #############################################
   
   
-  
-  
-  
-  
-  ###  To know if it is an aggregate analysis
+
+  #### step 1. Selecting the type of object ##############
+  ### Verifying if it is a TextDataObject and aggregated TextData
+  bTextData <- ifelse(inherits(object,"TextData"),TRUE,FALSE)
+  ###  To know if it is an aggregate analysis for an TextData object
   # If it is an aggregated table
   bvaragg <- FALSE
   if(inherits(object,"TextData"))
@@ -240,278 +257,435 @@ LexChar <- function(object, proba = 0.05, maxDocs=20, maxCharDoc = 10, maxPrnDoc
       if(object$info$name.var.agg[[1]]!="") bvaragg <- TRUE 
   
   
-  #=================================================================		
-  ###### Step 2. Extraction of the characteristic words #### 				     
-  
-  if(bTextData) { # There is TextData
-    DocTerm <- as.matrix(object$DocTerm)
-    # Pendiente de las frecuencias row.INIT dependiendo del marg
-    if(marg.doc=="before") {
-      row.INIT <- object$rowINIT 
-      DocTerm <- cbind(DocTerm,as.data.frame(row.INIT -apply(DocTerm,1,sum)))
-      colnames(DocTerm)[ncol(DocTerm)] <- "RestOfWords"
+  #=================================================================	
+  # Computing DocTerm and row.INIT
+  #### step 2. Detecting names contextual variables ##############
+  if(bTextData) {
+    # Is bTextData
+   # df.qual<- strquali <- strquanti <- NULL
+    strquali <- strquanti <- NULL
+    if(!is.null(context))
+    if(length(context)==1) if(context=="ALL") {
+      if(bvaragg) {
+        context  <- colnames(object$SourceTerm.qual)
+        context  <- c(context,colnames(object$SourceTerm.quant))  
+      } else {
+        context  <- colnames(object$context$quali)
+        context  <- c(context,colnames(object$context$quanti))
+      } }
+    
+    
+    # context, quanti and quali names of variables
+    strquali<- colnames(object$SourceTerm.qual)[which(colnames(object$SourceTerm.qual) %in% context)]
+    strquanti<- colnames(object$SourceTerm.quant)[which(colnames(object$SourceTerm.quant) %in% context)]
+    if(!is.null(strquali)) if(length(strquali)==0) strquali <- NULL
+    if(!is.null(strquanti)) if(length(strquanti)==0) strquanti <- NULL
+    
+  } else {
+    # Is not bTextData
+   # df.context.quali <- df.context.quanti <-NULL
+    if("DocumentTermMatrix" %in% class(object)) object <- as.matrix(object)
+    if(is.matrix(object))      object <- as.data.frame(object)
+    if(!is.data.frame(object)) stop("Error: object must be a dataframe")
+
+    if(marg.doc!="after") {
+      options(warn=0)
+      warning("Only marg.doc==after is allowed ; is changed to after")
+      marg.doc <- "after"
     }
-    else row.INIT <- data.frame(Ocurrences.After=rowSums(DocTerm))
-    row.INIT <- row.INIT[,1]
-  } else{  # "CharWord extern docterm"
-    DocTerm <- as.matrix(object)
-    row.INIT <- rowSums(DocTerm)
-    col.INIT <- as.vector(colSums(DocTerm))
+
+    # DocTerm <- object
+    sel.context <- colnames(object)[which(colnames(object) %in% context)]
+    
+    strquali <- strquanti <- NULL
+    if(length(sel.context)!=0) {
+      df.context <- object[,sel.context,drop=FALSE]
+      context.type <- sapply(df.context, class)
+      strquali <- names(context.type[ which(context.type %in% c("factor","character", "logical", "Date"))])
+      strquanti <- names(context.type[!names(context.type) %in% strquali])
+    }
+  }
+  
+
+  
+  #=================================================================	
+  
+  ##### step 3. Building object to descfreq_NewChar function ##############
+  if(bTextData) { # There is TextData object
+    # 1. Computing DocTerm
+    DocTerm <- as.matrix(object$DocTerm)
+    if(marg.doc=="after") {
+      DocTerm <- DocTerm[rowSums(DocTerm)!=0,]
+      row.INIT <- data.frame(Occurrences.after=rowSums(DocTerm))
+    }
+    if(marg.doc=="before") {
+      DocTerm <- DocTerm[rowSums(DocTerm)!=0,]
+      row.INIT <- as.data.frame(object$rowINIT)        # Frequency Occurrences.before
+      # before0 for remove rows with 0 frequency. Occurrences.before
+      # row.INIT <- row.INIT[row.INIT$Occurrences.before>0,,drop=FALSE] 
+      row.INIT <- row.INIT[rownames(DocTerm),,drop=FALSE]
+    }
+    
+    if(marg.doc=="before.RW") {
+      row.INIT<- as.data.frame(object$summDoc[, "Occurrences.before",drop=FALSE])
+      rownames(row.INIT) <- object$summDoc$DocName
+      row.INIT <- row.INIT[row.INIT$Occurrences.before!=0,,drop=FALSE] 
+      
+      # NoNullBefore rows with no null documents before but after threshold
+      DT2 <- DocTerm
+      NoNullBefore <- row.INIT[!rownames(row.INIT) %in% rownames(DocTerm),,drop=FALSE]
+      
+      if(nrow(NoNullBefore)>0){
+        DT2 <- cbind(DT2,as.data.frame(row.INIT[rownames(DocTerm),]))
+        nrDT2 <- nrow(DT2)
+        strnames <- rownames(NoNullBefore)
+        # Add NoNullBefore rows to dataframe and fill them with 0
+        DT2[( nrDT2+1):( nrDT2+  nrow(NoNullBefore)),] <- 0
+        # Add rownames to new rows from strnames
+        rownames(DT2)[(nrDT2+1):(nrDT2+nrow(NoNullBefore))]  <-  strnames  
+        DT2[(nrDT2+1):( nrDT2+  nrow(NoNullBefore)),ncol(DT2)] <- NoNullBefore[,1]
+        DT2 <- DT2[rownames(row.INIT),]
+      } 
+      else {
+        DT2 <- cbind(DT2,as.data.frame(row.INIT[rownames(DocTerm),]))
+      }# End if(nrow(NoNullBefore)>0)
+      
+      freq.after <- apply(DT2[,c(1:(ncol(DT2)-1))],1,sum)
+      freq.before <- DT2[,ncol(DT2)]      
+      # Adding a column with the name of RemovedWords
+      DT2 <- cbind(DT2,as.data.frame(freq.before-freq.after))
+      colnames(DT2)[ncol(DT2)] <- "RemovedWords"
+      DT2 <- DT2[,-(ncol(DT2)-1)]
+      #  colnames(DT2)[ncol(DT2)] <- "RemovedWords"
+      DocTerm <- DT2
+    }  # End before.RW
+    # DocTerm can have some document/aggregate document with margin zero
+    pos.0 <- which(rowSums(DocTerm)==0)
+    if(length(pos.0)!=0) {
+      # Remove empty documents or aggregate documents 
+      DocTerm <- DocTerm[!rownames(DocTerm) %in% names(pos.0),,drop=FALSE]
+      row.INIT <- row.INIT[!rownames(row.INIT) %in% names(pos.0),,drop=FALSE]
+    }
+    
+  } else {
+    # Is not bTextData
+
+    DocTerm <- object
+    if(!is.null(strquali))  DocTerm <- DocTerm[,!colnames(DocTerm) %in% strquali,drop=FALSE] 
+    if(!is.null(strquanti))  DocTerm <- DocTerm[,!colnames(DocTerm) %in% strquanti,drop=FALSE]
+    
+    context.type <- sapply(DocTerm, class)
+
+    strquali.rem <- names(context.type[ which(context.type %in% c("factor","character", "logical", "Date"))])
+    DocTerm <- DocTerm[,!colnames(DocTerm) %in% strquali.rem,drop=FALSE]
+    if(!is.null(strquali)) df.context.quali <- object[,colnames(object) %in% strquali,drop=FALSE]
+    if(!is.null(strquanti)) df.context.quanti <- object[,colnames(object) %in% strquanti,drop=FALSE]
+    pos.0 <- which(rowSums(DocTerm)==0)
+
+    if(length(pos.0)!=0) {
+      # Remove empty documents of non TextData object 
+      DocTerm <- DocTerm[!rownames(DocTerm) %in% names(pos.0),,drop=FALSE]
+      if(!is.null(strquali))  df.context.quali<- df.context.quali[!rownames(df.context.quali) %in% names(pos.0),,drop=FALSE] 
+      if(!is.null(strquanti))  df.context.quanti<- df.context.quanti[!rownames(df.context.quanti) %in% names(pos.0),,drop=FALSE]  
+    }
+
+    row.INIT <- data.frame(rowSums(DocTerm))
+#    stop("Is not bTextData")
   }
   col.INIT <- as.vector(colSums(DocTerm))
-  resCharWord <- descfreq_NewChar(DocTerm, proba = 0.05, row.INIT, col.INIT) 		
-  d.single <- chi.quali.single(DocTerm) 
+  row.INIT.B <- row.INIT
+
+  #--------------------------------------
+  #  Computing Lexical Table: Chi.Squared  df   p.value       phi Cramer's V. No weigthing is applied
+  n.words<- ncol(DocTerm)
+  d.single <- chi.quali.single(DocTerm[rowSums(DocTerm)>0,c(1:n.words)]) 
+  #--------------------------------------------------------------------------------------------
+  resCharWord <- descfreq_NewChar(DocTerm, proba = proba, row.INIT, col.INIT) 	
+  # Return words for active categories
   res <- list(CharWord=resCharWord, stats=d.single)
-  
-  
-  
-  ##################3###      Step 3. Verifying context variables and extracting information
-  # --------------- Check context quanti-quali
-  context <- context.sup
-  context.quanti <-  context.quali <- NULL 
-  #_____________________________________________
-  # Fill NA quantitative values with the average
-  mean.p <- function(V,poids) res<-sum(V*poids,na.rm=TRUE)/sum(poids[!is.na(V)])
-  var.p <- function(V,poids) res<-sum(V^2*poids,na.rm=TRUE)/sum(poids[!is.na(V)])
-  
-  
-  if(!is.null(context)) # Check that names of context.quanti exist		
-  if(bTextData) { # There is TextData
-    if(bvaragg) { # Is agreggated table
-      if(length(context)==1)  if(context=="ALL") {
-        context <- as.character(object$context$quali$qualivar[,1])
-        context <- c(context,colnames(object$context$quanti))
-      }# eND  if(context=="ALL")
+  # Chi square not depend on row.INIT
+  ###########################################################################################################
 
-      if(!is.null(object$context$quali$qualivar))
-        strquali<- object$context$quali$qualivar[,1][which(object$context$quali$qualivar[,1] %in% context)]
-        else strquali<- NULL
-      if(length(strquali)>0)  {
-          numb.qual <- length(strquali)
-          dfq <- NULL
-          if(marg.doc=="after") {
-            df <- object$context$quali$qualivar
-            df <- cbind(df, ac = cumsum(df$qualincat))
-            df$qualincat <- df$ac - df$qualincat+1
-            for(i in 1:numb.qual) {
-              df2 <- df[df$qualivar==strquali[i],]
-              rowdf2 <- c(df2$qualincat:df2$ac)
-              Z2 <- object$context$quali$qualitable[rowdf2,]
-              d.single <- chi.quali.single(Z2) 
-              rownames(d.single) <- strquali[i]
-              dfq <- rbind(dfq,d.single)     # stats for qualivariables after
-              resCharWordQL <- descfreq_NewChar(Z2, proba = 0.05, rowSums(Z2), col.INIT) 
-              res$Vocab$quali$CharWord[[i]] <-resCharWordQL
-            } # end for
-          } else {  # before aggregation
-            SourceTerm <-as.matrix(object$SourceTerm)
-            occ.after <- rowSums(SourceTerm)
-            occ.before <- object$SourceTerm.freq$Occurrences.before
-            df <- cbind(SourceTerm, "RestOfWords"= (occ.before-occ.after))
-            for(i in 1:numb.qual) {
-              Zqs <- tab.disjonctif(object$SourceTerm.qual[ rownames(SourceTerm), i])  # 300 x 2
-              Z2 <- t(Zqs) %*% as.matrix(df )
-              d.single <- chi.quali.single(Z2) 
-              rownames(d.single) <- strquali[i]
-              dfq <- rbind(dfq,d.single)     # stats for qualivariables before
-              resCharWordQL <- descfreq_NewChar(Z2, proba = 0.05, rowSums(Z2), col.INIT) 
-              res$Vocab$quali$CharWord[[i]] <-resCharWordQL
-            } # End for
-                    } # End if(marg.doc=="after")
-          res$Vocab$quali$stats <- dfq
-          names(res$Vocab$quali$CharWord) <- strquali
-                  } # End context.quali
- 
 
-        if(!is.null(colnames(object$context$quanti))) 
-          strquanti<- colnames(object$context$quanti)[which(colnames(object$context$quanti) %in% context)]
-        else strquanti <- NULL
-        
-        
-        if(length(strquanti)>0)  {
-            X <- object$context$quanti[,strquanti, drop=FALSE]
-            res$Vocab$quanti <- vocabQuanti(DocTerm,X, row.INIT)
-          } # End strquanti
 
- 
-        
-    } else { # Is not agreggated table
-      
-      if(length(context)==1)  if(context=="ALL") {
-        context <- colnames(object$context$quali)
-        context <- c(context,colnames(object$context$quanti)) }
-
-      if(!is.null(object$context$quali))
-       strquali <-  colnames(object$context$quali)[which(colnames(object$context$quali) %in% context)]
-   
-         if(!is.null(colnames(object$context$quanti))) 
-          strquanti<- colnames(object$context$quanti)[which(colnames(object$context$quanti) %in% context)]
-        else strquanti <- NULL
-      
-      
-      
-         if(length(strquali)==0) str.quali<-NULL  else {
-          #df.context.quali <- context[,context.quali,drop=FALSE]
-          numb.qual <- length(strquali)
-          dfq <- NULL
-          df.context.quali <- object$context$quali[,strquali,drop=FALSE]
-          # Hago las tablas de contingencia agregada en una lista
-          dis.X <- lapply(colnames(df.context.quali), function(x) FactoMineR::tab.disjonctif(df.context.quali[,x,drop=FALSE])) 
-          names(dis.X) <- context.quali
-          res.chi.quali <- chi.quali(DocTerm, dis.X)
-          rownames(res.chi.quali ) <- strquali
-          res$Vocab$quali$stats <- res.chi.quali   
-          
-          for(i in 1:length(strquali)) {
-            AggTable <- t(t(as.matrix(DocTerm))%*% dis.X[[i]])
-            resCharWordQL <- descfreq_NewChar(AggTable, proba = 0.05, row.INIT, col.INIT) 
-            res$Vocab$quali$CharWord[[i]] <-resCharWordQL
-          }
-          names(res$Vocab$quali$CharWord) <- strquali
-         } # End if(length(strquali)==0)
   
-         if(length(strquanti)>0)  {
-           X <- object$context$quanti[,strquanti, drop=FALSE]
-           res$Vocab$quanti <- vocabQuanti(DocTerm,X, row.INIT)
-         } # End strquanti
-         
-         
-         
+  #=================================================================	  
+  ##### step 4. Quali contextual variables ##############
+  if(length(strquali)==0) strquali <- NULL
+
+  
+  if(!is.null(strquali)){
+   if(bTextData) {  # Is bTextData
+    df.context.quali <- object$SourceTerm.qual[,strquali,drop=FALSE]
+    
+       if(bvaragg) {   ## si bvaragg add aggr variable
+         df.aggr <- object$SourceTerm.var.agg
+         df.context.quali <- cbind(df.aggr,df.context.quali)
+         }  
+    
+    if(ncol(df.context.quali)>0) {
+      df.context.quali$new.Cat <- ""
+      df.context.quali$new.Cat  <- paste0(df.context.quali$new.Cat, paste0(colnames(df.context.quali)[1],"."), df.context.quali[,1])
+    
+      if(ncol(df.context.quali)>2)
+      for(i in 2:(ncol(df.context.quali)-1)) {
+        df.context.quali$new.Cat  <- paste0(df.context.quali$new.Cat, 
+                                            paste0("@",colnames(df.context.quali)[i],"."), df.context.quali[,i])
+      } }
+
+    if(!is.null(strquanti)) {
+       X.quanti.agg <- data.frame(object$SourceTerm.quant[,strquanti,drop=FALSE],"new.Cat"=df.context.quali$new.Cat)
+    } # End if(!is.null(strquanti))
+    
+    
+        if(bvaragg) {
+      DT3 <- as.matrix(object$SourceTerm.dtm)   # original documents x total vocabulary
+      row.INIT <- data.frame("row.INIT"=rowSums(DT3))
+      DT4 <-  DT3[,colnames(DT3) %in% colnames(DocTerm),drop=FALSE]
+      
+      if(marg.doc=="before.RW"){
+             DT4 <- cbind(DT4, row.INIT - data.frame(rowSums(DT4))); colnames(DT4)[ncol(DT4)] <- "RemovedWords"
+             df.temp <- data.frame(DT4, row.INIT,df.context.quali[rownames(DT4),ncol(df.context.quali),drop=FALSE])      
+      } else {
+        if(marg.doc=="after") row.INIT <- data.frame("row.INIT"=rowSums(DT4))
+         df.temp <- data.frame(DT4,row.INIT, df.context.quali[rownames(DT4),ncol(df.context.quali),drop=FALSE])
+      }  # End marg.doc
+
+
+      df.temp.agg <- aggregate(.~new.Cat, df.temp, sum)
+      rownames(df.temp.agg) <- df.temp.agg[,1]
+      df.temp.agg <- df.temp.agg[,-1]
+      df.temp.agg <- df.temp.agg[rowSums(df.temp.agg[1:(ncol(df.temp.agg)-1)])!=0,]
+      row.init.QL <- df.temp.agg[, "row.INIT", drop=FALSE]
+      DT3 <- df.temp.agg[,-ncol(df.temp.agg)]
+      } else {   # no aggr
+        df.temp <- data.frame(DocTerm,row.INIT, df.context.quali[rownames(DocTerm),ncol(df.context.quali),drop=FALSE])
+        df.temp.agg <- aggregate(.~new.Cat, df.temp, sum)
+        rownames(df.temp.agg) <- df.temp.agg[,1]
+        df.temp.agg <- df.temp.agg[,-1]
+        df.temp.agg <- df.temp.agg[rowSums(df.temp.agg[1:(ncol(df.temp.agg)-1)])!=0,]
+        row.init.QL <- df.temp.agg[, ncol(df.temp.agg), drop=FALSE]
+        DT3 <- df.temp.agg[,-ncol(df.temp.agg)]
+    }# End no aggregated
+
+    
+  } else {    # No bTextData
+
+    
+    df.context.quali <- object[,strquali,drop=FALSE]
+    
+    if(ncol(df.context.quali)>0) {
+      df.context.quali$new.Cat <- ""
+      df.context.quali$new.Cat  <- paste0(df.context.quali$new.Cat, paste0(colnames(df.context.quali)[1],"."), df.context.quali[,1])
+      
+     if(ncol(df.context.quali)>2)      
+      for(i in 2:(ncol(df.context.quali)-1)) {
+        df.context.quali$new.Cat  <- paste0(df.context.quali$new.Cat, 
+                                            paste0("@",colnames(df.context.quali)[i],"."), df.context.quali[,i])
+      } }
+  
+    df.temp <- data.frame(DocTerm,row.INIT, df.context.quali[rownames(DocTerm),ncol(df.context.quali),drop=FALSE])
+    df.temp.agg <- aggregate(.~new.Cat, df.temp, sum)
+    rownames(df.temp.agg) <- df.temp.agg[,1]
+    df.temp.agg <- df.temp.agg[,-1]
+    df.temp.agg <- df.temp.agg[rowSums(df.temp.agg[1:(ncol(df.temp.agg)-1)])!=0,]
+    row.init.QL <- df.temp.agg[, ncol(df.temp.agg), drop=FALSE]
+    row.init.QL <-  row.init.QL[,1,drop=TRUE]
+    DT3 <- df.temp.agg[,-ncol(df.temp.agg)]
+    if(length(strquanti)==0) strquanti <- NULL
+    if(!is.null(strquanti)){
+      df.context.quanti <- data.frame(object[rownames(df.context.quali),strquanti,drop=FALSE],df.context.quali$new.Cat)
     }
-  } else { # There is not TextData
+  }
+    col.INIT <- colSums(DT3)
+    resCharWord.QL <- descfreq_NewChar(DT3, proba = proba, row.init.QL, col.INIT) 
     
-    if(!is.data.frame((context.sup)))
-    if(length(context.sup)==1) if(context.sup=="ALL") { context <- context.sup <- NULL }
-
-    if(!is.null(context.sup)) 
-      if(is.data.frame(context.sup))  context <- colnames(context.sup) else
-          context.sup <- as.data.frame(context.sup, drop=FALSE)
-
-    dt <- as.matrix(object) # DocTerm Matrix
-    if(!is.null(context.sup)) {
-      
-      context.quanti <- colnames(context.sup)[unlist(lapply(context.sup, is.numeric))]
-      context.quali  <- colnames(context.sup)[!unlist(lapply(context.sup, is.numeric))]
+    d.single <- chi.quali.single(DT3)
+    res$Vocab$quali$stats <- d.single 
+    res$Vocab$quali$CharWord <- resCharWord.QL
+  } # End (!is.null(strquali))
+    
 
 
-      
-      if(length(context.quali)==0) context.quali<-NULL  else {
-        
-        df.context.quali <- context.sup[,context.quali,drop=FALSE]
-        # To make contingency aggregated tables into a list
-       dis.X <- lapply(colnames(df.context.quali), function(x) FactoMineR::tab.disjonctif(df.context.quali[,x,drop=FALSE])) 
-        names(dis.X) <- context.quali
-       res.chi.quali <- chi.quali(dt, dis.X)
-       res$Vocab$quali$stats <- res.chi.quali 
+  
+  
+  #=================================================================	  
+  ##### step 5. Quanti contextual variables ##############
+  if(!is.null(strquanti)){
+    
+    if(bTextData) {
+        if(is.null(strquali)) {
 
+          if(bvaragg) {
+          X.quanti.TEMP <- cbind(object$SourceTerm.quant[rownames(object$SourceTerm.var.agg),strquanti,drop=FALSE],
+                                 object$SourceTerm.var.agg)
+          colnames(X.quanti.TEMP)[ncol(X.quanti.TEMP)] <- "new.Cat"
+          X.quanti.TEMP <- aggregate(.~new.Cat, X.quanti.TEMP, mean)
+          rownames(X.quanti.TEMP) <- X.quanti.TEMP$new.Cat
+          X.quanti.TEMP <- X.quanti.TEMP[rownames(row.INIT.B),-1,drop=FALSE]
+          res$Vocab$quanti <- vocabQuanti(DocTerm[rownames(row.INIT.B),,drop=FALSE],
+                                          X.quanti.TEMP,row.INIT.B)
+          
+         } else {  # No aggregated
+           X.quanti.TEMP <- object$SourceTerm.quant[rownames(DocTerm),strquanti,drop=FALSE]
+           res$Vocab$quanti <- vocabQuanti(DocTerm[rownames(row.INIT.B),,drop=FALSE],
+                                           X.quanti.TEMP,row.INIT.B)
        
-       #  list.Agg <- lapply(seq_along(QL),FUN=function(i) t(t(as.matrix(X))%*% QL[[i]]))
-       for(i in 1:length(context.quali)) {
-         AggTable <- t(t(as.matrix(dt))%*% as.matrix(dis.X[[i]]))
-         resCharWordQL <- descfreq_NewChar(AggTable, proba = 0.05, row.INIT, col.INIT) 
-         res$Vocab$quali$CharWord[[i]] <-resCharWordQL
-       }
-#     if(length(res$Vocab$quali$CharWord)> 1)
-         names( res$Vocab$quali$CharWord) <- context.quali
-        } # End context.quali
+         }
+      } else {    # There are quali variables
+        X.quanti.agg <- aggregate(.~new.Cat, X.quanti.agg, mean)
+        rownames(X.quanti.agg) <- X.quanti.agg[,1]
+        X.quanti.agg <- X.quanti.agg[rownames(row.init.QL),-1,drop=FALSE]
+        res$Vocab$quanti.aggr <- vocabQuanti(DT3[rownames(row.init.QL),,drop=FALSE],
+                                             X.quanti.agg[rownames(row.init.QL),,drop=FALSE],row.init.QL) 
+      }
+    }  # End bTextData==TRUE
+    
+    if(bTextData==FALSE) {
 
-      
-      
-      if(length(context.quanti)==0) context.quanti<-NULL  else {
-        
-        
-        X <- context.sup[,context.quanti,drop=FALSE]
-      #  DocTerm <- as.matrix(object)
-      #  row.INIT <- rowSums(DocTerm)
-        row.INIT <- rowSums(dt)
+      row.INIT.B <- data.frame(rowSums(DocTerm)) 
 
-        
-        
-        ### Inicio de pasar a función   
-        for(i in 1:ncol(X)){
-          if(any(is.na(X[,i]))) warning("\n", names(X)[i], " variable has missing values. They will be replaced by the mean\n") 
-               X[is.na(X[,i]), i] <- mean(X[,i], na.rm = TRUE)
-        }
-       res$Vocab$quanti <- vocabQuanti(dt,X, row.INIT)
-      } # End strquanti
-       }  # End is.null(context)
-  } # End !bTextData
+      # Relationships with original documents, no qualitative contextual variables are considered
+      res$Vocab$quanti <- vocabQuanti(DocTerm[rownames(row.INIT.B),,drop=FALSE],
+                                      df.context.quanti[rownames(row.INIT.B),strquanti,drop=FALSE],row.INIT.B)
+  
+      stop("0000000000000000000000000")
+      
+          
+      
+      if(!is.null(strquali)) {  # quali and quanti contextual
+        df.temp.quali <- data.frame(DocTerm,row.INIT, df.context.quali[rownames(DocTerm),ncol(df.context.quali),drop=FALSE])
+        df.temp.quali.agg <- aggregate(.~new.Cat, df.temp.quali, sum)
+        rownames(df.temp.quali.agg) <- df.temp.quali.agg[,1]
+        df.temp.quali.agg <- df.temp.quali.agg[-1]
+        row.INIT.B <- df.temp.quali.agg[,ncol(df.temp.quali.agg),drop=FALSE]
+        DocTerm.quant <- df.temp.quali.agg[,-ncol(df.temp.quali.agg),drop=FALSE]
+        colnames(df.context.quanti)[ncol(df.context.quanti)] <- "new.Cat"
+        df.temp.quanti.agg <- aggregate(.~new.Cat, df.context.quanti, mean)
+        rownames(df.temp.quanti.agg) <- df.temp.quanti.agg$new.Cat
+        df.temp.quanti.agg <- df.temp.quanti.agg[,-1, drop=FALSE]
+        res$Vocab$quanti.aggr <- vocabQuanti(DocTerm.quant[rownames(row.INIT.B),,drop=FALSE],
+                                             df.temp.quanti.agg[rownames(row.INIT.B),,drop=FALSE],row.INIT.B)
+      }
+  }}
 
   
-  if(!bvaragg) maxDocs <- 0 # Not allowed if there is not source documents
-    
-  ###### Step  3. Extraction of the characteristic documents in the case of an aggregate table	
-  if(maxDocs>0)   	
-  {	
-    vlev <- rownames(DocTerm)			
-    nlev <- nrow(DocTerm)
-    
-    SourceTerm<-as.matrix(object$SourceTerm)
-    var.text <- object$info$var.text[[1]]
-    str.base <- object$info$base[[1]]
-    str.envir <- object$info$menvir[[1]]
-    base <- get(str.base, envir=str.envir)
-    corpus <- base[, var.text[1]]
-    #--------- Save corpus var.text  -------------------						
-    if(length(var.text) > 1) {					
-      for (i in 2:length(var.text)){					
-        corpus <- paste(corpus, base[, var.text[i]], sep = ".")}}
-    corpus <- data.frame(corpus, stringsAsFactors = FALSE)
-    rownames(corpus) <- rownames(base)
-    corpus <- corpus[rownames(object$var.agg),]
-    # motsval vtest of words for each group
-    # Intern %     glob % Intern freq Glob freq       p.value    v.test
-    # For each group, alphabetical order of words and |vtest|>1.96 
-    motsval <- sapply(resCharWord,function(x) if(!is.null(x))  x[order(row.names(x)),6,drop=FALSE],simplify = TRUE)
-    # nlev Nombre of categories
-    lisresult <- vector(mode="list",length=nlev)
-    if(marg.doc=="before")  DT <- DocTerm[,-ncol(DocTerm)] else DT <- DocTerm
-    
-    for (ilev in 1:nlev)     {
-      # repsel doc position for each group, starting the firs ilev=1)
-      respsel <- which(object$var.agg == vlev[ilev])  # vlev vector with the names of aggregated categories
-      
-      # ntrep maximum nombre of documents to print, minumum between maxPrnDoc and the size of the group
-      ntrep <- min(maxCharDoc, length(respsel))
-      lisresult[[ilev]] <- data.frame(nlev,3)  # Nombre of the group
-      # SourceTerm the rows for non aggregated table
-      SourceTermcurs <- SourceTerm[respsel,,drop=FALSE ]   
-      ly<-as.matrix(rep(0,ncol(DT)))
-      # Rows are the vocabulary of after words
-      rownames(ly)<-colnames(DT)
-      if(is.null(motsval[[ilev]])) {  lisresult[ilev] <- NULL } else {
-        # There are significant words for this category
-        motsvalcurs<-as.matrix(motsval[[ilev]])
-        motsvalcurs<-	  motsvalcurs[which(rownames(motsvalcurs)!="RestOfWords"),,drop=FALSE ]
-        # ly has the words in rows + vtest =0 if not significant, else the vtest (+ or -)
-        ly[rownames(motsvalcurs),1] <- motsvalcurs[,1]
-        # SourceTermcurs has the docs of the category in rows and the vocabulary in columns
-        # a use vtest + and -
-        a <- crossprod(ly,t(SourceTermcurs))
-        b <- rowSums(SourceTermcurs)          # sum of vocabulary after of category, categories in columns
-        repvaltest <- a
-        repvaltest[b > 0] <- a[b > 0]/b[b > 0]
-        # Order of the docs into category
-        ordrep <- order(repvaltest, decreasing = "TRUE")
-        # ntrep is the number of docs to print
-        
-        for (i in 1:ntrep)
-        {
-          lisresult[[ilev]][i,1] <- rownames(object$SourceTerm)[respsel[ordrep[i]]]
-          lisresult[[ilev]][i,2] <- repvaltest[ordrep[i]]
-          lisresult[[ilev]][i,3] <- substr(corpus[respsel[ordrep[i]]], start = 1, stop = maxPrnDoc)
-        }
-        
-        colnames(lisresult[[ilev]]) <- c("DOCUMENT", "CRITERION", "---------------------TEXT---------------------")	
-        
-      } # End  if(is.null(motsval[[ilev]]))
-    } # End for ilev in 1:nlev
-    names(lisresult) <- vlev
-    res$CharDoc <- lisresult
-  } # End Extraction of documents
+
+#============================= 
+
+  if(bTextData & !bvaragg & is.null(strquali)) maxDocs <- 0
+  if(!bTextData & is.null(strquali)) maxDocs <- 0
+
   
+  if(maxDocs>0)  {
+    if(!bTextData) { # Not TextData objext
+      df.QUAL<- df.context.quali[,"new.Cat", drop=FALSE]
+      motsval <- sapply(resCharWord.QL,function(x) if(!is.null(x))  x[order(rownames(x)),6,drop=FALSE],simplify = FALSE)
+      DT3 <- DocTerm
+    }
+    
+    if(bTextData)
+    if(bvaragg | !is.null(strquali)) {   # Yes Extraction of the characteristic documents
+      #  stop("Tiene sentido extraer ducumentos")     
+      var.text <- object$info$var.text[[1]]
+      str.base <- object$info$base[[1]]
+      str.envir <- object$info$menvir[[1]]
+      base <- get(str.base, envir=str.envir)
+      corpus <- base[, var.text[1]]
+      #--------- Save corpus var.text  -------------------						
+      if(length(var.text) > 1) {					
+        for (i in 2:length(var.text)){					
+          corpus <- paste(corpus, base[, var.text[i]], sep = ".")}}
+      
+      corpus <- data.frame(corpus, stringsAsFactors = FALSE)
+      rownames(corpus) <- rownames(base)
+      # corpus <- corpus[rownames(dtm4),]
+
+       if(bvaragg) DT3<- as.matrix(object$SourceTerm) else DT3 <- DocTerm
+      corpus <- corpus[rownames(DT3),,drop=FALSE]
+
+       if(is.null(strquali)) { # only aggregated
+         df.QUAL<- object$var.agg[rownames(DT3),, drop=FALSE]
+         colnames(df.QUAL) <- "new.Cat"
+         resCharWord.QL <- resCharWord
+         motsval <- sapply(resCharWord,function(x) if(!is.null(x))  x[order(rownames(x)),6,drop=FALSE],simplify = FALSE)
+      } else {
+        df.QUAL <- df.context.quali[rownames(DT3),"new.Cat",drop=FALSE]
+        motsval <- sapply(resCharWord.QL,function(x) if(!is.null(x))  x[order(rownames(x)),6,drop=FALSE],simplify = FALSE)
+      }
+}
+
+      ########################################
+      # motsval vtest of words for each group
+      # Intern %     glob % Intern freq Glob freq       p.value    v.test
+      # For each group, alphabetical order of words and |vtest|>1.96 
+      # motsval <- sapply(resCharWord.QL,function(x) if(!is.null(x))  x[order(row.names(x)),6,drop=FALSE],simplify = TRUE)
+      # nlev Nombre of categories
+      vlev <- names(resCharWord.QL)
+      nlev <- length(vlev)	
+      lisresult <- vector(mode="list",length=nlev)
+
+      ######### -----------------------------      
+      for (ilev in 1:nlev)     {
+        # docpos doc position for each group, starting the firs ilev=1)
+        docpos <- which(df.QUAL$new.Cat == vlev[ilev])  # vlev vector with the names of aggregated categories
+
+        # ntrep maximum nombre of documents to print, minumum between maxPrnDoc and the size of the group
+        ntrep <- min(maxCharDoc, length(docpos))
+        lisresult[[ilev]] <- data.frame(nlev,3)  # Name of the group
+        SourceTermcurs <- DT3[docpos,,drop=FALSE ] 
+        # SourceTermcurs the selected rows for non aggregated table
+
+        #lisresult[[ilev]] <- SourceTermcurs
+        ly<-as.matrix(rep(0,ncol(DT3)))
+        # Rows are the vocabulary of after words
+        rownames(ly)<-colnames(DT3)
+
+        
+        if(is.null(motsval[[ilev]])) {  
+          lisresult[ilev] <- list(NULL)
+        } else {
+          # There are significant words for this category
+          motsvalcurs<- as.matrix(motsval[[ilev]])
+          motsvalcurs<-	motsvalcurs[which(rownames(motsvalcurs)!="RemovedWords"),,drop=FALSE ]
+          
+          # ly has the words in rows + vtest =0 if not significant, else the vtest (+ or -)
+          ly[rownames(motsvalcurs),1] <- motsvalcurs[,1]
+          
+      
+          
+          # SourceTermcurs has the docs of the category in rows and the vocabulary in columns
+          # a use vtest + and -
+          a <- crossprod(ly,t(SourceTermcurs))
+          b <- rowSums(SourceTermcurs)          # sum of vocabulary after of category, categories in columns
+          repvaltest <- a
+          repvaltest[b > 0] <- a[b > 0]/b[b > 0]
+
+          # Order of the docs into category
+          ordrep <- order(repvaltest, decreasing = "TRUE")
+
+          # ntrep is the number of docs to print
+          for (i in 1:ntrep)
+          {
+            lisresult[[ilev]][i,1] <- rownames(DT3)[docpos[ordrep[i]]]
+             lisresult[[ilev]][i,2] <- repvaltest[ordrep[i]]
+             if(bTextData)
+            lisresult[[ilev]][i,3] <- substr(corpus[docpos[ordrep[i]],], start = 1, stop = maxPrnDoc)
+             else lisresult[[ilev]][i,3] <- ""
+          }
+          if(bTextData)
+          colnames(lisresult[[ilev]]) <- c("DOCUMENT", "CRITERION", "---------------------TEXT---------------------")	
+          else colnames(lisresult[[ilev]]) <- c("DOCUMENT", "CRITERION", "")	
+        } # End is.null(motsval[[ilev]]
+        
+      } # End ilev
+      
+      names(lisresult) <- vlev
+      res$CharDoc <- lisresult
+  } # End if(maxDocs>0) 
+
   res$Proba <- proba
   class(res) <- c("LexChar", "list")  
-return(res)
-} # End function
- 
+  return(res)
+  
+}

@@ -11,7 +11,7 @@ Draws the characteristic and anti-characteristic words of documents from a LexCh
 \usage{
 \method{plot}{LexChar}(x, char.negat=TRUE, col.char.posit="blue", col.char.negat="red",
 col.lines="black", theme=theme_bw(), text.size=12, numr=1, numc=2, top=NULL, 
-max.posit=15, max.negat=15, type=c("CharWord","quanti","quali"),context.sup=NULL, ...) 
+max.posit=15, max.negat=15, type=c("CharWord","quanti","quali"), ...) 
 }
 \arguments{
   \item{x}{object of LexChar class}
@@ -27,7 +27,6 @@ max.posit=15, max.negat=15, type=c("CharWord","quanti","quali"),context.sup=NULL
   \item{max.posit}{maximum number of characteristic words (by default 15)}
   \item{max.negat}{maximum number of anti-characteristic words (by default 15)}
   \item{type}{CharWord and draws the characteristic and anti-characteristic words; quanti draws characteristic words for all quantitative variables; quali draws only the words for one qualitative variable  (by default CharWord)}
-   \item{context.sup}{number or index of qualitative contextual variable to be plotted (only one at a time) (by default NULL)}
   \item{\dots}{further arguments passed to or from other methods...}
 }
 

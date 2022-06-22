@@ -1,7 +1,7 @@
-###' @import ggplot2
-###' @importFrom grDevices dev.new dev.interactive
-###' @importFrom utils head write.table
-###' @export
+#' @import ggplot2
+#' @importFrom grDevices dev.new dev.interactive
+#' @importFrom utils head write.table
+#' @export
 plot.TextData <- function (x, ndoc=25, nword=25, nseg=25, sel=NULL,
   stop.word.tm=FALSE, stop.word.user=NULL, theme=theme_bw(), title=NULL, xtitle=NULL,
   col.fill="grey", col.lines="black", text.size=12, freq=NULL, vline=NULL,...)
@@ -11,7 +11,8 @@ plot.TextData <- function (x, ndoc=25, nword=25, nseg=25, sel=NULL,
 if (!inherits(x, "TextData")) 
  stop("Object x should be TextData class")
   pdoc <- pword <- pseg <- NULL 
-
+ if(!is.null(vline)) if(vline==FALSE) vline <-NULL
+  
 idiom <- x$info$idiom[[1]]
 theme$text$size <- text.size
 words<-iFreq<-docnames<-rsegment<-frequency<-NULL
@@ -43,8 +44,8 @@ df <- data.frame(x$indexS$segOrderFreq[,])
  ylab(txtitle) + xlab("") + ggtitle(ttitle) + theme + theme(plot.title = element_text(hjust = 0.5))
  if(!is.null(freq))
       pseg <- pseg+ geom_text(aes(x=rsegment, y=frequency+ freq, label = frequency))
- if (dev.interactive()) dev.new() 
-  print(pseg)
+# if (dev.interactive()) dev.new() 
+#  print(pseg)
 }}
 
 
@@ -79,26 +80,28 @@ if(!is.null(vline)) {
  df$words <- reorder(df$words,-as.numeric(rownames(df)))
  pword <- ggplot(df)+ geom_bar(aes(x=words, y=iFreq),stat = "identity", color = col.lines, fill = col.fill)+ coord_flip() +
 ylab(txtitle) + xlab("") + ggtitle(ttitle) + theme + theme(plot.title = element_text(hjust = 0.5))
+ wrd <- df$words
  if(!is.null(freq))
-   pword <- pword+ geom_text(aes(x=df$words, y=iFreq+ freq, label = iFreq))
+#   pword <- pword+ geom_text(aes(x=df$words, y=iFreq+ freq, label = iFreq))
+   pword <- pword+ geom_text(aes(x=wrd, y=iFreq+ freq, label = iFreq))
 
 
  if(!is.null(vlineword)) {
    pword <- pword+ geom_hline(yintercept=vlineword, linetype="dashed", color = "red")
  }
  
-  if (dev.interactive()) dev.new()
-  print(pword)
+#  if (dev.interactive()) dev.new()
+#  print(pword)
 }
 
 
-# To build a data frame with three columns (rows, columns and frequencies) keeping compress structure
+
+# 
 if(ndoc>0){
-DT <- data.frame(x$DocTerm$i,x$DocTerm$j,x$DocTerm$v)
-docnames <- rownames(x$DocTerm) 
-colnames(DT) <- c("i","j","v")
-iFreq <- sapply(split(DT, DT$i), function(z) sum(z$v))
-df <- data.frame(docnames, iFreq)
+
+df <-as.data.frame(rowSums(as.matrix(x$DocTerm)))
+df <- cbind(df,rownames(df))
+colnames(df) <- c("iFreq", "docnames")
 
 if(!is.null(vline)) {
   if(is.numeric(vline)) vlinedoc <- vline
@@ -113,9 +116,11 @@ df <- df[c(1:ndoc),]
 
 ifelse(is.null(title), ttitle <- paste0( ndoc," documents with higher length"), ttitle <- title)
 ifelse(is.null(xtitle), txtitle <- "Document length", txtitle <- xtitle)
+
 df$docnames <- reorder(df$docnames,df$iFreq)
 pdoc <-ggplot2::ggplot(df)+ geom_bar(aes(x=docnames, y=iFreq),stat = "identity", color = col.lines, fill = col.fill)+ coord_flip() +
   ylab(txtitle) + xlab("") + ggtitle(ttitle) + theme + theme(plot.title = element_text(hjust = 0.5))
+
 if(!is.null(freq))
   pdoc <- pdoc+ geom_text(aes(x=docnames, y=iFreq+ freq, label = iFreq))
 
@@ -124,13 +129,19 @@ if(!is.null(freq))
 }
 
 
- if (dev.interactive()) dev.new()
- print(pdoc)
+# if (dev.interactive()) dev.new()
+   #  print(pdoc)
 }
 
 # pword, pdoc, pseg
 theme_set(theme)
-if(!is.null(pdoc))if(is.null(pword))if(is.null(pseg)) return(pdoc)
-if(is.null(pdoc))if(!is.null(pword))if(is.null(pseg)) return(pword)
-if(is.null(pdoc))if(is.null(pword))if(!is.null(pseg)) return(pseg)
+
+# if (dev.interactive()) dev.new()
+
+ if(!is.null(pdoc)) return(pdoc)
+if(!is.null(pword)) return(pword)
+if(!is.null(pseg)) return(pseg)
+# if(!is.null(pdoc))if(is.null(pword))if(is.null(pseg)) return(pdoc)
+# if(is.null(pdoc))if(!is.null(pword))if(is.null(pseg)) return(pword)
+# if(is.null(pdoc))if(is.null(pword))if(!is.null(pseg)) return(pseg)
 }

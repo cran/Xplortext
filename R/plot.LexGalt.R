@@ -37,7 +37,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
     autoLab = FALSE
   auto.Lab <- autoLab
   
-  if (is.null(palette)) 
+
     PALETTE <- palette(c("black", "red", "green3", "blue", "cyan", 
                          "magenta", "darkgray", "darkgoldenrod", "darkgreen", 
                          "violet", "turquoise", "orange", "lightpink", 
@@ -48,6 +48,8 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
                          "darkslategray", "darkslategrey", "darkturquoise", 
                          "darkviolet", "lightgray", "lightsalmon", "lightyellow", 
                          "maroon")) 
+    if (!is.null(palette)) PALETTE[1:length(palette)] <- palette
+                   
   
   selectionX <- function(sel1, xobj, bType, axx, axy)
   {
@@ -99,49 +101,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
 
 
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-###################################### Document selection selDoc
+###################################### Document selection selDoc. Only for separate analysis. Answers if open question
   if (!is.null(selDoc)) {
     if (is.null(title)) 
       titre <- "Document factor map (LexGalt)"
@@ -159,11 +119,12 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
       if (selDoc=="ALL")  selection <- c(1:num.doc)
       else rdo <- selX(selDoc)
     } else { selection <-  which(rownames(coord.doc) %in% selDoc)}
+  
     
     
     if (rdo=="coord") 
-      selection <- (rev(order(apply(coord.doc[,axes]^2, 1, max))))[1:min(num.doc, 
-                                                                                sum(as.integer(unlist(strsplit(selDoc, "coord"))), na.rm = T))]
+      selection <- (rev(order(apply(coord.doc^2, 1, max))))[1:min(num.doc,
+                 sum(as.integer(unlist(strsplit(selDoc, "coord"))), na.rm = T))]
     if (rdo=="cos2") {
       selcos2 <- as.numeric(substr(selDoc, 5, nchar(selDoc)))
       selection <- which(apply(res.cagalt$doc$cos2[, axes], 1, sum)> selcos2)
@@ -264,7 +225,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
   
     
     if (rdo=="coord") 	
-      selection <- (rev(order(apply(coord.word[,axes]^2, 1, max))))[1:min(nrow(coord.word), 	
+      selection <- (rev(order(apply(coord.word, 1, max))))[1:min(nrow(coord.word), 	
             sum(as.integer(unlist(strsplit(selWord, "coord"))), na.rm = TRUE))]	
     if (rdo=="cos2") {	
       selcos2 <- as.numeric(substr(selWord, 5, nchar(selWord)))	
@@ -406,7 +367,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
       stop("Variables are not quantitative")
     
 }
-# FInal quantitative variables  
+# Final quantitative variables  
   
 
 ##############################################  Qualitative variables
@@ -436,7 +397,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
     } else { selection <-  which(rownames(coord.var) %in% selQualiVar)}
     
     if (rdo=="coord") 	
-      selection <- (rev(order(apply(coord.var[,axes]^2, 1, max))))[1:min(num.var, 	
+      selection <- (rev(order(apply(coord.var^2, 1, max))))[1:min(num.var, 	
            sum(as.integer(unlist(strsplit(selQualiVar, "coord"))), na.rm = TRUE))]	
     if (rdo=="cos2") {	
       selcos2 <- as.numeric(substr(selQualiVar, 5, nchar(selQualiVar)))	
@@ -519,7 +480,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
    
     
     
-#########################################  FInal variables cualitativas
+#########################################  Final qualitative variables
 
 
   # Qualitative categories ellipses
@@ -605,7 +566,7 @@ col.quali <- coll[which(rownames(res.cagalt$quali.var$coord) %in% selQualiVarEll
     } else { selection <-  which(rownames(coord.Q) %in% selQuantiVar)}
     
     if (rdo=="coord") 
-      selection <- (rev(order(apply(coord.Q[,axes]^2, 1, max))))[1:min(nrow(coord.Q), 
+      selection <- (rev(order(apply(coord.Q^2, 1, max))))[1:min(nrow(coord.Q), 
                                                                        sum(as.integer(unlist(strsplit(selQuantiVar, "coord"))), na.rm = T))]
     if (rdo=="cos2") {
       selcos2 <- as.numeric(substr(selQuantiVar, 5, nchar(selQuantiVar)))
@@ -624,7 +585,7 @@ col.quali <- coll[which(rownames(res.cagalt$quali.var$coord) %in% selQualiVarEll
     if ((new.plot) & !nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) 
       dev.new()
 
-    
+   
         plot(0, 0, xlab = lab.x, ylab = lab.y, xlim = xlim, ylim = ylim, 
          col = "white", asp = 1, main = titre, ...)
     if(selCov==FALSE){
@@ -638,7 +599,7 @@ col.quali <- coll[which(rownames(res.cagalt$quali.var$coord) %in% selQualiVarEll
     coll <- coo <- labe <- posi <- NULL
     
     coll <- rep(col.quanti, nrow(coord.Q))
-    coo <- coord.Q                                 # Coordenadas de las var.cuantitativas sin simular
+    coo <- coord.Q                                 # Coordinates quantitative variables without simulation
 
     
     if (label) 	
@@ -718,10 +679,7 @@ col.quali <- coll[which(rownames(res.cagalt$quali.var$coord) %in% selQualiVarEll
       
    
       coord.ellip <- coord.ellipse(dfEll,level.conf=level.conf,bary = FALSE)
-      # Lo hago con las correlaciones, luego lo cambio
-      # Ajuste para cuando las correlaciones sobrepasan el circulo
 
-      
       if(selCov==FALSE) {
         tmp <- sqrt(coord.ellip$res[,2]^2+coord.ellip$res[,3]^2)
         coord.ellip$res[which(tmp>1),2] <- coord.ellip$res[which(tmp>1),2]/tmp[which(tmp>1)]
@@ -766,19 +724,19 @@ col.quali <- coll[which(rownames(res.cagalt$quali.var$coord) %in% selQualiVarEll
     if(length(selGroup)==0) stop("There is not selected groups")
     noselGroup <- name.groups[-which(name.groups %in% selGroup)]		
   
-      
     # Labels of groups
     # Tienen que ser el mismo número que name.groups, estén seleccionadas o no
-    if(is.null(label.group)) label.group <- name.groups
+
+    
+   old.name.groups <- name.groups
+        if(is.null(label.group)) label.group <- name.groups
     if(length(label.group)==num.groups) name.groups <- label.group 
     else if(length(label.group)==length(selGroup)) name.groups[which(name.groups %in% selGroup)] <- label.group
          else      warning("Number of label.group is not the same as number of groups or selected selGroup) \n     label.group will be ignorated")
-      label.group <- name.groups 
-
+     label.group <- name.groups 
+  
+    
       
-      
-        
-    # Preferencias válidas para todos los gráficos
     # Color selection		
     if(is.null(col.group)) col.group <- PALETTE[1:res.mfagalt$call$num.groups]	
     if (is.numeric(unselect)) if ((unselect > 1) | (unselect < 0)) stop("unselect should be between 0 and 1")		
@@ -801,7 +759,7 @@ col.quali <- coll[which(rownames(res.cagalt$quali.var$coord) %in% selQualiVarEll
 
 
     
-    # selection <- NULL  # Número de grupos no seleccionados
+    # selection <- NULL  # Number of non selected groups
     if(length(noselGroup)>0)
       selection <- which(!rownames(res.mfagalt$group$coord[, axes, drop = FALSE]) %in% noselGroup)
         else selection <- c(1:length(selGroup))
@@ -847,6 +805,9 @@ if(plot.group==TRUE){
 
   fonte <- rep(1, nrow(coord.actif))
 
+  
+
+  
     if(label) labe <- label.group
   pos.text <- NULL
     if (any(labe != "")) {
@@ -952,7 +913,7 @@ if(length(pch)==1)  ipch <- c(pch:(pch+num.groups-1))	else ipch <- pch
        C <- res.mfagalt$word$coord						
        rownames(C) <- c(1:nrow(C))		
        C <- data.frame(C[,axes], c(1:nrow(C)), rownames(coord.word))	# Añade a la última columna la palabra
-       C2 <- data.frame(apply(C[,axes]^2, 1, max), c(1:nrow(C)), rownames(coord.word))[sel,]						
+       C2 <- data.frame(apply(C^2, 1, max), c(1:nrow(C)), rownames(coord.word))[sel,]						
        selcoord <- rownames(C2[ order(-C2[,1]), ]  [c(1:selcoord),])		
        temp <- 1:nrow(C)						
        noselcoord <- temp[!temp %in% selcoord]						
@@ -961,11 +922,13 @@ if(length(pch)==1)  ipch <- c(pch:(pch+num.groups-1))	else ipch <- pch
      if (rdo=="contrib") {						
        selcontrib <- as.numeric(substr(selWord, 8, nchar(selWord)))						
        C <- res.mfagalt$word$contrib						
-       rownames(C) <- c(1:nrow(C))						
-       C <- data.frame(C[,axes], c(1:nrow(C)), rownames(res.mfagalt$word$contrib))						
-       C2 <- data.frame(apply(C[,axes], 1, max), c(1:nrow(C)), rownames(res.mfagalt$word$coord))[sel,]						
+       rownames(C) <- c(1:nrow(C))		
+       C <- data.frame(C[,axes], c(1:nrow(C)), rownames(res.mfagalt$word$contrib))	
+       
+       C2 <- data.frame(apply(C[,c(1,2)], 1, max), c(1:nrow(C)), rownames(res.mfagalt$word$coord))[sel,]
        noselcontrib <- which(C2[,1]< selcontrib)						
-       nosel <- unique(c(nosel,noselcontrib)) }   
+       nosel <- unique(c(nosel,noselcontrib))
+       }   
      
      if (rdo=="meta") {						
        selmeta <- as.numeric(substr(selWord, 5, nchar(selWord)))						
@@ -1006,6 +969,8 @@ if(length(pch)==1)  ipch <- c(pch:(pch+num.groups-1))	else ipch <- pch
     
       sel <- NULL
     cont <- 1
+    
+    
     for(i in 1:num.groups) {						
       if(name.groups[i] %in% selGroup) {
         strtmp <- rownames(coord.word)[pos[i,2]:pos[i,3]]  # Palabras totales del grupo i
@@ -1113,18 +1078,17 @@ if(length(pch)==1)  ipch <- c(pch:(pch+num.groups-1))	else ipch <- pch
 # Controlar antes los pch si solo es uno o hay varios
 
   
-  ###################### Pendiente la leyenda
-
 
 pch2 <- pch
 if(is.null(pch2)) pch2 <- rep(NA, num.groups)
 
-   if(length(label.group)==num.groups){						
+   if(legend) if(length(label.group)==num.groups){						
 #    legend(pos.legend,label.group,pch=15:(15+res.mfagalt$call$num.group-1),cex=cex*1.5,text.col=col.word,col=col.word)				
-  #  legend(pos.legend,label.group,pch=pch2,cex=cex*1.1,text.col=col.group,col=col.group)				
-     legend(pos.legend,label.group,pch=pch2,cex=cex*1.1,text.col=col.group,col=col.group)				
-     
-      } else { warning("The number of groups of name.groups is ",  res.mfagalt$call$num.groups, " not " , length(label.group))}						
+  #  legend(pos.legend,label.group,pch=pch2,cex=cex*1.1,text.col=col.group,col=col.group)	
+   
+     legend(pos.legend,label.group[which(old.name.groups %in% selGroup)],pch=pch2,cex=cex*1.1,text.col=col.group,col=col.group)			
+
+    } else { warning("The number of groups of name.groups is ",  res.mfagalt$call$num.groups, " not " , length(label.group))}						
   } # Final if(!is.null(selWord)){		
 
     
@@ -1276,6 +1240,7 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
       rdo<-""			
       
       
+
       xlim <- xlimT; ylim <- ylimT		
       if(selCov==TRUE) {		
         coord.Q <- res.mfagalt$quanti.var$coord[, axes, drop = FALSE]		
@@ -1288,11 +1253,7 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
         xlim <- ylim <- c(-1, 1)		
       } # Final selCov		
       
-   #   return(coord.Q)
-      
-      
-      
-      
+
       
       if (mode(selQuantiVar) == "numeric") 			
         selection <- selQuantiVar			
@@ -1300,9 +1261,10 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
         if (selQuantiVar=="ALL")  selection <- c(1:nrow(coord.Q))			
         else rdo <- selX(selQuantiVar)			
       } else { selection <-  which(rownames(coord.Q) %in% selQuantiVar)}			
-      
+
+
       if (rdo=="coord") 			
-        selection <- (rev(order(apply(coord.Q[,axes]^2, 1, max))))[1:min(nrow(coord.Q), 			
+        selection <- (rev(order(apply(coord.Q^2, 1, max))))[1:min(nrow(coord.Q), 			
                                                                          sum(as.integer(unlist(strsplit(selQuantiVar, "coord"))), na.rm = T))]			
       if (rdo=="cos2") {			
         selcos2 <- as.numeric(substr(selQuantiVar, 5, nchar(selQuantiVar)))			
@@ -1312,22 +1274,27 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
       
       if(is.null(selection)) if(rdo=="") if(length(selQuantiVar)==1) selection <- which(rownames(coord.Q) %in% selQuantiVar)		
       if(length(selection)==0) stop("There are not selected elements to plot")		
-      
-      
+  
 
+      
       
       if(new.plot) if(!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY")))   
         dev.new(width = min(14, 8 * (xlim[2] - xlim[1])/(ylim[2] - ylim[1])), height = 8) # Outside RStudio 
-      else dev.new()
+      else if(new.plot==TRUE) dev.new()
+      
       
       coo <- labe <- coll <- ipch <- fonte <- NULL	
+    
+      
+      
+      
+      
       if (label) labe <- rownames(coord.Q)		
       else labe <- rep("", nrow(coord.Q))	
       #		if(is.null(col.quanti)) col.quanti="blue"	
       coll <- rep(col.quanti, nrow(coord.Q))			
       #      	coo <- coord.Q		
       plot(0, 0, xlab = lab.x, ylab = lab.y, xlim = xlim, ylim = ylim, col = "white", asp = 1, main = title, ...)
-      
       
       if(selCov==FALSE) {				
         x.cercle <- seq(-1, 1, by = 0.01)	
@@ -1341,48 +1308,36 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
       
 
       col.var.partial <- col.group					
-  
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-          
+
+    
+   
       if(partial==FALSE | partial=="ALL"){				
         posi <- NULL
-        coll <- rep(col.quanti, nrow(coord.Q))					
+        
+        if(length(col.quanti)== 1)
+        coll <- rep(col.quanti, nrow(coord.Q))		
+        else {
+          coll <- rep("blue", nrow(coord.Q))
+          coll[1:length(col.quanti)] <- col.quanti
+        }
+        
         coo <- coord.Q					
+        
         if (label) 					
           labe <- rownames(coord.Q)					
         else labe <- rep("", nrow(coord.Q))					
         
+
         if (!is.null(selection)) {					
           if (is.numeric(unselect)) 					
             coll[!((1:length(coll)) %in% selection)] = rgb(t(col2rgb(coll[!((1:length(coll)) %in% 					
                                                                               selection)])), alpha = 255 * (1 - unselect),maxColorValue = 255)					
           else coll[!((1:length(coll)) %in% selection)] = unselect					
           labe[!((1:length(coll)) %in% selection)] <- ""					
-        }					
+        }				
+        
+
+        
         for (v in 1:nrow(coord.Q)) {					
           arrows(0, 0, coord.Q[v, 1], coord.Q[v, 2], 					
                  length = 0.1, angle = 15, code = 2, col = coll[v])					
@@ -1397,7 +1352,10 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
                 posi <- c(posi, 3)					
               else posi <- c(posi, 1)					
             }					
-          }					
+          }		
+        }
+
+
           if (any(labe != "")) {					
             autoLab <- FALSE					
             if (auto.Lab == "auto")  autoLab = (length(which(labe != "")) < 50)					
@@ -1408,12 +1366,16 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
             else					
               text(coo[labe != "", 1], y = coo[labe != "", 2], labels = labe[labe != ""], 					
                    pos = posi[labe != ""], col = coll[labe != ""], cex=cex,...)					
-          }					
-        }
+         #  }		
       }	# Final partial				
   
+} # End Temporal      
+
       
       
+
+
+
       #==============================================================	
       if(partial==TRUE | partial=="ALL"){	
         n.group <- res.mfagalt$call$num.groups	
@@ -1421,7 +1383,6 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
         nam.group <- res.mfagalt$call$name.groups	
         coord.Q <- NULL			
         
-      
         for(i in 1:n.group) {
           coord.Q <- rbind(coord.Q, res.mfagalt$quanti.var$coord.partial[[i]])
         }
@@ -1430,15 +1391,40 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
           xlim <- ylim <- c(-1, 1)	
         } # End selCov			
         
-        coord.Q <- cbind(coord.Q,rep(nam.group, each=n.var))			
-        coord.Q <-  coord.Q[,c(axes,ncol(coord.Q))]			
-        selection <- which(coord.Q[,3] %in% selGroup)  # name.sel.group)
- 
+        coord.Q <- cbind(coord.Q,rep(nam.group, each=n.var))		
+        coord.Q <-  coord.Q[,c(axes,ncol(coord.Q))]	
+
+        posi <- NULL			
+        coll <- rep(col.var.partial, each=n.var)			# Basic colors of variables by groups
+        coo <- coord.Q	
+        if (label) 			
+          labe <- rownames(coord.Q)			
+        else labe <- rep("", nrow(coord.Q))			
+       
+       selection <-  which(rownames(coord.Q) %in% rownames(coord.Q)[selection] & coord.Q[,3] %in% selGroup)
+
         
         
+        if (!is.null(selection)) {			
+          if (is.numeric(unselect)) 			
+            coll[!((1:length(coll)) %in% selection)] = rgb(t(col2rgb(coll[!((1:length(coll)) %in% selection)])),
+                                                           alpha = 255 * (1 - unselect),maxColorValue = 255)			
+          else coll[!((1:length(coll)) %in% selection)] = unselect			
+          labe[!((1:length(coll)) %in% selection)] <- ""			
+        }			
+        ipch <- rep(25, nrow(coord.Q))				
+        fonte <- rep(1, nrow(coord.Q))				
+        
+        for (v in 1:nrow(coord.Q)) {		
+          arrows(0, 0, as.numeric(coord.Q[v, 1]), as.numeric(coord.Q[v, 2]), 		
+                 length = 0.1, angle = 15, code = 2, col = coll[v])		
+          #   if (shadowtext) points(coo[, 1], y = coo[, 2], pch = ipch, col = coll,cex=cex, ...)				
+          
+        } # End for
+
         posi <- NULL			
         coll <- rep(col.var.partial, each=n.var)			
-        coo <- coord.Q			
+        coo <- coord.Q		
         if (label) 			
           labe <- rownames(coord.Q)			
         else labe <- rep("", nrow(coord.Q))			
@@ -1447,8 +1433,10 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
           if (is.numeric(unselect)) 			
             coll[!((1:length(coll)) %in% selection)] = rgb(t(col2rgb(coll[!((1:length(coll)) %in% 			
                                                                               selection)])), alpha = 255 * (1 - unselect),maxColorValue = 255)			
-          else coll[!((1:length(coll)) %in% selection)] = unselect			
-          labe[!((1:length(coll)) %in% selection)] <- ""			
+          else coll[!((1:length(coll)) %in% selection)] = unselect		
+          
+          # labe[!((1:length(coll)) %in% selection)] <- ""
+          # labe[((1:length(coll)) %in% selection)] <- rownames(coord.Q)[selection]
         }			
         ipch <- rep(25, nrow(coord.Q))				
         fonte <- rep(1, nrow(coord.Q))				
@@ -1464,11 +1452,20 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
           autoLab(as.numeric(coord.Q[labe != "", 1]), y = as.numeric(coord.Q[labe != "", 2]), 
                   labels = labe[labe != ""], col = coll[labe != ""], font = fonte[labe != ""], cex=cex, ...)					
         }
-        legend(pos.legend,label.group,pch=15:(15+res.mfagalt$call$num.group-1),cex=cex*1.5,text.col=col.var.partial,
-               col=col.var.partial)	
+
+
+             
+
+        nselGr <- which(old.name.groups %in% selGroup)
+       
         
+        if(legend) 
+         legend(pos.legend,label.group[nselGr],pch=NULL,cex=cex*1.5,text.col=col.var.partial[ nselGr],
+                          col=col.var.partial[ nselGr])	  
+                 
       } # End partial
       #==============================================================	
+
       
       
     } ########################## Final selQuantiVar

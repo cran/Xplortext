@@ -2,7 +2,7 @@
 \encoding{UTF-8}
 \alias{plot.LexGalt}
 
-\title{Plot of LexGalt objects}
+\title{Plot LexGalt objects}
 
 \description{
 Plots Generalised Aggregate Lexical Tables (LexGalt) graphs from a LexGalt object
@@ -45,15 +45,15 @@ Plots Generalised Aggregate Lexical Tables (LexGalt) graphs from a LexGalt objec
   \item{pch}{plotting character for coordinates, cf. \code{\link[graphics]{points}} function in the graphics package}
   \item{label}{a list of character for the elements which are labelled (by default TRUE and all the drawn elements are labelled).}
   \item{autoLab}{if autoLab="auto", autoLab turns to be equal to "yes" if there are less than 50 elements and equal to "no" otherwise; if "yes", the labels are moved, as little as possible, to avoid overlapping (time-consuming if many elements); if "no" the labels are placed quickly but may overlap}
-  \item{palette}{the color palette used to draw the points. By default colors are chosen. If you want to define the colors : palette=palette(c("black", "red", "blue")); or you can use: palette=palette(rainbow(30)), or in black and white for example: palette=palette(gray(seq(0,.9,len=25)))}
+  \item{palette}{the color palette used to draw the points. By default colors are chosen. If you want to define the colors : palette=c("black", "red", "blue"); or you can use: palette=rainbow(10), or in black and white for example: palette=gray(seq(0,.9,len=3))}
   \item{unselect}{may be either a value between 0 and 1 that gives the transparency of the unselected objects (if unselect=1 the transparceny is total and the elements are not drawn, if unselect=0 the elements are drawn as usual but without any label) or may be a color (for example unselect="grey60")}
   \item{selCov}{a boolean, if TRUE then data are scaled to unit variance (by default TRUE)}
   \item{selGroup}{vector with the groups to plot if multiple analysis was performed (indexes, names or rules; see details; by default NULL)}
-  \item{partial}{if partial elements (results for the groups) are shown (TRUE or ALL) and results for the conjoint analysis (FALSE or ALL); by default FALSE}
+  \item{partial}{if TRUE partial elements (results for the groups) are shown, if ALL results for the conjoint analysis are superimposed; by default FALSE}
   \item{plot.group}{draw a plot comparing the groups in multiple case (by default TRUE)} 
   \item{col.group}{color for the groups if multiple analysis was performed (by default NULL and they are selected from palette)}
   \item{label.group}{a vector containing the new name of the groups. If "BLANK" no labels with the group are added at the end of the drawn elements (by default, NULL and the name of each group is added)}
-  \item{legend}{sho2 the legend of labels of groups. See \code{\link[graphics]{legend}} from graphics package (by default TRUE}
+  \item{legend}{show the legend of labels of groups. See \code{\link[graphics]{legend}} from graphics package (by default TRUE}
   \item{pos.legend}{position of the legend of labels of groups. See \code{\link[graphics]{legend}} from graphics package (by default "topleft")}
   \item{new.plot}{if TRUE, a new graphical device is created (by default TRUE)}
   \item{cex}{text and symbol size is scaled by cex, in relation to size 1 (by default 1)}
@@ -63,7 +63,7 @@ Plots Generalised Aggregate Lexical Tables (LexGalt) graphs from a LexGalt objec
 \details{
 The argument autoLab = "yes" is time-consuming if many overlapping labels. Furthermore, the visualization of the words cloud can result distorted because of the apparent greater dispersion of the words labels. An alternative would be reducing the character size of the words labels to reduce overlapping (e.g. cex=0.7).
 
-selDoc, selWord, selQualiVar=NULL and selQuantiVar=NULL, selWordEllip, selQualiVarEllip,
+selDoc, selWord, selQualiVar, selQuantiVar, selWordEllip, selQualiVarEllip,
     selQuantiVarEllip allow for selecting all or part of the elements of the corresponding type, using either labels, indexes or rules.\cr
 
 The syntax is the same for all types.

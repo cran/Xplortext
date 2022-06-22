@@ -27,19 +27,35 @@ mots.h=function(LTab){
        
 
 ## 
-dendro<-object$dendro 
+
+
+###############  <----------------- Comprobar la siguiente, no funciona
+
+if (inherits(object, "LexCHCca")) dendro<-object$dendro$clust
+else {
+  mat.merge <- object$call$t$tree$merge
+  dendro<- list()
+  for(i in 1:nrow(mat.merge)) {
+    if(mat.merge[i,1]<0) V1 <- -mat.merge[i,1] else V1 <- unlist(dendro[mat.merge[i,1]])
+    if(mat.merge[i,2]<0) V2 <- -mat.merge[i,2] else V2 <-unlist(dendro[mat.merge[i,2]])
+    a1 <- list(V1) ; a2 <- list(V2)
+    dendro[[i]] <- c(a1,a2)
+  }
+}
+
 DocTerm<-object$data.clust[,1:(dim(object$data.clust)[2]-1)]
 nodt<-nrow(DocTerm)  
 lista_tabmots<-list()
 #lista_tabmots<-structure((vector(mode= "list", length=(nodt*2-2)),
 #              names =rep(" ",(nodt*2-2) ))
 
+# nodt number of documents or categories
+
 inodA<-0
 for (inode in 1:(nodt-2)) 
  {
   nodecours<-(nodt)-(inode+1)   
-
-    don<-unlist(dendro[[nodecours]])
+  don<-unlist(dendro[[nodecours]])
     label.node<-paste(rownames(DocTerm)[don],collapse=" ")
     by.quali<-rep(2,dim(DocTerm)[1])
     by.quali[don]<-1
@@ -52,6 +68,7 @@ for (inode in 1:(nodt-2))
    }
 res<-descfreq(DocTerm,proba=proba)
 
+
 for (inode in 1:nodt) {                         
 
    label.node<-rownames(DocTerm)[inode]
@@ -60,11 +77,13 @@ for (inode in 1:nodt) {
    lista_tabmots[[inodA]]<- as.data.frame(res[[inode]])
    names(lista_tabmots)[inodA]<-label.node  
                                   }    
-                        }                 
+} 
+
+
+
 #  only the non-doubled are kept
 res<-NULL
-   res$words <- mots.h(lista_tabmots)
-   res$clust <- object
-   class(res) = c("LabelTree")
-      return(res)
+   hierWord <- mots.h(lista_tabmots)
+   class(hierWord) = c("LabelTree")
+      return(hierWord)
 }

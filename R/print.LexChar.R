@@ -1,172 +1,279 @@
-###' @export
+#' @export
 print.LexChar <- function (x,file = NULL, sep = ";", dec=".",...) 
 {
+  
+  if (!inherits(x, "LexChar")) 
+    stop("x object must be LexChar class")
 
- if (!inherits(x, "LexChar")) 
-        stop("x object should be LexChar class")
+  df.res <- data.frame(name = character(),
+                       description = character(),
+                       stringsAsFactors = FALSE)
+  
+  if("CharWord" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$CharWord", "Words characterizing the documents")
+  if("stats" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$stats", "Association statistics of the lexical table")
+  if("CharDoc" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$CharDoc", "Documents characterizing categories")
+  if("Vocab" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$Vocab", "Information about the vocabulary and contextual variables")
+  if(!is.null(x$Vocab$quali$CharWord)) df.res[nrow(df.res)+1,] <-c("$Vocab$quali$CharWord", "Provides the qualitative variables and their categories")
+  if(!is.null(x$Vocab$quali$stats)) df.res[nrow(df.res)+1,] <- c("$Vocab$quali$stats", "Provides association statistics for vocabulary and qualitative variables")
+  if(!is.null(x$Vocab$quanti$CharWord)) df.res[nrow(df.res)+1,] <- c("$Vocab$quanti$CharWord", "Provides characteristic quantitative variables for each word") 
+  if(!is.null(x$Vocab$quanti$stats)) df.res[nrow(df.res)+1,] <- c("$Vocab$quanti$stats", "Provides association statistics for vocabulary and quantitative variables")
+  
+  index <- nrow(df.res)
+  df.res <- as.matrix(df.res) 
+  res <- array("", c(index, 2), list(1:index, c("name", "description")))
+  for(i in 1:index) res[i,] <-df.res[i,]
+  cat("\n*The results are available in the following objects:\n\n")
+  print(res[c(1:index),])
+  
 
-
-sink.reset <- function(){
+  sink.reset <- function(){
     for(i in seq_len(sink.number())){sink()}}
-sink.reset
-
-indice <- 8
-cat("*The results are available in the following objects:\n\n")
- res.LexChar <- x
- res <- array("", c(indice, 2), list(1:indice, c("name", "description")))
- res[1,] <- c("$CharWord", "Words characterizing the documents")
- res[2,] <- c("$CharDoc", "Documents with a characterizing word")
- res[3,] <- c("$stats", "Association statistics of the lexical table")
- res[4,] <- c("$Vocab", "Information about the vocabulary")
- res[5,] <- c("$Vocab$quali$CharWord", "Provides the qualitative variables and their categories")
- res[6,] <- c("$Vocab$quali$stats", "Provides association statistics for vocabulary and qualitative variables")
- res[7,] <- c("$Vocab$quanti$CharWord", "Provides characteristic quantitative variables for each word") 
- res[8,] <- c("$Vocab$quali$stats", "Provides association statistics for vocabulary and quantitative variables")
-  print(res[c(1:indice),])
- cat("\n")
- 
-
-if (is.null(file))
- print("(*) To obtain more detailed information use print to file")
- 
-if (!is.null(file)) {
- sink(file)
-
+  sink.reset
   
-fCharWord <- function(z)  {
-  nobjects <- length(z) 
-  cat("\nOver_used_words are ordered from the most characteristic word to the less one\n")
-  cat("Infra_used_words are ordered from the most anti-characteristic word to the less one\n\n")
-  stit <- t(c("Word","Intern %","glob %","Intern freq","Glob freq","p.value", "v.test"))
+  if (is.null(file))
+    cat("(*) To obtain more detailed information use print to file")
+  else 
+    {
+      sink(file)
+  
+  fCharWord <- function(z)  {
+    nobjects <- length(z) 
 
-  for(i in 1:nobjects){	
+    cat("\n\nCHARACTERISTIC WORDS FOR EACH DOCUMENT\n(DETAILED INFORMATION)\n\n")
+    cat("\nOver_used_words are ordered from the most characteristic word to the less one\n")
+    cat("Infra_used_words are ordered from the most anti-characteristic word to the less one\n\n")
+    stit <- t(c("Word","Intern %","glob %","Intern freq","Glob freq","p.value", "v.test"))
+  
     
-    out1 <- c(names(z[i]), "Over_used_words")	
-    out2 <- c(names(z[i]), "Infra_used_words")	
-
-    
-#    write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
-    temp <- z[[i]]	
-    posic <- temp[,"v.test"]>0	
-    out3 <- data.frame(temp[posic,,drop=FALSE])	
-
-    
-    if(nrow(out3)>0){	
-      write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+    for(i in 1:nobjects){	
+      out1 <- c(names(z[i]), "Over_used_words")	
+      out2 <- c(names(z[i]), "Infra_used_words")	
       
-      write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
-      write.table(out3, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
+      #    write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+      temp <- z[[i]]	
+      posic <- temp[,"v.test"]>0	
+      
+      out.over <- data.frame(temp[posic,,drop=FALSE])	
+      out.infra <- data.frame(temp[!posic,,drop=FALSE])	
 
-    
-    cat("\n")	
- #   if(nrow(out3)>0){	
-    write.table(out2, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
-    out3 <- data.frame(temp[!posic,,drop=FALSE])	
-    out3 <- out3[order(out3["v.test"]), ]	
- 
-    
-  #  if(nrow(out3)>0){	
-      write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-      write.table(out3, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec) 
-    cat("\n")	
-} # End if(nrow(out3)>0)
+      if(nrow(out.over)>0){	
+        write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(out.over, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec) 
+        cat("\n")	
+      }
+      
+      if(nrow(out.infra)>0){	
+        write.table(out2, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(out.infra, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec) 
+        cat("\n")	
+      }
+    }
   }
-}
   
- if(!is.null(x$CharWord)) fCharWord(x$CharWord)
+  fCharQuanti<- function(x)  {
+    tac <- NULL
+    strcolnames<- c("GlobalAverage", "AverageWord","Differ.", "pvalue", "Word", "Variable")
+    for(i in 1:length(x)) {
+      t1<- as.data.frame(x[i,drop=FALSE])
+      t2 <- data.frame(t1,rep(names(x[i]),length(x[i])), rownames(t1))
+      colnames(t2) <- strcolnames
 
-if(!is.null(x$CharDoc)){	
-  nobjects <- length(x$CharDoc) 
+      if(i==1) tac <- t2 else tac <- rbind(tac,t2)
+      SP <- split(tac,f=tac$Variable, drop=FALSE)
+      str.colnames<- c("Word", "GlobalAverage", "AverageWord","Differ.", "pvalue")
+      empty_list = structure(vector(mode = "list", length = length(SP)), names = names(SP))		
+      
+
+      for(i in 1:length(SP)) {
+        t1<- as.data.frame(SP[i,drop=FALSE])
+        t2.pos <- t1[t1[,3]>0, ,drop=FALSE]
+        t2.neg <- t1[t1[,3]<0, ,drop=FALSE]
+        if(nrow(t2.pos)>0) {
+          t2.pos <- t2.pos[order(t2.pos[,4]),,drop=FALSE]
+          rownames(t2.pos) <- paste0("P", c(1:nrow(t2.pos)))
+          t3.pos <- t2.pos[,c(5,1:4)]
+          colnames(t3.pos) <- str.colnames
+          empty_list[[i]]$posit <- t3.pos
+        }
+        if(nrow(t2.neg)>0) {
+          t2.neg <- t2.neg[order(t2.neg[,4]),,drop=FALSE]
+          rownames(t2.neg) <- paste0("N", c(1:nrow(t2.neg)))
+          t3.neg <- t2.neg[,c(5,1:4)]
+          colnames(t3.neg) <- str.colnames
+          #    print(t3.neg)
+          empty_list[[i]]$negat <- t3.neg
+        }
+      } # End for
+    }
+    return(empty_list)
+  } # End fCharQuanti
   
-  # Print documents	
-  stit <- t(c("Classification criterion","Document","Characteristic documents"))	
-  cat("\nCharacteristic documents (Words frequency criterion)\n")	
   
+  #################  Check CharWord
+  if(!is.null(x$CharWord)) {
+    
+  fCharWord(x$CharWord)
+  nobjects <- length(x$CharWor)
+  
+  cat("\n\nDOCUMENTS (OR AGGREGATE DOCS) RELATED WITH A WORD\n")	
+  tw <- NULL	
   for(i in 1:nobjects){	
-    write.table(names(x$CharWord[i]), quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
-    if(nrow(x$CharDoc[[i]][2])>0){	
-      out3 <- c(format(round(x$CharDoc[[i]][2],3),nsmall=3),x$CharDoc[[i]][1],
-                x$CharDoc[[i]][3])
-      write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-      write.table(out3, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-      cat("\n")}
-  }
-
-
-cat("\n", "Documents related to a word")	
-tw <- NULL	
-for(i in 1:nobjects){	
-  tw <- c(tw,rownames(x$CharWord[[i]]))	
-}	
-tw <- paste(unique(tw))	
-tw <- sort(tw, decreasing = FALSE)	
-ntw <- length(tw)	
-
-
-for(i in 1:ntw){	
-  vsearch <- tw[i]	
-  vt_ <- NULL; posit <- NULL; negat <- NULL  	
-  for(j in 1:nobjects){	
-    cat_ <- which(rownames(x$CharWord[[j]]) %in% vsearch)	
-    if(length(cat_)>0){	
-      vt  <- x$CharWord[[j]][cat_,6]	
-      if(vt>0) posit <- c(posit,sep,names(x$CharWord[j])) else	
-        negat <- c(negat,sep,names(x$CharWord[j]))	
-    }	
+    tw <- c(tw,rownames(x$CharWord[[i]]))	
   }	
-  cat("\n",vsearch)	
-  if(length(posit)>0)  cat("\n",sep, "Over", posit) 	
-  if(length(negat)>0)  cat("\n",sep, "Infra", negat) 	
-  cat("\n")	
-}	
-}
+  tw <- paste(unique(tw))	
+  tw <- sort(tw, decreasing = FALSE)	
+  ntw <- length(tw)	
+  
+  
+  for(i in 1:ntw){	
+    vsearch <- tw[i]	
+    vt_ <- NULL; posit <- NULL; negat <- NULL  	
+    for(j in 1:nobjects){	
+      cat_ <- which(rownames(x$CharWord[[j]]) %in% vsearch)	
+      if(length(cat_)>0){	
+        vt  <- x$CharWord[[j]][cat_,6]	
+        if(vt>0) posit <- c(posit,sep,names(x$CharWord[j])) else	
+          negat <- c(negat,sep,names(x$CharWord[j]))	
+      }	
+    }	
+    cat("\n",vsearch)	
+    if(length(posit)>0)  cat("\n",sep, "Over", posit) 	
+    if(length(negat)>0)  cat("\n",sep, "Infra", negat) 	
+    cat("\n")	
+  }	
+    }
+  
+  
+  fCharWord2 <- function(z,i)  {
+    nobjects <- length(z) 
+    
+  #  cat("\n\nCHARACTERISTIC WORDS FOR EACH DOCUMENT\n(DETAILED INFORMATION)\n\n")
+  #  cat("\nOver_used_words are ordered from the most characteristic word to the less one\n")
+  #  cat("Infra_used_words are ordered from the most anti-characteristic word to the less one\n\n")
+    stit <- t(c("Word","Intern %","glob %","Intern freq","Glob freq","p.value", "v.test"))
+    
+    
+  #  for(i in 1:nobjects){	
+      out1 <- c(names(z[i]), "Over_used_words")	
+      out2 <- c(names(z[i]), "Infra_used_words")	
+      
+      #    write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+      temp <- z[[i]]	
+      posic <- temp[,"v.test"]>0	
+      
+      out.over <- data.frame(temp[posic,,drop=FALSE])	
+      out.infra <- data.frame(temp[!posic,,drop=FALSE])	
+      
+      if(nrow(out.over)>0){	
+        write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(out.over, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec) 
+        cat("\n")	
+      }
+      
+      if(nrow(out.infra)>0){	
+        write.table(out2, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)	
+        write.table(out.infra, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec) 
+        cat("\n")	
+      }
+   # }
+  }
+  
 
-if(!is.null(x$stats)){	
-  cat("\n\nAssociation statistics of the lexical table\n")
-  stit <- t(c("",colnames(x$stat)))
-  write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-  write.table(x$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
-}
+  
+  
+    
+    #################  Check of stats exists  
+  if(!is.null(x$stats)) {
+    cat("\n\n\nSTATISTIC ASSOCIATION LEXICAL TABLE DOCUMENTS (OR AGGREGATE DOCS) AND VOCABULARY\n\n")
+      stit <- t(c("",colnames(x$stat)))
+      write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+      write.table(x$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
+    }
 
-if(!is.null(x$Vocab$quali$CharWord)){	
-  for(i in 1:length(x$Vocab$quali$CharWord)) {
-      fCharWord(x$Vocab$quali$CharWord[[i]])
-}
+  
+  
+  #################  Check CharDoc
+  if(!is.null(x$CharDoc)) {
+    cat("\n\n\nCHARACTERISTIC SOURCE-DOCUMENTS\n")
+    #     print(object$CharDoc)
+    stit <- t(names(x$CharDoc[[1]]))
+    for(i in 1:length(x$CharDoc)){	
+      cat("\n")
+      write.table(names(x$CharDoc[i]), quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+      write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+      write.table(x$CharDoc[[i]][1:3], quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+    }	
+  }  
+  
+  ###########  Qualitative contextual variables
+  if(!is.null(x$Vocab$quali$stats)){	
+    cat("\n\nASSOCIATION STATISTICS OF AGGREGATE CONTEXTUAL QUALITATIVE TABLE\n")
+    stit <- t(c("",colnames(x$Vocab$quali$stats)))
+    write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+    write.table(x$Vocab$quali$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
+  } # End Vocab$quali$CharWord$stats
+  
+  if(!is.null(x$Vocab$quali$CharWord)){	
+    for(i in 1:length(x$Vocab$quali$CharWord)) {
+      cat("\n\nCharacteristic of aggregate-documents for qualitative variable: ", names(x$Vocab$quali$CharWord[i]), "\n")
+      cat("=====================================================================================")
+      fCharWord2(x$Vocab$quali$CharWord,i)
+    }
   } # End CharWord
 
-if(!is.null(x$Vocab$quali$stats)){	
-  cat("\n\nAssociation statistics of the aggregated contextual qualitative  table\n")
-  stit <- t(c("",colnames(x$Vocab$quali$stats)))
-  write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-  write.table(x$Vocab$quali$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
-} # End Vocab$quali$CharWord$stats
-
-if(!is.null(x$Vocab$quanti$CharWord)){	
-  cat("\n\nContextual quantitative variables related with words\n")
-  stit <- t(c("",colnames(x$Vocab$quanti$CharWord[[1]])))
-  for(i in 1:length(x$Vocab$quanti$CharWord)) {
-    cat("\nWord: ", names(x$Vocab$quanti$CharWord)[i],"\n" )
-    write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-    write.table(x$Vocab$quanti$CharWord[[1]], quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
-  }
-  cat("\n")
   
+    
+  ###########  Quantitative contextual variables
   if(!is.null(x$Vocab$quanti$stats)){	
-    cat("\n\nRelationship between vocabulary and contextual quantitative variables\n")
+    cat("\nRELATIONSHIPS BETWEEN VOCABULARY AND CONTEXTUAL QUANTITATIVE VARIABLES\n")
+    cat("\nStatistics for quantitative variables")
+    cat("\n-------------------------------------\n")
     stit <- t(c("",colnames(x$Vocab$quanti$stats)))
     write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
     write.table(x$Vocab$quanti$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
-  } # End Vocab$quali$CharWord$stats
+    
+  
+  #  print(object$Vocab$quanti$CharWord)
+    res.quanti <- fCharQuanti(x$Vocab$quanti$CharWord)
+    num.var.quanti <- length(res.quanti)
+    stit<- t(c("Word", "GlobalAverage", "AverageWord","Differ.", "pvalue"))
+    
+       for(i in 1:num.var.quanti) {
+      str.name.var <- rownames(x$Vocab$quanti$stats)[i]
+      cat("\n\nCharacteristic quantitative variables for each word. Variable:", str.name.var)
+      cat("\n----------------------------------------------------------------------------------------\n")
+      
+      
+      if(length(res.quanti[[str.name.var]]$posit)>0) {
+        cat(paste0("\n$",str.name.var, "$posit\n"))
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+        write.table(res.quanti[[str.name.var]]$posit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+      }
+   
+      if(length(res.quanti[[str.name.var]]$negat)>0) {
+        cat(paste0("\n$",str.name.var, "$negat\n"))
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+        write.table(res.quanti[[str.name.var]]$negat, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+      }    
+      
+    }
+    
+  } # End Vocab$quanti
   
   
-}
-
-
-
-
-
-
-sink()
-if (!is.null(file)) print(paste("All the results are in file", file))
-}
+  
+  
+  
+  
+  
+  
+  
+  
+  sink()
+    }  # End sink file    
+  if (!is.null(file)) cat(paste("(*) All the results are in file", file))
 }

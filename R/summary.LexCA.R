@@ -1,4 +1,4 @@
-###' @export
+#' @export
 summary.LexCA <- function (object, ncp=5, nb.dec = 3, ndoc=10, nword=10, nseg=10, 
   nsup=10, metaDocs=FALSE, metaWords=FALSE, file = NULL, ...) 
 {

@@ -2,20 +2,22 @@ Package: Xplortext
 Type: Package
 Encoding: UTF-8
 Title: Statistical Analysis of Textual Data
-Version: 1.4.1
-Date: 2021-01-14
+Version: 1.5.1
+Date: 2022-06-22
 Author: Mónica Bécue-Bertaut, Ramón Alvarez-Esteban, Josep-Anton Sánchez-Espigares, Belchin Kostov
 Maintainer: Ramón Alvarez-Esteban <ramon.alvarez@unileon.es>
 Description: Provides a set of functions devoted to multivariate exploratory statistics on textual data. Classical methods such as correspondence analysis and agglomerative hierarchical clustering are available. Chronologically constrained agglomerative hierarchical clustering enriched with labelled-by-words trees is offered. Given a division of the corpus into parts, their characteristic words and documents are identified. Further, accessing to 'FactoMineR' functions is very easy. Two of them are relevant in textual domain. MFA() addresses multiple lexical table allowing applications such as dealing with multilingual corpora as well as simultaneously analyzing both open-ended and closed questions in surveys. See <http://xplortext.unileon.es> for examples.
 License: GPL (>= 2.0)
-Depends: R (>= 4.0), FactoMineR(>= 2.4), ggplot2, tm(>= 0.7-8)
-Imports: ggdendro(>= 0.1.22), ggforce(>= 0.3.2), ggrepel(>= 0.9.0),
-        graphics, gridExtra(>= 2.3), MASS(>= 7.3-53), methods,
-        stringi(>= 1.5.3), stringr(>= 1.4.0), slam(>= 0.1-48), stats,
-        utils, flexclust(>= 1.4-0), flashClust(>= 1.01-2)
+Depends: R (>= 4.2), FactoMineR(>= 2.4), ggplot2(>= 3.3.6), tm(>=
+        0.7-8)
+Imports: ggdendro(>= 0.1.23), ggforce(>= 0.3.3), ggrepel(>= 0.9.1),
+        graphics(>= 4.2.0), gridExtra(>= 2.3), MASS(>= 7.3-56),
+        methods(>= 4.2.0), stringi(>= 1.7.6), stringr(>= 1.4.0),
+        slam(>= 0.1-50), stats(>= 4.2.0), utils(>= 4.2.0), flexclust(>=
+        1.4-1), flashClust(>= 1.01-2), vegan(>= 2.6-2)
 URL: https://xplortext.unileon.es
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2021-01-14 11:03:53 UTC; ralve
+Packaged: 2022-06-22 14:57:29 UTC; ralve
 Repository: CRAN
-Date/Publication: 2021-01-14 11:30:02 UTC
+Date/Publication: 2022-06-22 16:00:02 UTC

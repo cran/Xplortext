@@ -1,4 +1,4 @@
-###' @export
+#' @export
 print.TextData <- function (x, file = NULL, sep = ";", ...) 
 {
   options(stringsAsFactors = FALSE)

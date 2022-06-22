@@ -1,6 +1,6 @@
-###' @importFrom methods hasArg
-###' @importFrom graphics barplot
-###' @export
+#' @importFrom methods hasArg
+#' @importFrom graphics barplot
+#' @export
 plot.LexCA <- function(x, selDoc="ALL", selWord="ALL", selSeg=NULL,
   selDocSup=NULL, selWordSup=NULL, quanti.sup=NULL, quali.sup=NULL, maxDocs=20,  
   eigen=FALSE, title=NULL, axes=c(1,2), col.doc="blue", col.word="red",

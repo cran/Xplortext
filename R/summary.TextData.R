@@ -1,6 +1,6 @@
-###' @export
+#' @export
 summary.TextData <- function(object,ndoc=10, nword=50, nseg=50, ordFreq = TRUE, file = NULL, sep=";",
-      ...) 
+     info=TRUE,...) 
 {
   options(stringsAsFactors = FALSE)
  if (!inherits(object, "TextData")) 
@@ -14,6 +14,7 @@ if(ndoc=="ALL") ndoc <- nrow(object$summDoc)
 
 
 if(nword=="ALL") nword <- object$info$Nword[[1]]
+
  nword <- min(nword, object$info$Nword[[1]])
  ndoc <- min(ndoc, nrow(object$summDoc))
 
@@ -36,13 +37,13 @@ if(is.null(file)) print(object$summGen)  else {
 }
 
 if(var.agg=="") {
- name1 <- c("Occurrences", "DistinctWords", "PctLength", "Mean Length100")
- nameF <- c("DocName", name1, name1)
- name2 <- c("", rep("before",4), rep("after",4))
+  name1 <- c("Occurrences", "DistinctWords", "PctLength", "Mean Length100")
+  nameF <- c("DocName", name1, name1)
+  name2 <- c("", rep("before",4), rep("after",4))
 } else {
- nameF <- c("DocName", "Occurrences", "DistinctWords", "NumberDocs","PctLength", "MeanLength100", 
-            "Occurrences", "DistinctWords", "PctLength", "MeanLength100")
- name2 <- c("", rep("before",5), rep("after",4))
+  nameF <- c("DocName", "Occurrences", "DistinctWords", "NumberDocs","PctLength", "MeanLength100", 
+             "Occurrences", "DistinctWords", "PctLength", "MeanLength100")
+  name2 <- c("", rep("before",5), rep("after",4))
 }
 A1 <- data.frame(nameF,name2)
 
@@ -63,96 +64,137 @@ rownames(A3) <- c(""," ",c(1:(nrow(A3)-2)))
 colnames(A3) <- NULL
 
 
-if(ndoc>0){
-if(ndoc== object$info$Ndoc[[1]]) cat("\nStatistics for the documents\n")
- else cat("\nStatistics for the ", ndoc, " first docs\n")
 
+if(ndoc>0){
+  if(ndoc== object$info$Ndoc[[1]]) cat("\nStatistics for the documents\n")
+  else cat("\nStatistics for the ", ndoc, " first docs\n")
+  
   if(is.null(file))  print(A3[1:(ndoc+2),],na.print = "") else
-   write.table(A3[1:(ndoc+2),], quote=FALSE, sep = sep)}
+    write.table(A3[1:(ndoc+2),], quote=FALSE, sep = sep)}
+
 
 if(nword>0){
-if (ordFreq) { 
-if(nword== object$info$Nword[[1]]) cat("\nIndex of the words\n")
- else cat("\nIndex of the ", nword, " most frequent words\n")
+  if (ordFreq) { 
+    if(nword== object$info$Nword[[1]]) cat("\nIndex of the words\n")
+    else cat("\nIndex of the ", nword, " most frequent words\n")
+    
 
-   A1 <- cbind(format(as.data.frame(rownames(object$indexW[c(1:nword), ])), justify = "l"),
-      object$indexW[c(1:nword), ])
-      colnames(A1) <- c(format("Word",justify = "l"), "Frequency", "N.Documents")
- if(is.null(file))  print(A1) else {
-   out1 <- t(c("","Word", "Frequency", "N.Documents",sep="\t"))
-   write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
-   write.table(A1, quote=FALSE, sep = sep, col.names=FALSE)}
- } else { 
-     out1 <- t(c("","Word", "Frequency", "N.Documents",sep="\t"))
-     Tabfq  <- object$indexW[(order(rownames(object$indexW)))[c(1:nword)],]
+    A1 <- cbind(format(as.data.frame(rownames(object$indexW[c(1:nword), ])), justify = "l"),
+                object$indexW[c(1:nword), ])
+    colnames(A1) <- c(format("Word",justify = "l"), "Frequency", "N.Documents")
+    
 
-if(nword== object$info$Nword[[1]]) cat("\nIndex of the words in alphabetical order\n")
- else cat("\nIndex of the first ", nword, " words in alphabetical order\n")
-     if(is.null(file)){  
-    print(Tabfq) 
-}else {
-         cat("\nIndex of the words in alphabetical order\n")
-         write.table(Tabfq, quote=FALSE, sep = sep, row.names=TRUE,col.names=FALSE)
+    
+    
+    
+    if(is.null(file))  print(A1) else {
+      out1 <- t(c("","Word", "Frequency", "N.Documents",sep="\t"))
+      write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
+      write.table(A1, quote=FALSE, sep = sep, col.names=FALSE)}
+  } else { 
+    out1 <- t(c("","Word", "Frequency", "N.Documents",sep="\t"))
+    Tabfq  <- object$indexW[(order(rownames(object$indexW)))[c(1:nword)],]
+    
+    if(nword== object$info$Nword[[1]]) cat("\nIndex of the words in alphabetical order\n")
+    else cat("\nIndex of the first ", nword, " words in alphabetical order\n")
+    if(is.null(file)){  
+      print(Tabfq) 
+    }else {
+      cat("\nIndex of the words in alphabetical order\n")
+      write.table(Tabfq, quote=FALSE, sep = sep, row.names=TRUE,col.names=FALSE)
     }
-} 
+  } 
 }
+
+
 
 if(nseg>0) { 
   cat("\nNumber of repeated segments\n")
   cat(" ", ncol(object$DocSeg),"\n") 
-if (ordFreq) {
- df <- data.frame(object$indexS$segOrderFreq[,])
- df <- df[with(df, order(-frequency,segment)), ]
- row.has.na <- apply(df, 1, function(z){any(is.na(z))})
- A1 <- df[!row.has.na,]
- A1 <- A1[c(1:nseg),]
- nseg <- min(nseg, nrow(A1))
-   colnames(A1) <- c(format("Segment",justify = "l"), "Frequency", "Long")
- if(nseg== ncol(object$DocSeg)) cat("\nIndex of the repeated segments\n")
- else cat("\nIndex of the ", nseg, " most frequent repeated segments\n")
-  if(is.null(file))  print(A1) else {
-     out1 <- t(c("Number","Segment", "Frequency", "Long",sep="\t"))
-     write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
-     write.table(object$indexS$segOrderFreq[1:nseg,], quote=FALSE, sep = sep, col.names=FALSE)}
-} else {
-  if(is.null(file)) {
- if(nseg== ncol(object$DocSeg)) cat("\nIndex of the repeated segments in alphabetical order\n")
-  else cat("\nIndex of the first ", nseg, " repeated segments in alphabetical order\n")
-    colnames(object$indexS$segOrderlist) <- c("Segment", "Frequency", "Long")
-    print(object$indexS$segOrderlist[1:nseg,]) 
-} else {
-    cat("\nIndex of the repeated segments in alphabetical order\n")
-    out1 <- t(c("Number","Segment", "Frequency", "Long",sep="\t"))
-    write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
-    write.table(object$indexS$segOrderlist[1:nseg,], quote=FALSE, sep = sep, col.names=FALSE)}
-}} 
-
+  if (ordFreq) {
+    df <- data.frame(object$indexS$segOrderFreq[,])
+    df <- df[with(df, order(-frequency,segment)), ]
+    row.has.na <- apply(df, 1, function(z){any(is.na(z))})
+    A1 <- df[!row.has.na,]
+    A1 <- A1[c(1:nseg),]
+    nseg <- min(nseg, nrow(A1))
+    colnames(A1) <- c(format("Segment",justify = "l"), "Frequency", "Long")
+    if(nseg== ncol(object$DocSeg)) cat("\nIndex of the repeated segments\n")
+    else cat("\nIndex of the ", nseg, " most frequent repeated segments\n")
+    if(is.null(file))  print(A1) else {
+      out1 <- t(c("Number","Segment", "Frequency", "Long",sep="\t"))
+      write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
+      write.table(object$indexS$segOrderFreq[1:nseg,], quote=FALSE, sep = sep, col.names=FALSE)}
+  } else {
+    if(is.null(file)) {
+      if(nseg== ncol(object$DocSeg)) cat("\nIndex of the repeated segments in alphabetical order\n")
+      else cat("\nIndex of the first ", nseg, " repeated segments in alphabetical order\n")
+      colnames(object$indexS$segOrderlist) <- c("Segment", "Frequency", "Long")
+      print(object$indexS$segOrderlist[1:nseg,]) 
+    } else {
+      cat("\nIndex of the repeated segments in alphabetical order\n")
+      out1 <- t(c("Number","Segment", "Frequency", "Long",sep="\t"))
+      write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
+      write.table(object$indexS$segOrderlist[1:nseg,], quote=FALSE, sep = sep, col.names=FALSE)}
+  }} 
 
 if(var.agg=="") {
- if(!is.null(object$context$quali))
-  if(dim(object$context$quali)[[2]]>0)
-{
-  cat("\nSummary of the contextual categorical variables\n")
-  print(summary(object$context$quali))}
-
-if(!is.null(object$context$quanti))
-if(ncol(object$context$quanti)>0){
- cat("\nSummary of the contextual quantitative variables\n")
-  print(summary(object$context$quanti))}
-
+  if(!is.null(object$context$quali))
+    if(dim(object$context$quali)[[2]]>0)
+    {
+      cat("\nSummary of the contextual categorical variables\n")
+      print(summary(object$context$quali))}
+  
+  if(!is.null(object$context$quanti))
+    if(ncol(object$context$quanti)>0){
+      cat("\nSummary of the contextual quantitative variables\n")
+      print(summary(object$context$quanti))}
+  
 } else {
   if(!is.null(object$context$quanti)){
-  cat("\nSummary of the contextual quantitative variables\n")
- Tabfq <- cbind(object$context$quanti, object$summDoc[,4])
- sname <- colnames(object$context$quanti)
- colnames(Tabfq) <- c(sname,"Ndocs")
- print(Tabfq)}
+    cat("\nSummary of the contextual quantitative variables\n")
+    Tabfq <- cbind(object$context$quanti, object$summDoc[,4])
+    sname <- colnames(object$context$quanti)
+    colnames(Tabfq) <- c(sname,"Ndocs")
+    print(Tabfq)}
+  
+  if(!is.null(object$context$quali$qualitable))
+  {
+    cat("\nSummary of the contextual categorical variables\n")
+    cat("Supplementary tables in: $context$quali$qualitable\n")
+  }}
 
-if(!is.null(object$context$quali$qualitable))
-{
-  cat("\nSummary of the contextual categorical variables\n")
- cat("Supplementary tables in: $context$quali$qualitable\n")
-}}
+if(info){
+  cat("\n\nSummary of used argumments\n" )
+  cat("==========================" )
+  
+if(object$info$name.var.agg[[1]]!="") {
+  cat("\nThis is an aggregated TextData object built using the aggregated variable: ", object$info$name.var.agg[[1]]," \n")
+}
+
+cat("* ", object$info$var.text[[2]], " :",object$info$var.text[[1]],"\n" )
+cat("* ", object$info$idiom[[2]], " :",object$info$idiom[[1]],"\n" )
+cat("* ", object$info$lminword[[2]], " :",object$info$lminword[[1]],"\n" )
+cat("* ", object$info$lower[[2]], " :",object$info$lower[[1]] ,"\n")
+cat("* ", object$info$remov.number[[2]], " :",object$info$remov.number[[1]] ,"\n")
+cat("* ", object$info$Fmin[[2]], " :",object$info$Fmin[[1]] ,"\n")
+cat("* ", object$info$Fmax[[2]], " :",object$info$Fmax[[1]] ,"\n")
+cat("* ", object$info$Dmin[[2]], " :",object$info$Dmin[[1]] ,"\n")
+cat("* ", object$info$Ndoc[[2]], " :",object$info$Ndoc[[1]] ,"\n")
+cat("* ", object$info$LengthW[[2]], " :",object$info$LengthW[[1]] ,"\n")
+cat("* ", object$info$Nword[[2]], " :",object$info$Nword[[1]] ,"\n\n")
+cat("* ", object$info$stop.word.tm[[2]], " :",sort(object$info$stop.word.tm[[1]]) ,"\n")
+cat("* ", object$info$stop.word.user[[2]], " :",sort(object$info$stop.word.user[[1]]) ,"\n")
+
+
+
+
+
+
+
+} # End info TRUE
+
+
 if(!is.null(file)) sink()
 }
 

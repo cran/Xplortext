@@ -1,4 +1,4 @@
-﻿\name{summary.TextData}
+\name{summary.TextData}
 \encoding{UTF-8}
 \alias{summary.TextData}
 
@@ -10,7 +10,7 @@ Summarizes TextData objects.
 
 \usage{
 \method{summary}{TextData}(object, ndoc=10, nword=50, nseg=50, ordFreq = TRUE, file = NULL, sep=";", 
-   ...) 
+   info=TRUE,...) 
 }
 \arguments{
   \item{object}{object of TextData class}
@@ -27,6 +27,7 @@ Summarizes TextData objects.
 if ordFreq=FALSE, glossaries are listed  in alphabetic order (by default TRUE)}
   \item{file}{a connection, or a character string naming the file to print to in csv format. If NULL (the default), the results are not printed in a file}
   \item{sep}{character string to insert between the objects to print (if the argument file is not NULL) (by default ";")}
+  \item{info}{if TRUE the selection criteria of the words are shown(by default TRUE)}
   \item{\dots}{further arguments passed to or from other methods,...}
 }
 

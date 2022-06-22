@@ -15,7 +15,7 @@
 
 \arguments{
   \item{x}{object of LexHCca class}
-  \item{type}{type of graph. "map" plots the CA map where the individuals are colored in accordance with the cluster of belonging (by default); "tree" plots the dendrogram if hierarchical method without consolidation is performed from LexHCca. See details)}
+  \item{type}{type of graph. "map" plots the CA map where the individuals are colored in accordance with the cluster of belonging (by default); "tree" plots the dendrogram if hierarchical method without consolidation is performed from LexHCca. See details}
   \item{plot}{elements to plot for map graph: points, labels, centers, hull or traject; by default "ALL" and points, labels and centers are plotted. Also combinations are allowed, i.e: plot=c(points,centers)}
   \item{selClust}{vector indexes with the numbers of the clusters to plot (by default "ALL")}
   \item{selInd}{vector with the active documents/words to plot (indexes, names or rules; see details; by default "ALL")}
@@ -87,8 +87,8 @@ Parameters can be used in combination, e.g.: title=c("text"="CA", "color"="red")
 See grDevices package (The R Graphics Devices and Support for Colours and Fonts).
 
 palette, the color of the palette used to draw the points. 
-   By default colors are chosen. If you want to define the colors : palette=c("black","red","blue"); 
-   or you can use: palette=palette(rainbow(30)), or in black and white for example: palette=palette(gray(seq(0,.9,len=25))).
+   By default colors are chosen. If you want to define the colors for three clusters : palette=c("black","red","blue"); 
+   or you can use: palette=palette(rainbow(30)); or in black and white for example: palette=palette(gray(seq(0,.9,len=25))).
 
 Family Fonts (family). Also see the extrafont package for a much better support of fonts: library(extrafont); font_import(). By default "family"='serif'.
 
@@ -97,7 +97,6 @@ Face fonts (face). Can be 'plain', 'bold', 'italic', 'bold.italic', 'symbol'. By
 alpha.t is the level of transparency for some objects. 0 value means full transparency and 1 opacity. By default 1.
 
 Values for horizontal justification hjust, vertical vjust and both hvjust can be (c,centered or 0.5 if centered; l,left or 0 if left; r, right or 1 if right)
-
 
 \preformatted{
 By default in:
@@ -144,7 +143,6 @@ res.LexCA<-LexCA(res.TD, graph=FALSE)
 res.chcca<-LexHCca(res.LexCA, nb.clust=4, min=3, graph=FALSE)
 plot(res.chcca, type="tree")
 plot(res.chcca, type="map")
-
 }
 
 \keyword{plot}

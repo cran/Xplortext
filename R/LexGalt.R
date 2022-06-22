@@ -1,10 +1,21 @@
 #' @importFrom MASS ginv
 #' @export
-LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TRUE,
-         conf.ellip=FALSE, nb.ellip = 100, graph= TRUE, axes = c(1, 2), label.group=NULL) 
+LexGalt <- function (object, context="ALL", conf.ellip=FALSE, 
+                     nb.ellip = 100, graph= TRUE, axes = c(1, 2), label.group=NULL) 
 {
 
+  # ncp= number of dimensions kept to compute (by default NULL to indicate all dimensions)
+  ncp <- NULL
+  
   # LexGalt CAN'T work with Aggregated Lexical Tables (ALT)
+  # level.ventil, a proportion corresponding to the level under which the category is ventilated; by default, 0 and no ventilation is done
+  # If level.ventil, seed is a random value by defect and results may differ when running the same script twice.
+  # Use the same values for the set.seed() function.
+  
+  # scale. Variables are are scaled to unit variance (standardized) (by default TRUE)
+  scale <- TRUE
+  level.ventil = 0; set.seed(1234)
+  
   if(!is.null(object$var.agg)) stop("LexGalt needs non aggregate TextData objects")
   options(stringsAsFactors = FALSE)
   
@@ -40,9 +51,13 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
     }
     return(res)
   }
-  #######################################################################
+
+
+    #######################################################################
   # 1.- Checking if it is a list (multiple) or only one object (simple)
   num.group <- ifelse(is.vector(object), length(object),1)
+  
+
   if(num.group==1) {
     # Simple, only one TextData object
     # If it is not a TextData object: stop
@@ -54,7 +69,6 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
       if (!inherits(object[[i]],"TextData")) stop("Object should be TextData class")
   }
   #######################################################################
-  
   
   #######################################################################
   ##2. Contextual variables
@@ -80,7 +94,7 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
   if(num.group ==1) {  # If it is simple
     if(!is.null(colnames(object$context$quanti))) # Selection quanti variables 
       context.quanti <- colnames(object$context$quanti)[which(colnames(object$context$quanti) %in% context)]
-    if(!is.null(colnames(object$context$quali)))  # Selection quanti variables
+    if(!is.null(colnames(object$context$quali)))  # Selection quali variables
       context.quali <- colnames(object$context$quali)[which(colnames(object$context$quali) %in% context)]
   } else { # If is multiple
     context.quanti <- context.quali <- context
@@ -102,13 +116,13 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
   ################################################################################
   
   
+  
   #######################################################################
   ##3. Functions
   mean.p<-function(V, poids) res <- sum(V * poids, na.rm = TRUE)/sum(poids[!is.na(V)])
   sd.p<-function(V, poids) res <- sqrt(sum(V^2 * poids, na.rm = TRUE)/sum(poids[!is.na(V)]))
   
-  
-  
+
   #######################################################################
   ## 4. Simple LexGalt 
   ####### If LexGalt is simple, not multiple
@@ -138,7 +152,8 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
       XQN.initial<- XQN
     }
     #################### Final quantitative variables
-    
+  
+        
     ######### Categorical variables
     if(nQL!=0){
       XQL <- data.frame(object$context$quali[,context.quali,drop=FALSE]) 
@@ -193,6 +208,8 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
       res <- list(eig = diag.L$eig, doc = res.doc, word = res.word, diag.L=diag.L, L=L, W=W)
     }
     ########### Final of function funct1 ############					
+
+    
     
     # =======  Call when LexGalt with quantitative variables			
     if(nQN!=0) {			
@@ -378,8 +395,10 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
   
    else {
           ############################  MULTIPLE
+
      Y<-vector(mode='list',length=num.group)
      for(i in 1:num.group) Y[[i]] <- as.matrix(object[[i]]$DocTerm)
+     
      if(is.null(label.group)) label.group <- paste("GROUP",1:num.group,sep = ".")	
      if(length(label.group) != num.group) stop("The name of groups is != number of groups")
      name.group <- label.group
@@ -400,7 +419,8 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
      DJ<-unlist(DJl)
      
      nXQL <- nXQN <- 0 
-     
+
+          
      if(nQL!=0) {
        XQL<-vector(mode='list',length=num.group)
        nXQL <- length(context.quali) 
@@ -449,7 +469,8 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
        tab<-sweep(sweep(tab,2,row.w,"*"),1,row.w,"*")				
        Lg<-matrix(0,num.group+1,num.group+1)				
        ind.gl<-0				
-       
+
+     
        for (gl in 1:num.group) {				
          ind.gc<-0			
          for (gc in 1:num.group) {			
@@ -562,6 +583,7 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
        contrib.group<-matrix(NA,num.group,ncol(U))				
        dist2.group<-vector(length=num.group)				
        freq.gr<-0				
+
        
        for (g in 1:num.group) {				
          if (g==1) contrib.group[g,]<-apply(contrib.freq[1:num.freq[g],],2,sum)			
@@ -585,7 +607,7 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
          rownames(coord.var.partiel[[i]])<-colnames(XG)			
          colnames(coord.var.partiel[[i]])<-paste("Dim",c(1:ncol(U)),sep = ".")			
        }				
-       
+
        rownames(coord.group)<-rownames(contrib.group)<-rownames(cos2.group)<-label.group				
        colnames(coord.group)<-colnames(contrib.group)<-colnames(cos2.group)<-paste("Dim",c(1:ncol(U)),sep = ".")				
        rownames(Lg)<-colnames(Lg)<-rownames(RV)<-colnames(RV)<-c(label.group,"MFA-GALT")				
@@ -607,7 +629,7 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
      resNew <- list(MQL=resQL,MQN=resQN)
      class(resNew) <- c("LexGalt", "list") 
  
-  
+     
      if(graph) {
        if(nQL!=0){
          plot.LexGalt(resNew, type="QL", eigen=TRUE, new.plot = TRUE, title="Eigenvalues from Quantitative variables")
@@ -620,10 +642,10 @@ LexGalt <- function (object, context="ALL", ncp=NULL, level.ventil = 0, scale=TR
        
        if(nQN!=0){
          plot.LexGalt(resNew, type="QN", eigen=TRUE, new.plot = TRUE, title="Eigenvalues from Quantitative variables")
-         plot.LexGalt(resNew, type="QN",plot.group="TRUE", new.plot = TRUE,
+                  plot.LexGalt(resNew, type="QN",plot.group="TRUE", new.plot = TRUE,
                       title="Groups representation (LexGalt) from quantitative variables")
          plot.LexGalt(resNew, type="QN", selDoc="ALL",axes = axes, new.plot = TRUE, title="Documents from Quantitative variables")
-         plot.LexGalt(resNew , type="QN", selQuantiVar="ALL", axes = axes, new.plot = TRUE, title="Quantitative variables")
+         plot.LexGalt(resNew , type="QN", selQuantiVar="ALL", axes = axes, new.plot = TRUE, partial=TRUE, title="Quantitative variables")
          plot(resNew, type="QN", selWord="ALL", new.plot=TRUE, title="Words from Quantitative variables")
        } # FINAL nQN
      } # Final graph

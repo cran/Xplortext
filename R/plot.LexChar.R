@@ -4,10 +4,25 @@
 #' @export
 plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.negat="red",
   col.lines="black", theme=theme_bw(), text.size=12,numr=1,numc=2, top=NULL, max.posit=15, max.negat=15, 
-  type=c("CharWord","quanti","quali"),context.sup=NULL, ...) 
+ # type=c("CharWord","quanti","quali"),context=NULL, ...) 
+ type=c("CharWord","quanti","quali"), ...) 
+   # 1. Eliminar de la ayuda context, controlar de las versiones anteriores
+   
 {
+   
+   
   options(stringsAsFactors = FALSE)
+   varnames<- lapply(substitute(list(...))[-1], deparse)
+ #  if(!is.null(varnames$context.sup)) {
+ #     context <- gsub("[[:punct:]]", "", varnames$context.sup)   # Only for Compatibility version 1.4.1
+ #     warning("Versions > 1.4.1 use context, no context.sup argument") 
+ #  }
+   
   type <- match.arg(type[1], c("CharWord", "quanti", "quali"))
+ if(max.negat<1) char.negat<-FALSE 
+  if(char.negat==FALSE) max.negat<-0
+ # context.sup <- context
+
   
   marrangeGrob2<- function(grobs, ncol, nrow, ..., top ) 
 {
@@ -32,8 +47,7 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
 
  words <-vtest <- NULL
  
- 
- 
+
  
  fCharWord <- function(x, top)  {
    icont<-0
@@ -54,7 +68,7 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
        colnames(df) <- c("words", "vtest")
        df$words <- reorder(df$words,df$vtest)
        
-       if(!char.negat) df <- df[-df$vtest<0,,drop=FALSE]
+       if(!char.negat)      df <- df[-df$vtest<0,,drop=FALSE]
        numposit<-nrow(df[df$vtest>0,])
        numnegat <- nrow(df[df$vtest<0,])
        
@@ -62,8 +76,9 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
          df <- df[-((max.posit+1):numposit),,drop=FALSE]
          numposit <- max.posit
        }
+
        if(numnegat > max.negat) {
-         df <- df[-((max.posit+1):(nrow(df)-max.negat)),,drop=FALSE]
+         df <- df[-((numposit+1):(nrow(df)-max.negat)),,drop=FALSE]
          numnegat <- max.negat
        }
        
@@ -82,12 +97,15 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
    }
    return(pword)
  }
-   
+
+ 
+ 
+ 
+ 
 if(type=="CharWord")  {
   if(is.null(top)) top <- paste0("Characteristic words. Proba= ", x$Proba)
  pword <- fCharWord(x$CharWord,  top)
 } # End CharWord
- 
  
 
  
@@ -129,14 +147,13 @@ if(type=="CharWord")  {
  }
  
  if(type=="quanti")  {
+   if(is.null(x$Vocab$quanti$CharWord)) stop("There is not quantitative variables to plot in LexChart object")
    res <- fChar(x$Vocab$quanti$CharWord)
    ldoc<-names(res)
    ntdoc<-length(ldoc)
    pword <-list()
    proba<-x$Proba
-   
-   
-   
+
    if(is.null(top)) top <- paste0("Characteristic words. Proba= ",proba)
    theme$text$size <- text.size
    icont<-0
@@ -188,14 +205,7 @@ if(type=="CharWord")  {
  
  if(type=="quali") {
    if(is.null(x$Vocab$quali$CharWord)) stop("There are not qualitative variables in LexChart object")
-   if(is.null(context.sup)) stop("You must write one qualitative variable in context.sup argument")
-      xnames <- names(x$Vocab$quali$CharWord)
-      if(length(xnames)==1) context.sup <- xnames
-      rdonames <- xnames[which(xnames %in% context.sup)]
-
-      if(length(rdonames)>1) stop("Please select only one qualitative variable in context.sup")
-      my_list <- x$Vocab$quali$CharWord[[rdonames]]
-      pword <- fCharWord(my_list , top)
+         pword <- fCharWord(x$Vocab$quali$CharWord,  top)
  } # End Type quali
 
   

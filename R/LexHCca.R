@@ -1,13 +1,21 @@
-#' import flexclust
+#' @import flexclust
 #' @export
-LexHCca <- function(x, cluster.CA="docs", marg.doc="before", nb.clust="click",  min=2, max=NULL, kk=Inf, 
+LexHCca <- function(x, cluster.CA="docs", nb.clust="click",  min=2, max=NULL, kk=Inf, 
                     consol=FALSE, iter.max=500, graph=TRUE, description=TRUE, proba=0.05, 
                     nb.desc=5, size.desc=80, seed=12345,...)
   
 {
-  object <- x
+  dots <- list(...)
+  if(is.null(dots$method)) method.sel <- "ward"
+    else method.sel <-  dots$method
+    
+
+    object <- x
 if (!inherits(object, "LexCA")) stop("object should be LexCA class")
   options(stringsAsFactors = FALSE)
+  
+  marg.doc<-"before"
+ if(description==FALSE)  nb.desc <-0
   
 #---- Initial checks -----------------------------------------
   ## Type selection number of clusters
@@ -30,7 +38,6 @@ if(is.character(nb.clust))
   ##
   if (min <2) min<-2
   metric = "euclidean"
-  method = "ward"
   if (cluster.CA=="rows" ) cluster.CA <- "docs"
   if (cluster.CA=="columns" ) cluster.CA <- "words"
  #---- End Initial checks -----------------------------------------
@@ -38,7 +45,7 @@ if(is.character(nb.clust))
 
   
 #---- F1. auto.cut.tree function -----
-  auto.cut.tree <- function(res, min, max, metric, method, weight = NULL, cla = NULL, ...)
+  auto.cut.tree <- function(res, min, max, metric, method=method.sel, weight = NULL, cla = NULL, ...)
   {
     set.seed(seed)
     X <- as.data.frame(res$ind$coord)
@@ -54,7 +61,6 @@ if(is.character(nb.clust))
     return(list(res = res, tree = hc, nb.clust = nb.clust,
                 within = intra, inert.gain = inert.gain, quot = quot))
   }	  # End Function auto.cut.tree  
-  
   
   
 
@@ -300,7 +306,7 @@ if(is.character(nb.clust))
   # row.w.init has the weighting from rows from res object of PCA
   # method=ward, metric=euclidean , res$call$row.w.init is absolute frequency after
   
-    t <- auto.cut.tree(res, min = min, max = max, metric = metric,method = method,
+    t <- auto.cut.tree(res, min = min, max = max, metric = metric,method.sel = method.sel,
                      weight = res$call$row.w.init, cla = cla, order = order, ...)	
  
    # tree can be plotted plot(t$tree)
@@ -468,6 +474,8 @@ if(is.character(nb.clust))
   # num.docs <- nrow(object$call$X)
   # num.words <- ncol(object$call$X)
   # Final 14 weighting docs
+ 
+#  doc.w.after <- apply(object$call$X,1,sum)    # Initial weighting for documents after selection
   
   
   
@@ -491,11 +499,10 @@ if(is.character(nb.clust))
   
   
   
-  
+  desc.ind <- descaxes <- descword <- descwordsup <- descdoc <- descquali <- descquanti <- NULL
   #---- 15. descword, Cluster description by words and descdoc ----
   if(description) { 
-    desc.ind <- descaxes <- descword <- descwordsup <- descdoc <- descquali <- descquanti <- NULL
-
+    
     if(cluster.CA=="docs") {
       descr.w.rows <- doc.w[rownames(descr.data)]
       descr.w.cols <- word.w[colnames(descr.data)]
@@ -642,10 +649,18 @@ if(is.character(nb.clust))
   }
   
   
+
+  
+  
   if (!is.null(object$info)) {
     if (nb.desc > 0) {
       if (is.null(desc.ind$para)) 
         stop("Please, use description=TRUE \n  to obtain a description of the clusters by the characteristic documents ")
+     
+
+      if(!is.null(object$var.agg)) vbaggr <- TRUE else vbaggr <- FALSE
+      
+      if(vbaggr==FALSE) {
       var.text <- object$info$var.text[[1]]
       str.base <- object$info$base[[1]]
       str.envir <- object$info$menvir[[1]]
@@ -656,10 +671,15 @@ if(is.character(nb.clust))
           corpus <- paste(corpus, base[, var.text[i]], sep = ".")
         }
       }
+      }
+      if(vbaggr==FALSE) {
       corpus <- data.frame(corpus, stringsAsFactors = FALSE)
       rownames(corpus) <- rownames(base)
-      lispara <- vector(mode = "list")
+      }
       
+     
+      lispara <- vector(mode = "list")
+   
       for (iclus in 1:nb.clust) {
         doctot <- length(desc.ind$para[[iclus]])
         ntdoc <- min(nb.desc, doctot)
@@ -667,12 +687,16 @@ if(is.character(nb.clust))
         for (i in 1:ntdoc) {
           lispara[[iclus]][i, 1] <- names(desc.ind$para[[iclus]][i])
           lispara[[iclus]][i, 2] <- desc.ind$para[[iclus]][i]
-          if (cluster.CA == "docs") 
+
+          if (cluster.CA == "docs") { if(vbaggr==FALSE)
             lispara[[iclus]][i, 3] <- strtrim(corpus[lispara[[iclus]][i,1], 1], size.desc)
+            else lispara[[iclus]][i, 3] <- ""
+          }
         }
 
-        if (cluster.CA == "docs") 
-          colnames(lispara[[iclus]]) <- c("DOCUMENT", "CRITERION", "TEXT")
+        if (cluster.CA == "docs") {
+          colnames(lispara[[iclus]]) <- c("DOCUMENT", "CRITERION", "TEXT") 
+        }
         else colnames(lispara[[iclus]]) <- c("WORD", "CRITERION")
       }
       names(lispara) <- paste("cluster", 1:nb.clust, sep = "_")
@@ -688,8 +712,10 @@ if(is.character(nb.clust))
           lisdist[[iclus]][i, 1] <- names(desc.ind$dist[[iclus]][i])
           lisdist[[iclus]][i, 2] <- desc.ind$dist[[iclus]][i]
           if (cluster.CA == "docs") 
+          { if(vbaggr==FALSE)
             lisdist[[iclus]][i, 3] <- strtrim(corpus[lisdist[[iclus]][i, 1], 1], size.desc)
-        }
+          else lisdist[[iclus]][i, 3] <-""
+        }}
         if (cluster.CA == "docs") 
           colnames(lisdist[[iclus]]) <- c("DOCUMENT","CRITERION", "TEXT")
         else colnames(lisdist[[iclus]]) <- c("WORD", "CRITERION")

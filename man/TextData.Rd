@@ -1,4 +1,4 @@
-﻿\name{TextData}
+\name{TextData}
 \encoding{UTF-8}
 \alias{TextData}
 
@@ -12,8 +12,8 @@ Creates a textual and contextual working-base (TextData format) from a source-ba
 TextData(base, var.text=NULL, var.agg=NULL, context.quali=NULL, context.quanti= NULL,
  selDoc="ALL", lower=TRUE, remov.number=TRUE,lminword=1, Fmin=Dmin,Dmin=1, Fmax=Inf,
  stop.word.tm=FALSE, idiom="en", stop.word.user=NULL, segment=FALSE,
- sep.weak="(['?]|[[:punct:]]|[[:space:]]|[[:cntrl:]])+",
- sep.strong="\u005B()\u00BF?./:\u00A1!=+;{}-\u005D", seg.nfreq=10, seg.nfreq2=10,
+ sep.weak="default",
+ sep.strong="\u005B()\u00BF?./:\u00A1!=;{}\u005D\u2026", seg.nfreq=10, seg.nfreq2=10,
  seg.nfreq3=10, graph=FALSE)
 }
 \arguments{
@@ -65,11 +65,17 @@ TextData function builds the working-documents-by-words table, submitted to the 
 
 sep.weak contains the string with the characters marking out the terms (by default punctuation characters, space and control).
 Backslash or double backslash are used to start an escape sequence defining special characters. Each special character must by separated the symbol | (or) in sep.weak and sep.strong.
-For example:
+The default is:
 \verb{
-sep.weak = "[[space]]|¡|!|;|\\,|\\.|\\-|\\(|\\)|\\#|:|¿|\\'|\%|_|\u0022"
+
+sep.weak = ("[\%`:_*$&#/^|<=>;'+@.,~?(){}|[[:space:]]|
+
+\u2014|\u002D|\u00A1|\u0021|\u00BF|\u00AB|\u00BB|\u2026|\u0022|\u005D")
+
+
+
 }
-Some special characters can be introduced as unicode characters.
+Some special characters can be introduced as unicode characters. Back slash (escape contol) is not allowed.
 
 Information related to context.quanti and context.quali arguments:
   \enumerate{

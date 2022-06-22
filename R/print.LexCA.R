@@ -1,3 +1,4 @@
+#' @export
 print.LexCA <- function (x, file = NULL, sep = ";", ...) 
 {
 

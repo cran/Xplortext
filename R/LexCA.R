@@ -332,19 +332,23 @@ checkcontext <- function(context_, TDContext) {
 if(naxes>=min(nrow(Rcontr),nrow(Ccontr)))			
  naxes <- min((nrow(Rcontr)-1),(nrow(Ccontr)-1))			
 # Computing the metakeys: words with contributions over lmw*average_contribution of words  		
-Metakeys <-vector(mode="list",length=naxes)		
-for (i in 1:naxes){		
-	Metakeys[[i]]=vector(mode="list",length=2)}	
+
+ 
+ Metakeys <-vector(mode="list",length=naxes)		
+for (i in 1:naxes){Metakeys[[i]]=vector(mode="list",length=2)}	
 
 for(i in 1:naxes){		
-	Metakeys[[i]][[1]]<-sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]>0),i],decreasing=TRUE)	
-	if (length(Metakeys[[i]][[1]])==1) 	
-          names(Metakeys[[i]][[1]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]>0),i],decreasing=TRUE))]		
-	Metakeys[[i]][[2]]<-sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]<0),i],decreasing=TRUE)	
-	if (length(Metakeys[[i]][[2]])==1) 	
-          names(Metakeys[[i]][[2]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]<0),i],decreasing=TRUE))]		
-}		
-# Computing the Keydocs : documents/answers with contributions over lmd*average_contribution of documents 			
+  lmw_ <- lmw*mean(Ccontr[,i])
+  Metakeys[[i]][[1]]<-sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]>0),i],decreasing=TRUE)	
+  if (length(Metakeys[[i]][[1]])==1) 	
+    names(Metakeys[[i]][[1]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]>0),i],decreasing=TRUE))]		
+  Metakeys[[i]][[2]]<-sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]<0),i],decreasing=TRUE)	
+  if (length(Metakeys[[i]][[2]])==1) 	
+    names(Metakeys[[i]][[2]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]<0),i],decreasing=TRUE))]		
+  }
+
+
+ # Computing the Keydocs : documents/answers with contributions over lmd*average_contribution of documents 			
 #lmd <- 3; lmw<-3
 
 
