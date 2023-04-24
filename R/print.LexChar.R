@@ -8,30 +8,33 @@ print.LexChar <- function (x,file = NULL, sep = ";", dec=".",...)
   df.res <- data.frame(name = character(),
                        description = character(),
                        stringsAsFactors = FALSE)
-  
+
   if("CharWord" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$CharWord", "Words characterizing the documents")
   if("stats" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$stats", "Association statistics of the lexical table")
-  if("CharDoc" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$CharDoc", "Documents characterizing categories")
-  if("Vocab" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$Vocab", "Information about the vocabulary and contextual variables")
-  if(!is.null(x$Vocab$quali$CharWord)) df.res[nrow(df.res)+1,] <-c("$Vocab$quali$CharWord", "Provides the qualitative variables and their categories")
-  if(!is.null(x$Vocab$quali$stats)) df.res[nrow(df.res)+1,] <- c("$Vocab$quali$stats", "Provides association statistics for vocabulary and qualitative variables")
-  if(!is.null(x$Vocab$quanti$CharWord)) df.res[nrow(df.res)+1,] <- c("$Vocab$quanti$CharWord", "Provides characteristic quantitative variables for each word") 
-  if(!is.null(x$Vocab$quanti$stats)) df.res[nrow(df.res)+1,] <- c("$Vocab$quanti$stats", "Provides association statistics for vocabulary and quantitative variables")
+  if("CharDoc" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$CharDoc", "Documents characterizing categories of aggregate table")
+  if("Proba" %in% names(x)) df.res[nrow(df.res)+1,] <- c("$Proba", "Threshold on the p-value used when selecting the characteristic words
+  (by default 0.05")
+                                                                         
+  if(!is.null(x$quali$CharWord)) df.res[nrow(df.res)+1,] <-c("$quali$CharWord", "Words characterizing the qualitative variables and their categories")
+  if(!is.null(x$quali$stats)) df.res[nrow(df.res)+1,] <- c("$quali$stats", "Association statistics for vocabulary and qualitative variables")
+  if(!is.null(x$quali$CharDoc)) df.res[nrow(df.res)+1,] <-c("$quali$CharDoc", "Documents characterizing categories of aggregate table from qualitative variables and their categories")
+ 
+  if(!is.null(x$quanti$CharWord)) df.res[nrow(df.res)+1,] <- c("$quanti$CharWord", "Provides characteristic quantitative variables for each word") 
+  if(!is.null(x$quanti$stats)) df.res[nrow(df.res)+1,] <- c("$quanti$stats", "Association statistics for vocabulary and quantitative variables")
   
-  index <- nrow(df.res)
   df.res <- as.matrix(df.res) 
+  index <- nrow(df.res)
   res <- array("", c(index, 2), list(1:index, c("name", "description")))
   for(i in 1:index) res[i,] <-df.res[i,]
   cat("\n*The results are available in the following objects:\n\n")
   print(res[c(1:index),])
-  
 
   sink.reset <- function(){
     for(i in seq_len(sink.number())){sink()}}
   sink.reset
   
   if (is.null(file))
-    cat("(*) To obtain more detailed information use print to file")
+    cat("(*) To obtain more detailed information use print to file (print.LexChar)")
   else 
     {
       sink(file)
@@ -210,40 +213,53 @@ print.LexChar <- function (x,file = NULL, sep = ";", dec=".",...)
   }  
   
   ###########  Qualitative contextual variables
-  if(!is.null(x$Vocab$quali$stats)){	
+  if(!is.null(x$quali$stats)){	
     cat("\n\nASSOCIATION STATISTICS OF AGGREGATE CONTEXTUAL QUALITATIVE TABLE\n")
-    stit <- t(c("",colnames(x$Vocab$quali$stats)))
+    stit <- t(c("",colnames(x$quali$stats)))
     write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-    write.table(x$Vocab$quali$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
+    write.table(x$quali$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
   } # End Vocab$quali$CharWord$stats
   
-  if(!is.null(x$Vocab$quali$CharWord)){	
-    for(i in 1:length(x$Vocab$quali$CharWord)) {
-      cat("\n\nCharacteristic of aggregate-documents for qualitative variable: ", names(x$Vocab$quali$CharWord[i]), "\n")
+  if(!is.null(x$quali$CharWord)){	
+    for(i in 1:length(x$quali$CharWord)) {
+      cat("\n\nCharacteristic of aggregate-documents for qualitative variable: ", names(x$quali$CharWord[i]), "\n")
       cat("=====================================================================================")
-      fCharWord2(x$Vocab$quali$CharWord,i)
+      fCharWord2(x$quali$CharWord,i)
     }
+    
+    #################  Check CharDoc
+    if(!is.null(x$quali$CharDoc)) {
+      cat("\n\n\nCHARACTERISTIC SOURCE-DOCUMENTS\n")
+      #     print(object$CharDoc)
+      stit <- t(names(x$quali$CharDoc[[1]]))
+      for(i in 1:length(x$quali$CharDoc)){	
+        cat("\n")
+        write.table(names(x$quali$CharDoc[i]), quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+        write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+        write.table(x$quali$CharDoc[[i]][1:3], quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
+      }	
+    }   
   } # End CharWord
 
   
-    
+
   ###########  Quantitative contextual variables
-  if(!is.null(x$Vocab$quanti$stats)){	
+  if(!is.null(x$quanti$stats)){	
     cat("\nRELATIONSHIPS BETWEEN VOCABULARY AND CONTEXTUAL QUANTITATIVE VARIABLES\n")
     cat("\nStatistics for quantitative variables")
     cat("\n-------------------------------------\n")
-    stit <- t(c("",colnames(x$Vocab$quanti$stats)))
+    stit <- t(c("",colnames(x$quanti$stats)))
     write.table(stit, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE,dec=dec)
-    write.table(x$Vocab$quanti$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
+    write.table(x$quanti$stats, quote=FALSE, sep = sep, col.names=FALSE, row.names=TRUE,dec=dec)
     
-  
-  #  print(object$Vocab$quanti$CharWord)
-    res.quanti <- fCharQuanti(x$Vocab$quanti$CharWord)
+
+  #  print(object$quanti$CharWord)
+    res.quanti <- fCharQuanti(x$quanti$CharWord)
     num.var.quanti <- length(res.quanti)
     stit<- t(c("Word", "GlobalAverage", "AverageWord","Differ.", "pvalue"))
     
        for(i in 1:num.var.quanti) {
-      str.name.var <- rownames(x$Vocab$quanti$stats)[i]
+      str.name.var <- rownames(x$quanti$stats)[i]
       cat("\n\nCharacteristic quantitative variables for each word. Variable:", str.name.var)
       cat("\n----------------------------------------------------------------------------------------\n")
       
@@ -262,15 +278,10 @@ print.LexChar <- function (x,file = NULL, sep = ";", dec=".",...)
       
     }
     
-  } # End Vocab$quanti
+  } # End quanti
   
-  
-  
-  
-  
-  
-  
-  
+  cat("\n------- Proba threshold -----------\n")
+  cat(paste("Proba=", x$Proba))
   
   
   sink()

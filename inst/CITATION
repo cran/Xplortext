@@ -1,0 +1,6 @@
+bibentry(
+  bibtype = 'Manual',
+  title = 'Xplortext: Statistical Analysis of Textual Data. R package version 1.5.2',
+  author = as.person('Mónica Bécue-Bertaut [aut], Ramón Alvarez-Esteban [aut], Josep-Anton Sánchez-Espigares [aut], Belchin Kostov [aut]'),
+  year = 2023,
+  url = "https://xplortext.unileon.es/")

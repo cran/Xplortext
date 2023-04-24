@@ -138,6 +138,7 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
       segments <- list(Nseg=mNseg, seg.nfreq=mseg.nfreq, seg.nfreq2=mseg.nfreq2 ,seg.nfreq3=mseg.nfreq3) 
       zinfo<- c(zinfo, segments=list(segments))
     }
+
     return(zinfo)
   }
   
@@ -863,7 +864,12 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
   info <- infoNew()		
 
   attr(dtm, "language") <- info$idiom[[1]] # Version 1.3.1
-  y <- list(summGen=mTfreqdoc,summDoc=detOcc, indexW = TFreq, DocTerm =dtm) 
+  
+  df.TFreq <- as.data.frame(TFreq)
+  df.TFreq$rownames <- rownames(df.TFreq)
+  df.TFreq <- df.TFreq[order(-df.TFreq[,1], df.TFreq[,3]), ]
+  df.TFreq$rownames <- NULL
+  y <- list(summGen=mTfreqdoc,summDoc=detOcc, indexW = as.matrix(df.TFreq), DocTerm =dtm) 
   
   if(segment==TRUE) {
     y$indexS <- Index.segments
@@ -915,7 +921,6 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
   df <- y$summDoc[,2,drop=FALSE]
   rownames(df) <- y$summDoc[,1]
   y$rowINIT <- df
-  
   
   class(y) <- c("TextData", "list")
   if(blongErr==TRUE) warning("Only repeated segments < 20 words have been computed")	

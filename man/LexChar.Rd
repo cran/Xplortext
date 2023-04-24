@@ -6,14 +6,13 @@
 
 \description{Measure of the association between vocabulary or words and quantitative or qualitative contextual variables.}
 
-\usage{LexChar(object, proba=0.05, maxDocs=20, maxCharDoc=10, maxPrnDoc=100, 
+\usage{LexChar(object, proba=0.05, maxCharDoc=10, maxPrnDoc=100, 
               marg.doc="before",  context=NULL, correct=TRUE, nbsample=500,
               seed=12345,...)}
 
 \arguments{
  \item{object}{TextData, DocumentTermMatrix, dataframe or matrix object}
  \item{proba}{threshold on the p-value used when selecting the characteristic words (by default 0.05)}
- \item{maxDocs}{maximum number of documents in the working lexical table (by default 20). See details}
  \item{maxCharDoc}{maximum number of characteristic source-documents to extract (by default 10). See details}
  \item{maxPrnDoc}{maximum length to be printed for a characteristic document (by default 100 characters)}
  \item{marg.doc}{if after/before, frequencies after/before TextData selection are used as document weighting (by default "before"); 
@@ -40,20 +39,17 @@ Context cualitative variables allow to aggregate documents by combining the cate
 
 Extracting the characteristic words (CharWord) for a too high number of documents is of no interest and time-consuming. 
 
-In the case of aggregate documents, extracting the characteristic source-documents is possible but of interest only if the source-documents are not too long. 
 In any case, only the first maxPrnDoc characters of each characteristic document are printed (by default 100).
 
 In the case of the association between words and qualitative variables, the usual characteristic words are provided.
 
-Vocab$quali$CharWord provides the qualitative variables (including the aggregation variable) and their categories.
-Vocab$quali$stats provides association statistics for vocabulary and qualitative variables (including the aggregation variable).
-Vocab$quanti$CharWord provides characteristic quantitative variables for each word.
-Vocab$quanti$stats provides statistics for vocabulary and quantitative variables.
-Vocab$quanti.aggr$CharWord provides characteristic quantitative variables for each word from aggregated lexical table. 
-Vocab$$quanti.aggr$stats provides statistics for vocabulary and quantitative variables from aggregated lexical table.
+quali$CharWord provides the qualitative variables (including the aggregation variable) and their categories.
+quali$stats provides association statistics for vocabulary and qualitative variables (including the aggregation variable).
+quali$CharDoc provides characteristic source-documents for the categories.
+quanti$CharWord provides characteristic quantitative variables for each word. If there are aggregation variable and/or qualitative contextual variable, from aggregated lexical table.
+quanti$stats provides statistics for vocabulary and quantitative variables. If there are aggregation variable and/or qualitative contextual variable, from aggregated lexical table.
 
-
-If the lexical table (object) is not a TextData object, context argument can be a dataframe with the same number of rows than the lexical table and qualitative and quantitatice variables in columns.
+If the lexical table (object) is not a TextData object, context argument can be columns of the same dataframe.
 The aggregate lexical table is constructed from the combinations of the categories of the qualitative variables (including the aggregation variable).
 }
 

@@ -94,42 +94,36 @@ if (!inherits(object, "LexChar")) stop("object mut be LexChar class")
     print(object$stats)
   }
   
-  
-  
-
-
-  
-  if("Vocab" %in% names(object)) if(Vocab==TRUE)   {
-
-      if(!is.null(object$Vocab$quali))  {
+  if("quali" %in% names(object)) if(Vocab==TRUE)   {
+    if(!is.null(object$quali))  {
       cat("\n\nCHARACTERISTIC QUALITATIVE VARIABLES\n")
       cat("\nStatistics for qualitative variables\n")
       cat("\n-------------------------------------\n")
-      print(object$Vocab$quali$stats)
-
-
-    
-      for(i in 1:length(object$Vocab$quali$CharWord)) {
-        cat("\n\nCharacteristic words for qualitative variable: ", names(object$Vocab$quali$CharWord[i]), "\n")
-  #    cat("\n\nCharacteristic words for qualitative variable:\n")
+      print(object$quali$stats)
+      
+      
+      
+      for(i in 1:length(object$quali$CharWord)) {
+        cat("\n\nCharacteristic words for qualitative variable: ", names(object$quali$CharWord[i]), "\n")
+        #    cat("\n\nCharacteristic words for qualitative variable:\n")
         cat("=====================================================================================\n")
-   #      print(object$Vocab$quali$CharWord[[i]])
-#         fCharWord2(object$Vocab$quali$CharWord[[i]]) 
-        fCharWord2(object$Vocab$quali$CharWord,i) 
-        
-     }
-      } # End quali
-
-
-    if(!is.null(object$Vocab$quanti))  {
+        fCharWord2(object$quali$CharWord,i) 
+      }
+    } # End quali
+    
+    
+    if(!is.null(object$quanti))  {
       cat("\n\nCHARACTERISTIC QUANTITATIVE VARIABLES\n")
       cat("\nStatistics for quantitative variables\n")
       cat("\n-------------------------------------\n")
-      print(object$Vocab$quanti$stats)
-
+      print(object$quanti$stats)
+      
       cat("\n\nCharacteristic quantitative variables for each word\n")
       cat("\n-----------------------------------------------------\n")
-      print(object$Vocab$quanti$CharWord)
+      print(object$quanti$CharWord)
+      
+      
+      
       
       cat("\n\nCharacteristic words for each quantitative variable\n ")
       cat("\n---------------------------------------------------\n")
@@ -169,43 +163,28 @@ if (!inherits(object, "LexChar")) stop("object mut be LexChar class")
         return(empty_list)
       } # End fCharQuanti
       
-      res <- fCharQuanti(object$Vocab$quanti$CharWord)
+      res <- fCharQuanti(object$quanti$CharWord)
       print(res)
       
       
-      if(!is.null(object$Vocab$quanti.aggr)) {
+      if(!is.null(object$quanti.aggr)) {
         cat("\n\n\nQUANTITATIVE STATISTICS AND WORDS FOR AGGREGATED CONTEXTUAL VARIABLES\n\n")
-        cat(names(object$Vocab$quali$CharWord))
+        cat(names(object$quanti$CharWord))
         cat("\nStatistics for quantitative variables\n")
         cat("\n-------------------------------------\n")
-        print(object$Vocab$quanti.aggr$stats)
-  
-        cat("\n\nCharacteristic words for each quantitative variable\n ")
-        cat(names(object$Vocab$quali$CharWord))
-        cat("\n---------------------------------------------------\n")
-        print(object$Vocab$quanti.aggr$CharWord)  
-        res2 <- fCharQuanti(object$Vocab$quanti.aggr$CharWord)
-        cat("\n---------------------------------------------------\n")
-        cat(names(object$Vocab$quali$CharWord))
-        cat("\n---------------------------------------------------\n")
-        print(res2)
+        print(object$quanti$stats)
         
       }
-        
-        
-    } # End quanti
-
-        #################  Check CharDoc
-    if("CharDoc" %in% names(object)) if(CharDoc==TRUE)   {
-      cat("\n\n\nCHARACTERISTIC SOURCE-DOCUMENTS\n\n")
-      print(object$CharDoc)
       
-    }  
-    
+      
+    } # End quanti
   } 
   
-if(file!=""){
-  sink()
-cat("\nAll the results are in file: ",file,"\n")
-}
+
+  if(file!=""){
+    sink()
+    cat("\nAll the results are in file: ",file,"\n")
+  }
+
+
 }

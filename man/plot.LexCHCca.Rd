@@ -8,8 +8,8 @@
 }
 
 \usage{
-\method{plot}{LexCHCca}(x, axes=c(1, 2), type=c("tree","map","bar"), rect=TRUE, title=NULL, ind.names=TRUE,
-    new.plot=FALSE, max.plot=15, tree.barplot=TRUE,...)  
+\method{plot}{LexCHCca}(x, axes=c(1, 2), type=c("tree","map","bar"), rect=TRUE, title=NULL, 
+  ind.names=TRUE, new.plot=FALSE, max.plot=15, tree.barplot=TRUE,...)  
 }
 \arguments{
   \item{x}{object of LexCHCca class}
@@ -42,9 +42,9 @@ res.TD<-TextData(open.question,var.text=c(9,10), var.agg="Age_Group", Fmin=10, D
         stop.word.tm=TRUE)
 res.LexCA<-LexCA(res.TD, graph=FALSE)
 res.chcca<-LexCHCca(res.LexCA, nb.clust=4, min=3, graph=FALSE)
-plot(res.chcca, choice="tree")
-plot(res.chcca, choice="map")
-plot(res.chcca, choice="bar", max.plot=5)
+plot(res.chcca, type="tree")
+plot(res.chcca, type="map")
+plot(res.chcca, type="bar", max.plot=5)
 }
 }
 

@@ -75,8 +75,8 @@ res.TD<-TextData(open.question,var.text=c(9,10), Fmin=10, Dmin=10,
  context.quali=c("Gender", "Age_Group", "Education"),
  remov.number=TRUE, stop.word.tm=TRUE)
 
-res.LexGalt <- LexGalt(res.TD, graph=FALSE, conf.ellip =FALSE)
-plot(res.LexGalt, selQualiVar="ALL")
+# res.LexGalt <- LexGalt(res.TD, graph=FALSE, conf.ellip =FALSE)
+# plot(res.LexGalt, selQualiVar="ALL")
 
 }
 
