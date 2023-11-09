@@ -12,7 +12,12 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
   col.group=NULL, label.group=NULL, legend=TRUE, pos.legend="topleft", new.plot = TRUE,cex=1, ...)
 {
   
+
     if(!inherits(x,"LexGalt")) stop("non convenient data")
+    if(is.null(selDoc) & is.null(selWord) & is.null(selQualiVar)&
+     is.null(selQuantiVar) & conf.ellip==FALSE & is.null(selWordEllip) & is.null(selQualiVarEllip) &
+     is.null(selQuantiVarEllip) & eigen==FALSE) stop("There is nothing to plot\nSelect some argument")
+  
      if(unselect==TRUE) unselect <- 1
 #######################  Previous control
     if (is.numeric(unselect)) 
@@ -89,10 +94,10 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
 ###################################### Plot eigenvalues   
   if(eigen) {
     #  nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY")) # TRUE  when inside RStudio ,  # FALSE when outside RStudio
-    
-    if(new.plot) if(!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY")))   
+    # Cambiado
+    if(new.plot) if(!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) {
       dev.new(width = min(14, 8 * (xlim[2] - xlim[1])/(ylim[2] - ylim[1])), height = 8) # Outside RStudio 
-     else if(new.plot==TRUE) dev.new()
+     } else dev.new()
     
     if(is.null(title)) titleE <- "Eigenvalues" else titleE <- title
     barplot(res.cagalt$eig[, 1], main = titleE, col=col.eig, cex.axis=cex, cex.names=cex,
@@ -134,11 +139,10 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
     if(is.null(selection)) if(rdo=="") if(length(selDoc)==1) selection <- which(rownames(coord.doc) %in% selDoc)
     if(length(selection)==0) stop("There are not selected elements to plot")
     
-    if(new.plot) if(!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY")))   
+    if(new.plot) if(!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) {  
       dev.new(width = min(14, 8 * (xlim[2] - xlim[1])/(ylim[2] - ylim[1])), height = 8) # Outside RStudio 
-    else dev.new()
+   } else dev.new() 
 
-      
     plot(0, 0, main = titre, xlab = lab.x, ylab = lab.y, xlim = xlim, ylim = ylim, col = "white", asp = 1, ...)
     abline(v = 0, lty = 2, ...)
     abline(h = 0, lty = 2, ...)
@@ -178,9 +182,9 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
                 labels = labe[selection], col = coll[selection], 
                 font = fonte[selection], cex=cex,...)
         points(coo[, 1], y = coo[, 2], pch = ipch, col = coll, cex=cex,...)
-      }  # Final de autolab ==TRUE
+      }  # End of autolab ==TRUE
       else {  
-        # NO es autolab
+        # It is not autolab
         if(!is.null(pch)) { 
           points(coo[, 1], y = coo[, 2], pch = ipch, col = coll, cex=cex,...)
           pos.text <- 3
@@ -190,11 +194,11 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
              font = fonte[labe != ""], pos=pos.text , cex=cex,...)
       }
     } else {
-      # Sin etiquetas
+      # Without labels
       if(is.null(pch)) stop("You must plot points and/or text")
       points(coo[, 1], y = coo[, 2], pch = ipch, col = coll, cex=cex,...)
     }
-   }  # Final plot documents
+   }  # End plot documents
 ###################################### Document selection selDoc
 
     
@@ -1471,15 +1475,6 @@ if(is.null(pch2)) pch2 <- rep(NA, num.groups)
     } ########################## Final selQuantiVar
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-           
 
   } # Final multiple case
   

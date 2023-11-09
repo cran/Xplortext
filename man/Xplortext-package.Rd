@@ -16,8 +16,8 @@ See \url{https://xplortext.unileon.es} for examples.
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.5.2\cr
-Date: \tab 2023-04-24\cr
+Version: \tab 1.5.3\cr
+Date: \tab 2023-11-09\cr
 License: GPL (>=2.0)
 }
 }

@@ -1,15 +1,12 @@
 #' @importFrom MASS ginv
 #' @export
-LexGalt <- function (object, context="ALL", conf.ellip=FALSE, 
+ LexGalt <- function (object, context="ALL", conf.ellip=FALSE, 
                      nb.ellip = 100, graph= TRUE, axes = c(1, 2), label.group=NULL) 
+
 {
 
-  
-  stop("Pendiente de revision")
   # ncp= number of dimensions kept to compute (by default NULL to indicate all dimensions)
-  ncp <- NULL
-  
-  # LexGalt CAN'T work with Aggregated Lexical Tables (ALT)
+  ncp <- NULL  # LexGalt CAN'T work with Aggregated Lexical Tables (ALT)
   # level.ventil, a proportion corresponding to the level under which the category is ventilated; by default, 0 and no ventilation is done
   # If level.ventil, seed is a random value by defect and results may differ when running the same script twice.
   # Use the same values for the set.seed() function.
@@ -17,15 +14,15 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
   # scale. Variables are are scaled to unit variance (standardized) (by default TRUE)
   scale <- TRUE
   level.ventil = 0; set.seed(1234)
-  
+
+ #  return(object$var.agg)  
   if(!is.null(object$var.agg)) stop("LexGalt needs non aggregate TextData objects")
   options(stringsAsFactors = FALSE)
   
   
-  
-  
+
 ##################################################
-### Fase 0. Funciones
+### PHASE 0. Functions
 #################################################  
     Xtab.disjonctif <- function(tab)
   {
@@ -65,9 +62,9 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
   
   
   #######################################################################
-  # FASE 1. - Checking if it is a list (multiple) or only one object (simple)
+  # PHASE 1. - Checking if it is a list (multiple) or only one object (simple)
+  #######################################################################
   num.group <- ifelse(is.vector(object), length(object),1)
-  
   if(num.group==1) {
     # Simple, only one TextData object
     # If it is not a TextData object: stop
@@ -80,11 +77,11 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
   }
   #######################################################################
   
-  
+
   
   
   #######################################################################
-  ## FASE 2. Contextual variables
+  ## PHASE 2. Contextual variables
   context.quanti <- context.quali <- NULL
   #############  Start selecting contextual variables	
   if(length(context)==1)	# Only one contextual variable
@@ -103,7 +100,7 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
       } # Final num.group
     }  # Final context=1	
   ##########################################################################3
-  
+
   if(num.group ==1) {  # If it is simple
     if(!is.null(colnames(object$context$quanti))) # Selection quanti variables 
       context.quanti <- colnames(object$context$quanti)[which(colnames(object$context$quanti) %in% context)]
@@ -120,25 +117,24 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
         context.quali <- colnames(object[[i]]$context$quali)[which(colnames(object[[i]]$context$quali) %in% context.quali)]
       else   context.quali <- NULL
     } # End For
-  } # Final  if(num.group ==1) 
-  ##### Final of contextual variables
+  } # End  if(num.group ==1) 
+  ##### End of contextual variables
   # nQN is the number of selected quanti contextual variables
   # nQL is the number of selected quali contextual variables
   nQN <- ifelse(length(context.quanti)==0, 0, length(context.quanti))
   nQL <- ifelse(length(context.quali)==0, 0, length(context.quali))
   ################################################################################
-  
-  
-  
-  
+
   
   
 
+  
+  
+  
   #######################################################################
-  ## FASE 3. Simple LexGalt 
+  ##  PHASE 3. Simple LexGalt 
   ####### If LexGalt is simple, not multiple
   if(num.group==1) {  # It is simple, not multiple
-    
     #### There are Quantitative variables
     if(nQN!=0) {
       # df.quanti is a dataframe with quantitative variables in columns
@@ -163,7 +159,7 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
       XQN.initial<- XQN
     }
     #################### Final quantitative variables
-  
+    
         
     ######### Categorical variables
     if(nQL!=0){
@@ -176,21 +172,21 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
     
     if(nQN+nQL==0) stop("There are not contextual variables")
     
-   
-     
+ 
+  
     
     ##############################################
-    # FASE 5.  Starting 
+    # PHASE 4.  Starting. LEXICAL MATRIX AND MARGINALS
     Y <- as.matrix(object$DocTerm) # (Documents x words) (Respondents x words)
     P <- as.matrix(Y/sum(Y))       # Proportion matrix 
     PI. <- apply(P, 1, sum)        # Margin vector % words for each document (respondent)
     P.J <- apply(P, 2, sum)        # Margin vector % words for each word
     # I respondents (docs), J words, K quantitative variables (nQN)
     ##############################################
-    
+
     
     ####################################
-    ### Fase 6 #########################
+    ### PHASE 5 #########################
     ########### Start funct1 ############					
     funct1 <- function(phi.stand,ncpf,XP,su) {					# Quanti or qualitative variables
       # phi.stand have the eigenvectors (docs x dimensiones)
@@ -216,12 +212,12 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
       coord.ind <- sweep(crossprod(t(P), diag.L$svd$U), 1, PI., "/")
       # Cos2 of documents
       cos2.ind <- sweep(coord.ind^2, 1, apply(coord.ind^2, 1, sum),"/")
-      return(coord.ind)
       # Building an object res.doc with coordinates and cos2 for the documents
       res.doc <- list(coord = coord.ind, cos2 = cos2.ind)
       # Building an object res.word with coordinates and cos2 for the docs
-      res.word <- list(coord = diag.L$ind$coord, cos2 = diag.L$ind$cos2, 
-                       contrib = diag.L$ind$contrib)
+      res.word <- list(coord = diag.L$ind$coord, cos2 = diag.L$ind$cos2,  
+                       contrib = diag.L$ind$contrib,
+                       C=C , Cmenos = MASS::ginv(C))
       res <- list(eig = diag.L$eig, doc = res.doc, word = res.word, diag.L=diag.L, L=L, W=W)
     }
     ########### Final of function funct1 ############					
@@ -229,9 +225,11 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
     
     
     
+    
+    
     ############################################################################
-    # =======  FASE 7. Call when LexGalt has quantitative variables			
-    if(nQN!=0) {			
+    # =======  PHASE 6. Call when LexGalt has quantitative variables			
+    if(nQN!=0) {		
       diag.XQN <- PCA(XQN, scale.unit = scale, ncp = ncpQN, row.w = PI., graph = FALSE)
       # phi.stand.QN has the eigenvectors (Docs x dimensions)
       phi.stand.QN <- diag.XQN$svd$U
@@ -241,20 +239,21 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
       # If scale=TRUE divided for standard deviation
       if (scale == "TRUE") XQN <- sweep(XQN, 2, apply(XQN, 2, sd.p, PI.), "/")	
       resQN <- funct1(phi.stand.QN, ncpQN, XQN, scale)
-      return(resQN)
       resQN$quanti.var <- resQN$diag.L$quanti.sup	
       #  }
       class(resQN) <- c("LexGalt", "list")
     }			
     # =======  Final Call when LexGalt with quantitative variables	
     
-    
+
     # =======  Call when LexGalt with qualitative variables			
-    if(nQL!=0) {			
+    if(nQL!=0) {			  # Number of qualitative variables
       diag.XQL <- MCA(XQL, row.w = PI., ncp = ncpQL, level.ventil = level.ventil, graph = FALSE)
-      if (ncol(XQL) > 1) 
+     # Building disjonctif matrix
+      # Revisar si siempre se centra ******   
+      if (ncol(XQL) > 1) # Centering qualitative variables
         XQL <- sweep(Xtab.disjonctif(XQL), 2, apply(Xtab.disjonctif(XQL), 2, mean.p, PI.), "-")
-      else XQL <- Xtab.disjonctif(XQL)
+       else XQL <- Xtab.disjonctif(XQL)
       phi.stand.QL <- diag.XQL$svd$U
       # El resultado de funct1 var.contexto cualitativo se almacena en resQL
       resQL <- funct1(phi.stand.QL, ncpQL, XQL, FALSE)			
@@ -263,7 +262,7 @@ LexGalt <- function (object, context="ALL", conf.ellip=FALSE,
     }
     # ======= FInal  Call when LexGalt with qualitative variables			
     
-    
+
 
     #______________________________ Ellipses ---------------------
     if(conf.ellip==TRUE)
