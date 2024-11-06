@@ -7,13 +7,17 @@ plot.LexCA <- function(x, selDoc="ALL", selWord="ALL", selSeg=NULL,
   col.doc.sup="darkblue", col.word.sup="darkred", col.quanti.sup = "blue",
   col.quali.sup="darkgreen", col.seg="cyan4",col="grey", cex=1, 
   xlim=NULL, ylim=NULL, shadowtext=FALSE, habillage="none", unselect=1,
-  label="all", autoLab=c("auto", "yes", "no"), new.plot=TRUE, 
+  label="ALL", autoLab=c("auto", "yes", "no"), new.plot=TRUE, 
   graph.type = c("classic", "ggplot"),...) 
 {
+  
  if (!inherits(x, "LexCA"))  stop("x object should be LexCA class")
   options(stringsAsFactors = FALSE)
-  
-if(eigen==TRUE) {selDoc=selWord=NULL}
+  if(is.null(label)) label <- "none"
+  if(label=="ALL") label<-"all"
+  if(length(graph.type)>1) graph.type <- "classic"
+
+if(eigen==TRUE) {selDoc<-selWord<-NULL}
 if(!is.null(quali.sup)) {
  if(!is.null(x$var.agg)) { 
  if(length(quali.sup)==1) if(quali.sup=="ALL") 
@@ -43,7 +47,6 @@ if(!is.null(quali.sup)) {
     quali.sup <- rownames(x$quali.sup$coord)[posic]}
 } # Final not aggregate
 }
-
 
 selection <- function(sel1, xobj, bType, axx, axy)
 {
@@ -87,7 +90,7 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
  # Selection by contrib
  if(bType=="Seg") stop("Segments can not be selected by contribution")
  if(bType=="Quali") stop("Contextual categorical variables can not be selected by contribution")
- if(bType=="Quanti") stop("Contextual quantitaive variables can not be selected by contribution")
+ if(bType=="Quanti") stop("Contextual quantitative variables can not be selected by contribution")
  if(bType=="Dsup") stop("Supplementary documents can not be selected by contribution")
  if(bType=="Wsup") stop("Supplementary words can not be selected by contribution")
  sel1 <- as.numeric(substr(sel1, 9, nc))
@@ -136,13 +139,12 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" | xx=="char")
 
 
 
-if(eigen) {
-if(new.plot==TRUE){if(dev.interactive()) dev.new()}
- if(is.null(title)) titleE <- "Eigenvalues" else titleE <- title
 
+if(eigen) {
+
+ if(is.null(title)) titleE <- "Eigenvalues" else titleE <- title
   args <- list(...)
   exist <- "names.arg" %in% names(args)
- 
 
  if(hasArg(names.arg)) {
      valarg <- args$names.arg
@@ -153,9 +155,45 @@ if(new.plot==TRUE){if(dev.interactive()) dev.new()}
           else names.arg <- args$names.arg
  } else  names.arg <- paste("dim",1:nrow(x$eig))
 
- barplot(x$eig[, 1], main = titleE, col=col,
-     names.arg = names.arg)
+  
 
+ if(new.plot & graph.type!="interact") dev.new()
+ if(graph.type == "classic") { 
+   barplot(x$eig[, 1], main = titleE, col=col, names.arg = names.arg) 
+      }  else  {   # No es classic
+      x<- names.arg ; y <- x$eig[,1]
+      df <- data.frame(x,y)
+     # df <- data.frame(x=names.arg, y=x$eig[, 1])
+      df$x <- factor(df$x,levels=unique(df$x))
+      bplot<- ggplot(data=df, aes(x=x, y=y)) + ggtitle(titleE)+ 
+        labs(x = NULL)+ labs(y = NULL)+
+        geom_bar(stat="identity", width=0.5, fill=col)+  
+        theme_minimal()+
+        theme(plot.title = element_text(hjust = 0.5))
+      if(graph.type=="ggplot") {print(bplot); return(bplot)}
+
+   #   if(graph.type == "interact") {
+       my.text <-  paste(rownames(x$eig), "<br>", "Eigenvalue",round(x$eig[,1],4),
+                    "<br>", "Pct.Variance", round(x$eig[,2],4),
+                    "<br>", "AcumPct.Variance", round(x$eig[,3],4))
+       bplot <- plotly::plotly_build(bplot)
+       bplot$x$data[[1]]$text <- my.text
+       
+       fplot <- function(x) {
+        #  default_opts <- callr::r(function(){options()}); options(default_opts)
+         oo.viewer <- getOption("viewer")
+         on.exit({ # print("Restoring viewer...")
+           Sys.sleep(0)
+           options(viewer = oo.viewer)
+         }, add = TRUE)
+         options(viewer = NULL)
+         print(x)
+       }
+       if(new.plot) fplot(bplot) else print(bplot)
+return(bplot)
+  }
+
+  
  stemp <- c(selDoc, selWord,selSeg,selDocSup,selWordSup,quanti.sup,quali.sup)
  stemp <- unique(stemp)
  if(!is.null(stemp)) {
@@ -171,9 +209,13 @@ if(!is.null(quanti.sup))
   if (is.null(x$quanti.sup)) 
     stop("No quantitative supplementary variables in LexCA")
   qsn <- rownames(x$quanti.sup$coord)
+  
   if(is.numeric(quanti.sup))   quanti.sup <-  na.omit(qsn[quanti.sup])
   sel1 <- selection(quanti.sup,x$quanti.sup,"Quanti",axes[1],axes[2])
-  sel1  <- which(sel1 %in% qsn)
+ #  sel1  <- which(sel1 %in% qsn)  Changed version  1.5.4
+  sel1  <-  which(qsn %in% sel1)
+
+  
 if(length(sel1)==0)
     stop("No quantitative supplementary variables in plot.LexCA")
  
@@ -183,18 +225,24 @@ dcol <- unlist(dimnames(objqs[[1]])[2])
 coord.qs <- matrix(x$quanti.sup[[1]],length(drow),length(dcol))
 rownames(coord.qs) <- drow
 colnames(coord.qs) <- dcol
+
+
 coord.qs <- coord.qs[sel1,,drop=FALSE]
 x$quanti.sup$coord <- coord.qs
  if(is.null(title)) titleS <- "Supplementary quantitative variables on the CA map"
  else titleS <- title
- plot.CA(x, axes=axes, choix = c("quanti.sup"), col.quanti.sup =col.quanti.sup, title= titleS, 
+
+
+ res.quanti <-  FactoMineR::plot.CA(x, axes=axes, choix = c("quanti.sup"), col.quanti.sup =col.quanti.sup, title= titleS, 
          cex=cex,graph.type =graph.type)
  stemp <- c(selDoc, selWord,selSeg,selDocSup,selWordSup,quali.sup)
+
  stemp <- unique(stemp)
  if(!is.null(stemp)) {
    cat("When quanti.sup is not NULL other elements cannot be plotted at the same time")
  return("")
-                     }
+ }
+ return(res.quanti)
 } else {
 
 if(!is.null(selDoc)) { 
@@ -308,7 +356,7 @@ invisib <- unique(invisib)
 if(length(invisib)==6) stop("No selected elements to plot")
 
 
-
+if(eigen!=TRUE)
 if(new.plot==TRUE){if(dev.interactive()) dev.new()}
  plot.CA(x, axes=axes, invisible=invisib,
     choix=c("CA"), title= title, cex=cex, selectCol=selWord, selectRow=selDoc, 

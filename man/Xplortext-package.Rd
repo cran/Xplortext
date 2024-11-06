@@ -16,13 +16,12 @@ See \url{https://xplortext.unileon.es} for examples.
 \tabular{ll}{
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
-Version: \tab 1.5.3\cr
-Date: \tab 2023-11-09\cr
+Version: \tab 1.5.4\cr
+Date: \tab 2024-11-06\cr
 License: GPL (>=2.0)
 }
 }
-\author{Mónica Bécue-Bertaut, Ramón Alvarez-Esteban, Josep-Anton Sánchez-
-    Espigares, Belchin Kostov\cr
+\author{Ramón Alvarez-Esteban\cr
 Maintainer: \email{ramon.alvarez@unileon.es}
 }
 

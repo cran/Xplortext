@@ -1,3 +1,4 @@
+#' @rawNamespace import(ggdendro, except = c(theme_dendro))
 #' @importFrom grDevices palette
 #' @importFrom graphics layout legend par plot text
 #' @export

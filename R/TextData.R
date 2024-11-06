@@ -10,10 +10,14 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
                       seg.nfreq=10, seg.nfreq2=10, seg.nfreq3=10,
                       graph=FALSE)
 {
+  # Version 1.5.4. Allow use tibble as base
+  str.type <- class(base)
+  if("data.frame" %in% str.type) class(base) <- "data.frame" else
+    base<- as.data.frame(base)
   
  if(sep.weak=="default")
-   sep.weak = ("[%`:_*$&#/^|<=>;'+@.,~?(){}|[[:space:]]|\u2014|\u002D|\u00A1|\u0021|\u00BF|\u00AB|\u00BB|\u2026|\u0022|\u005D")
-  dfold <- deparse(substitute(base))
+   sep.weak = ("[%`:*$&#/^|<=>;'+@.,~?(){}|[[:space:]]|\u2014|\u002D|\u00A1|\u0021|\u00BF|\u00AB|\u00BB|\u2026|\u0022|\u005D|\u0097")
+  dfold <- base # deparse(substitute(base))
 
   filt=sep.weak
 
@@ -925,6 +929,17 @@ TextData <- function (base, var.text=NULL, var.agg=NULL, context.quali=NULL, con
   class(y) <- c("TextData", "list")
   if(blongErr==TRUE) warning("Only repeated segments < 20 words have been computed")	
 
+ # V Cramer DTM
+  Chi.sq <- suppressWarnings(chisq.test(as.matrix(y$DocTerm), correct = FALSE)$statistic)
+  Phi <- Chi.sq/sum(y$DocTerm)
+  dimDTM <- dim(y$DocTerm)
+  y$VCr <- as.numeric(sqrt(Phi/min(dimDTM[1] - 1, dimDTM[2] - 1)))
+  
+  # Inertia of DTM
+  I.A <- y$DocTerm/sum(y$DocTerm)
+  Inertia <-  sum((as.matrix(I.A) - as.matrix(rowSums(as.matrix(I.A))) %*% 
+                   t(as.matrix(colSums(as.matrix(I.A)))))^2)
+  y$Inertia <- Inertia
   if(graph==TRUE) plotTextData() 
   return(y)
 }

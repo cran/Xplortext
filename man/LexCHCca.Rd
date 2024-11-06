@@ -6,7 +6,7 @@
 \description{Chronological constrained agglomerative hierarchical clustering on a corpus of documents}
 
 \usage{
-LexCHCca (object, nb.clust=0, min=2, max=NULL, nb.par=5, 
+LexCHCca (object, ncp=5, nb.clust=0, min=2, max=NULL, nb.par=5, 
  graph=TRUE, proba=0.05, cut.test=FALSE, alpha.test =0.05, description=FALSE,
  nb.desc=5, size.desc=80)
 }
@@ -14,6 +14,7 @@ LexCHCca (object, nb.clust=0, min=2, max=NULL, nb.par=5,
 
 \arguments{
   \item{object}{object of LexCA class}
+  \item{ncp}{number of dimensions used from LexCA object (by default 5)}
   \item{nb.clust}{number of clusters only if no test (cut.test=FALSE). If 0 (or "click"), the tree is cut at the level the user clicks on. If -1 (or "auto"), the tree is automatically cut at the suggested level. If a (positive) integer, the tree is cut with nb.clust clusters (by default 0)}
   \item{min}{minimum number of clusters. Available only if cut.test=FALSE. (by default 3)}
   \item{max}{maximum number of clusters. Available only if cut.test=FALSE. (by default NULL; then max is computed as the minimum between 10 and the number of documents divided by 2)}

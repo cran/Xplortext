@@ -7,38 +7,42 @@
 
 
 \usage{
-\method{plot}{LexHCca}(x, type="map", plot=c("points", "labels", "centers"), selClust="ALL",
-     selInd="ALL",axes=c(1, 2), theme=theme_bw(), palette=NULL, title=NULL, 
-     axis.title=NULL, axis.text=NULL, points=NULL, labels=NULL,centers=NULL, 
-     traject=NULL, hull=NULL, xlim=NULL, ylim=NULL, hvline=TRUE,...) 
+\method{plot}{LexHCca}(x, type=c("map", "tree", "phylo", "clado", "radial", "fan"), 
+     plot=c("points", "labels", "centers"), selClust="ALL",
+     selInd="ALL",axes=c(1, 2), theme=theme_bw(), palette=NULL, title=NULL,
+     axis.title=NULL, axis.text=NULL, xlim=NULL, ylim=NULL, hvline=NULL, 
+     points=NULL, labels=NULL,centers=NULL, traject=NULL, hull=NULL, 
+     rotate=FALSE, branches=NULL,...) 
 }
 
 \arguments{
   \item{x}{object of LexHCca class}
-  \item{type}{type of graph. "map" plots the CA map where the individuals are colored in accordance with the cluster of belonging (by default); "tree" plots the dendrogram if hierarchical method without consolidation is performed from LexHCca. See details}
-  \item{plot}{elements to plot for map graph: points, labels, centers, hull or traject; by default "ALL" and points, labels and centers are plotted. Also combinations are allowed, i.e: plot=c(points,centers)}
-  \item{selClust}{vector indexes with the numbers of the clusters to plot (by default "ALL")}
-  \item{selInd}{vector with the active documents/words to plot (indexes, names or rules; see details; by default "ALL")}
+  \item{type}{type of graph. \code{"map"} plots the CA map where the individuals are colored in accordance with the cluster of belonging (by default); "tree" plots the dendrogram if hierarchical method without consolidation is performed from LexHCca; other options are "phylo", "clado", "radial", "fan". See details}
+  \item{plot}{elements to plot for map graph: points, labels, centers, hull, hvline or traject; by default "ALL" and points, labels and centers are plotted. Also combinations are allowed, i.e: plot=c(points,centers); For no maps plot elements are: branches, labels, hull and hvline. See details}
+  \item{selClust}{vector indexes with the numbers of the clusters to plot (by default "ALL")} 
+  \item{selInd}{vector with the active documents/words to plot (indexes, names or rules; see details; by default "ALL"). You can also use the "transparent"" option defining the color for clusters and/or cases}
   \item{axes}{length-2 vector indicating the axes of the CA map to plot; by default (1,2)}
-  \item{theme}{used to modify the theme settings by ggplot2 package (by default theme_bw())}
+  \item{theme}{used to modify the theme settings by ggplot2 package of the CA map (by default theme_bw())}
   \item{palette}{color palette used to draw the clusters. As many numbers as clusters. See details}
-  \item{title}{title of the graph. If NULL, a title is automatically defined (by default NULL).
-  Other parameters can be chosem using a list: text, color, size, family, face, just; See details}
-  \item{axis.title}{axis titles parameters can be used: text.x, text.y, color, size, family, face,
-  just;  If text.x and text.y are NULL automatic texts are plotted (by default NULL). See details}
-  \item{axis.text}{format of numbers can be chosen: color, size, family, face; See details}
-  \item{hvline}{horizontal (intercept.y) and vertical line (intercept.x) added by default at (0,0) position in map. Parameters: intercept.y, intercept.x, linetype (by default "dashed"), color, size, alpha.t}
-   \item{points}{format of points. Parameters: size (if size=0 the points are no plotted), shape (by default 21),
-   fill (if a color, the same for all the points, if color is NULL palette colors used for the clusters are applied; if more than one color use palette argument; only for shapes from 21 to 25 to fill the point), stroke (controls the edge of the point (by default 0 no edge), border (color of the border, same specifications than fill), alpha.t (by default 1). See geom_point() in ggplot2 library. See details}
-   \item{labels}{format of labels. Parameters: size (if size=0 the labels are not plotted; by default 4), family, face, hjust, vjust, color.text, alpha.t.text, numbers(if TRUE the label will be replaced by the number of the cluster to which it belongs, by default FALSE), rect (if TRUE a rectangle will be drawn around the label, by default FALSE), color.fill (color into the rectangle, by default FALSE is transparent), alpha.t.fill, force (to do repulsive textual annotations and make it easier to read), max.overlaps (maximum number of overlapped points, by default 10, can be Inf)
-   set.seed (by default a new seed for each plot draws different positions, for the same seed i.e: set.seed=1234)}
- \item{traject}{draws trajectory arrows in accordance with the order of clusters or in the selInd order. Parameters: color (by default blue), linetype (by default 1 solid), space (by default 0 and no space is added from point to arrow, be careful with this value), size (width,by default 1), arrow.length (of the arrow, by default .3), arrow.type (by default "closed"), arrow.angle (by default 30), alpha.t. See geom_segment for details}
-   \item{centers}{draws the barycenter of the clusters. Parameters: size (by default 5), family, face, color (of the border, only one), fill, alpha.t, labels (string vector with the names of the clusters)}
- \item{hull}{draws a hull containing all the elements of each cluster. Parameters: type (ellipse, by default, hull), alpha.t, color, linetype (by default "dotted"))}
- \item{xlim}{pair of values xlim=c(xmin,xmax). If a NA value, this limit is automatically calculated}
- \item{ylim}{pair of values ylim=c(ymin,ymax). If a NA value, this limit is automatically calculated}
+  \item{title}{title of the map graph. If NULL or FALSE, a title is automatically defined (by default NULL).
+  Other parameters can be chosem using for map in a list: text, color, size, family, face, just; For "tree" only "text" argument can be used. See details}
+  \item{axis.title}{axis titles parameters can be used por map plots: text.x, text.y, color, size, family, face, just;  If text.x and text.y are NULL automatic texts are plotted (by default NULL). ; For tree only FALSE are allowed and height are removed. See details}
+  \item{axis.text}{For maps, format of numbers can be chosen: color, size, family, face}
+ \item{xlim}{For map, pair of values xlim=c(xmin,xmax). If a NA value, this limit is automatically calculated}
+ \item{ylim}{For map, pair of values ylim=c(ymin,ymax). If a NA value, this limit is automatically calculated}
+  \item{hvline}{For map, horizontal (intercept.y) and vertical line (intercept.x) added by default at (0,0) position in map. Parameters: intercept.y, intercept.x, linetype (by default "dashed"), color, linesize, alpha.t. 
+For tree draws a line at level of the height chosen by the clusters selected. Parameters pos (position), linesize, linetype and color}
+\item{points}{For maps: format of points. Parameters: size (if size=0 the points are no plotted), shape (by default 21), fill (if a color, the same for all the points, if color is NULL palette colors used for the clusters are applied; if more than one color use palette argument; only for shapes from 21 to 25 to fill the point), stroke (controls the edge of the point (by default 0 no edge), border (color of the border, same specifications than fill), alpha.t (by default 1). See geom_point() in ggplot2 library. See details}
+\item{labels}{format of labels. For no maps: cex (value or vector with the length of cases, if 0 transparent) and color. For map plots, parameters: cex, size (if size=0 the labels are not plotted; by default 4), family, face, hjust, vjust, color.text, alpha.t.text, numbers(if TRUE the label will be replaced by the number of the cluster to which it belongs, by default FALSE), color.fill (color into the rectangle, by default FALSE is transparent), alpha.t.fill, groupLabels and labels will be added to each cluster in tree plots. For map: force (to do repulsive textual annotations and make it easier to read), max.overlaps (maximum number of overlapped points, by default 10, can be Inf),
+ set.seed (by default a new seed for each plot draws different positions, for the same seed i.e: set.seed=1234)}
+ \item{traject}{for map: draws trajectory arrows in accordance with the order of clusters or in the selInd order. Parameters: color (by default blue), linetype (by default 1 solid), space (by default 0 and no space is added from point to arrow, be careful with this value), size (width,by default 1), arrow.length (of the arrow, by default .3), arrow.type (by default "closed"), arrow.angle (by default 30), alpha.t. See geom_segment for details}
+\item{centers}{draws the barycenter of the clusters. Parameters: size (by default 5), family, face, color (of the border, only one), fill, alpha.t, labels (string vector with the names of the clusters)}
+ \item{hull}{draws a hull containing all the elements of each cluster. Parameters: type (ellipse, by default, hull), alpha.t, color, linetype (by default "dotted")). For tree, no null value, rect for example, draws a rectangle. See details.}
+\item{rotate}{rotation degrees, TRUE or FALSE. Not allowed for map. By default 0 or FALSE.}
+\item{branches}{color, linesize and linetype (integer (0-6), a name (0 = blank, 1 = solid, 2 = dashed, 3 = dotted, 4 = dotdash, 5 = longdash, 6 = twodash)}
  \item{...}{other arguments from other methods}
 }
+
 
 \details{
 
@@ -82,13 +86,12 @@ selInd="cos2 .85": the documents with a cos2 over 0.85, as summed on the 2 axes,
    are plotted.
 }
 
-Parameters can be used in combination, e.g.: title=c("text"="CA", "color"="red").
+Parameters can be used in combination, e.g.: title=list("text"="CA", "color"="red").
 
 See grDevices package (The R Graphics Devices and Support for Colours and Fonts).
 
 palette, the color of the palette used to draw the points. 
-   By default colors are chosen. If you want to define the colors for three clusters : palette=c("black","red","blue"); 
-   or you can use: palette=palette(rainbow(30)); or in black and white for example: palette=palette(gray(seq(0,.9,len=25))).
+   By default colors are chosen. If you want to define the colors for three clusters : palette=c("black","red","blue"); or you can use: palette= palette(rainbow(30)); or in black and white for example: palette=palette(gray(seq(0,.9,len=25))).
 
 Family Fonts (family). Also see the extrafont package for a much better support of fonts: library(extrafont); font_import(). By default "family"='serif'.
 
@@ -96,7 +99,9 @@ Face fonts (face). Can be 'plain', 'bold', 'italic', 'bold.italic', 'symbol'. By
 
 alpha.t is the level of transparency for some objects. 0 value means full transparency and 1 opacity. By default 1.
 
-Values for horizontal justification hjust, vertical vjust and both hvjust can be (c,centered or 0.5 if centered; l,left or 0 if left; r, right or 1 if right)
+Values for horizontal justification hjust, vertical vjust and both hvjust can be (c,centered or 0.5 if centered; l,left or 0 if left; r, right or 1 if right).
+
+groupLabels, only for tree, can be NULL or FALSE and no labels are added to each cluster, TRUE for all the clusters numbers are used, "as.roman", "letters" or "LETTERS" for capital letters. For several lines in the same cluster or no labels:labels=list("groupLabels"=c(paste0("FirstLine,"\\n","SecondLine", "b", "").
 
 \preformatted{
 By default in:
@@ -116,14 +121,21 @@ By default in:
 * labels: size=4, family=serif, face=plain, hjust=1, vjust=1, color.text=same of points, 
       alpha.t.text=1, numbers=FALSE, rect=FALSE, color.fill=transparent, alpha.t.fill=1,
       force=1, max.overlaps=10.
-
+      
 * traject: color=blue, linetype=solid, space=1, arrow.length=.3, arrow.type= closed, 
       arrow.angle=30, alpha.t=1. 
 
 * centers: size=5, family=serif, face=italic, color, fill=automatic cluster color,
       alpha.t=1, labels=automatic strig vector with the names of the clusters.
 
-* hull: type=ellipse, alpha.t=0.1, color=black, linetype=dotted }
+* hull: type=ellipse, alpha.t=0.1, color=black, linetype=dotted .
+      For rectangles in tree, you can use some dendextend::rect.dendrogram arguments as
+      which for select the cluster, border for the color, prop_k_height (value between 0 
+      to 1, indicating what proportion of the height our rect will be between the height 
+      needed for k and k+1 clustering), lower_rect (value of how low should the lower 
+      part of the rect be), upper_rect (value to add (default is 0) to how high should
+      the upper part of the rect be).
+      }
 }
 
 
@@ -140,9 +152,9 @@ data(open.question)
 res.TD<-TextData(open.question,var.text=c(9,10), var.agg="Age_Group", Fmin=10, Dmin=10,
         stop.word.tm=TRUE)
 res.LexCA<-LexCA(res.TD, graph=FALSE)
-res.chcca<-LexHCca(res.LexCA, nb.clust=4, min=3, graph=FALSE)
-plot(res.chcca, type="tree")
-plot(res.chcca, type="map")
+res.hcca<-LexHCca(res.LexCA, nb.clust=4, min=3, graph=FALSE)
+plot(res.hcca, type="tree")
+plot(res.hcca, type="map")
 }
 
 \keyword{plot}

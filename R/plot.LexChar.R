@@ -1,5 +1,7 @@
+#' @rawNamespace import(ggpubr, except = c(rotate))
 #' @import gridExtra
 #' @import stringr 
+#' @import patchwork
 #' @importFrom utils modifyList
 #' @export
 plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.negat="red",
@@ -13,7 +15,8 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
   
   dots <- list(...)
 ## Pendiente hjust
- # if("hjust" %in% names(dots)) hjust<- dots$hjust else hjust <- 0  ### <------------------------ Pendiente
+ # if("hjust" %in% names(dots)) hjust<- dots$hjust else hjust <- 0  
+  ### <------------------------ Pendiente
  if("ylab" %in% names(dots)) ylab <- dots$ylab else ylab <- "vtest"
   # text.size
 
@@ -37,22 +40,37 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
   
   marrangeGrob2<- function(grobs, ncol, nrow, ..., top ) 
   {
+  # grobs <- lapply(grobs, ggplotGrob)
+  # gridExtra::grid.arrange(grobs = grobs)
+    #######################################
+    
     n <- length(grobs)
     nlay <- nrow * ncol
     pages <- n%/%nlay + as.logical(n%%nlay)
-    groups <- split(seq_along(grobs), gl(pages, nlay, n))
-    pl <- vector(mode = "list", length = pages)
     
+    groups <- split(seq_along(grobs), gl(pages, nlay, n))
 
-    for (page in seq_along(groups)) {
-      g <- page
-      params <- modifyList(list(...), list(top = eval(top), 
-                                           nrow = nrow, ncol = ncol))
-      pl[[g]] <- do.call(gridExtra::arrangeGrob, c(grobs[groups[[g]]],params))
+    figure <- ggpubr::ggarrange(plotlist=grobs, 
+                       # labels = c("A", "B", "C"),
+                       ncol = ncol, nrow = nrow, #,
+                       # common.legend = TRUE, legend = "bottom",
+                       legend = "top",
+                       common.legend = TRUE
+                       )
+
+    if(pages==1)  figure <- figure +
+      patchwork::plot_annotation(title=eval(top),theme = theme(plot.title = element_text(hjust = 0.5)))
+    else {
+      for(i in 1:pages) {
+        figure[[i]] <- figure[[i]] +
+          patchwork::plot_annotation(title=eval(top),theme = theme(plot.title = element_text(hjust = 0.5)))
+      }
     }
-    class(pl) <- c("arrangelist", class(pl))
-    pl
+    
+           return(figure)
   }
+  
+
   
   
   # -------------------------------------------------------------------------------------
@@ -73,27 +91,30 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
     # if(is.null(svc)) svc <- ldoc
     n.svc <- length(svc)
     
+
     for(i.svc in 1:n.svc)
       #   for (idoc in 1:ntdoc)
     {
       name.svc <- svc[i.svc]
-      
+
 
       if(!is.null(x[[name.svc]])) {
-        df <- data.frame(x[name.svc])
+        df <- as.data.frame(x[name.svc])
         df[,1] <- rownames(df)
         df[,2] <- df[,6] 
         df[,3:6] <- NULL
+
         rownames(df) <- NULL
         colnames(df) <- c("words", "vtest")
         df$words <- reorder(df$words,df$vtest)
-       
       
-        if(length(sel.words)==1) if(sel.words=="ALL") sel.words <- df$words
-        if(is.null(sel.words)) sel.words <- df$words
-        df <- df[df$words %in% sel.words,,drop=FALSE]
+        sel.words.S <- NULL
+        if(length(sel.words)==1) if(sel.words=="ALL") sel.words.S <- df$words
+        if(is.null(sel.words)) sel.words.S <- df$words
+        df <- df[df$words %in% sel.words.S,,drop=FALSE]
         
           if(!char.negat)      df <- df[-df$vtest<0,,drop=FALSE]
+        
         numposit<-nrow(df[df$vtest>0,])
         numnegat <- nrow(df[df$vtest<0,])
         
@@ -107,28 +128,36 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
           numnegat <- max.negat
         }
         
-
-
-          
-        colorXX <- c(rep(col.char.posit,numposit),rep(col.char.negat,nrow(df)- numposit)) 
+       colorXX <- c(rep(col.char.posit,numposit),rep(col.char.negat,nrow(df)- numposit)) 
         
-      
-        # icont <- icont+1
+        icont <- icont+1
         
-    
+
         if(!is.null(txt.var.cat))  subtitle <- txt.var.cat[i.svc] else
         subtitle <- names(x[name.svc])
         
+  
+       
         pword[[i.svc]] <- ggplot(df) + geom_bar(aes(x=words,y=vtest),stat = "identity", color = col.lines,
                                                    fill = colorXX)+ coord_flip() +
           labs(title = subtitle)+ ylab(ylab) + xlab("") + 
           # ggtitle(title) + 
-          theme(axis.text = element_text(size = text.size))+ theme
+          theme(axis.text = element_text(size = text.size))+theme
+      }  else {  # NO words to select
+        
+        if(!is.null(txt.var.cat))  subtitle <- txt.var.cat[i.svc] else
+          subtitle <- names(x[name.svc])
+        
+        pword[[i.svc]] <- ggplot() + geom_bar(aes(x="",y=0),stat = "identity")+
+                                              coord_flip()+
+          labs(title = subtitle)+ ylab(ylab) + xlab("") + theme
+          # ggtitle(title) + 
+          theme(axis.text = element_text(size = text.size))
       }
     }
     return(pword)
   }
-  
+
   
   if(type=="CharWord")  {
     if(is.null(top)) top <- paste0("Characteristic words. Proba= ", x$Proba)
@@ -141,9 +170,7 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
     pword <- fCharWord(x$quali$CharWord,  top)
   } # End CharWord
   
-  
-  
-  
+
   fCharWord.Quanti <- function(x, top, p.Proba)  {
     tac <- NULL
     pword <-list()
@@ -207,19 +234,18 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
         subtitle <- svc[i.svc]
       df$word <- factor(df$Word,                                    # Factor levels in decreasing order
                        levels = df$Word[order(df$vtest, decreasing = FALSE)])
-
       pword[[i.svc]] <- ggplot(df) + geom_bar(aes(x=word,y=vtest),stat = "identity", color = col.lines,
                                               fill = colorXX)+ coord_flip() + ylab(ylab) + xlab("") +
         labs(title = subtitle)+ 
         # ggtitle(title) + 
         theme(axis.text = element_text(size = text.size))+ theme 
     } # End for
-    
     return(pword)
 
   } # End fCharWord.Quanti
   
   
+
   
   
   if(type=="quanti")  {
@@ -231,9 +257,6 @@ plot.LexChar <- function (x, char.negat=TRUE, col.char.posit="blue", col.char.ne
   } # End CharWord
   
   
-  
-
 if(length(pword)==1) numr <- numc <- 1
-
- suppressWarnings(marrangeGrob2(grobs=pword, nrow = numr, ncol = numc, top=top))
+  suppressWarnings(marrangeGrob2(grobs = pword, nrow = numr, ncol = numc, top=top))
 }

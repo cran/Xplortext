@@ -12,8 +12,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   # To compute vtest from pvalue when pvalue=0.000
   dots <- list(...)
   if("eps" %in% names(dots)) eps <- dots$eps else eps <- 0.0001
-  
-  
+
   # Version 1.4.1 used context.sup, version 1.4.2. use context argument
   varnames<- lapply(substitute(list(...))[-1], deparse)
   if(!is.null(varnames$context.sup)) {
@@ -21,6 +20,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
     warning("Xplortext Versions > 1.4.1 use context, no context.sup argument") 
   }
   ###################################################################
+
   if(marg.doc!="before"& marg.doc!="before.RW" & marg.doc!="after") stop("Error in marg.doc argument")
   
   # Checking object type, proba limits and maxCharDoc values
@@ -31,7 +31,6 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   
   if(is.null(maxCharDoc) |  maxCharDoc <0) maxCharDoc <- 0 
 
-  
   
 
   ###################################################################
@@ -49,7 +48,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
     nom <- tri <- structure(vector(mode = "list", length = nrow(data)), names = rownames(data))		
     if(is.data.frame(marge.li)) marge.li <- as.vector(marge.li[,1]) else marge.li <- as.vector(marge.li)
     if(is.data.frame(marge.col)) marge.col <- as.vector(marge.col[,1]) else marge.col <- as.vector(marge.col)
-    
+  
 
     SumTot<-sum(marge.li)				
     nr <- nrow(data)  				
@@ -100,6 +99,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
     return(res)				
   }		  # End   descfreq_New
  
+
    ##############  Function to compute Vocab$quali$stats  
   chi.quali<- function(X, QL)  {
     list.Agg <- lapply(seq_along(QL),FUN=function(i) t(t(as.matrix(X))%*% as.matrix(QL[[i]])))
@@ -141,8 +141,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   ##############  Function to compute Vocab$quanti$stats    
   mean.p <- function(V,poids) res<-sum(V*poids,na.rm=TRUE)/sum(poids[!is.na(V)])
   var.p <- function(V,poids) res<-sum(V^2*poids,na.rm=TRUE)/sum(poids[!is.na(V)])
-  
-  
+
   vocabQuanti <- function(vdt,vX, vrow.INIT ) {
     vrow.INIT <- vrow.INIT[,1]
     vX <- as.data.frame(vX)  # Quantitative values of variables
@@ -151,11 +150,11 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
       if(any(is.na(vX[,i]))) warning("\n", names(vX)[i], " variable has missing values. They will be replaced by the mean\n") 
       vX[is.na(vX[,i]), i] <- mean(vX[,i], na.rm = TRUE)
     }
-    
+ 
     # Weight documents. Different from marg.doc
     Wi <- vrow.INIT/sum(vrow.INIT)
     col.INIT <- colSums(vdt)
-
+  
     y <- sum(col.INIT)
     #  Weighted average of quantitative variables  (1 x 2 variables)
     
@@ -169,7 +168,6 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
 
     ntot <- sum(vrow.INIT)
     MeanWord <- t(vX) %*% Wij.cj 
-
 
     # Variance of words
     coef <- as.matrix((y/col.INIT-1)/(y-1))
@@ -211,7 +209,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
       for (iw in 1:ncol(vX)) relcq.SS.perm[[iw]][i,] <- pct.expl.perm[iw] # /  SC.X.perm[iw]
     }
   
-    
+  
     #  names(relcq.perm) <- colnames(vdt)
     a <- matrix(nrow=ncol(vdt),ncol=ncol(vX),0)
     b <- matrix(nrow=1,ncol=ncol(vX),0)
@@ -231,6 +229,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
    # colnames(res.mat )<- c("GlobalAverage","AverageWord","Differ.","pvalue")
     colnames(res.mat )<- c("GlobalAverage","AverageWord","Differ.","vtest", "pvalue")
     #    names(relcq.perm) <- colnames(vdt)
+
 
     
     for (i in 1:nWords) {
@@ -272,10 +271,8 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   
 
   ##### End of functions #############################################
-  
-  
-  
 
+  
   #### step 1. Selecting the type of object ##############
   ### Verifying if it is a TextDataObject and aggregated TextData
   bTextData <- ifelse(inherits(object,"TextData"),TRUE,FALSE)
@@ -304,7 +301,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
           context  <- colnames(object$context$quali)
           context  <- c(context,colnames(object$context$quanti))
         } }
-    
+
     # context, quanti and quali names of variables
     strquali<- context[which(context %in% colnames(object$SourceTerm.qual))]
     # strquanti<- colnames(object$SourceTerm.quant)[which(colnames(object$SourceTerm.quant) %in% context)]
@@ -325,7 +322,6 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
       warning("Only marg.doc==after is allowed ; is changed to after")
       marg.doc <- "after"
     }
-    
     # DocTerm <- object
     if(length(context)==1)
       if(context=="ALL") stop("You must define context variables by index or name of object")
@@ -352,10 +348,8 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
     
   }  # End step 2
   
+ 
 
-
-  
-  
   # STEP 3. 
   #=================================================================	
   # if after/before, frequencies after/before TextData selection are used as document weighting (by default "before");
@@ -363,25 +357,26 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   ##### step 3. Building object to descfreq_NewChar function ##############
   if(bTextData) { # There is TextData object
     # 1. Computing DocTerm
+
     DT2 <- as.matrix(object$DocTerm)
-    
     if(marg.doc=="after") {
       DT2 <- DT2[rowSums(DT2)!=0,]
       row.INIT.2 <- data.frame(Occurrences.after=rowSums(DT2))
     }
+
     if(marg.doc=="before") {
       DT2 <- DT2[rowSums(DT2)!=0,]
       row.INIT.2 <- as.data.frame(object$rowINIT)        # Frequency Occurrences.before
       row.INIT.2 <- row.INIT.2[rownames(DT2),,drop=FALSE]
     }
-    
-    if(marg.doc=="before.RW") {
+
+     if(marg.doc=="before.RW") {
       row.INIT.2 <- as.data.frame(object$summDoc[, "Occurrences.before",drop=FALSE])  # All documents
       rownames(row.INIT.2) <- object$summDoc$DocName
       row.INIT.2 <- row.INIT.2[row.INIT.2$Occurrences.before!=0,,drop=FALSE] 
       # NoNullBefore rows with no null documents before but after threshold
       NoNullBefore <- row.INIT.2[!rownames(row.INIT.2) %in% rownames(DT2),,drop=FALSE]
-      
+  
       if(nrow(NoNullBefore)>0){
         DT2 <- cbind(DT2,as.data.frame(row.INIT.2[rownames(DT2),]))
         nrDT2 <- nrow(DT2)
@@ -450,6 +445,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   res$Proba <- proba
   # Chi square not depend on row.INIT
   
+
 
   ###########################################################################################################
   if(length(strquali)==0) strquali <- NULL
@@ -566,6 +562,8 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
       }
     } # End bvaragg aggregate
     
+    
+  
   
     
     
@@ -642,9 +640,8 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   
   
 
-
   
-  ####### Pendiente hacer la tabla agregada a partir de las cualitativas + agregada  
+  ####### 
   if(!is.null(new.QUALI)) {
  
     if(!bTextData)  {
@@ -701,7 +698,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
   }
   
   
-  
+ 
   
   ############################################3
   fCharDoc  <- function(CharWord.z, df.QUAL.z, DT.z) {
@@ -794,32 +791,30 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
     names(lisresult) <- vlev
     return(lisresult)
   }  
-  
+
   
   if(bTextData & !bvaragg & is.null(strquali)) maxCharDoc <- 0 # maxDocs <- 0
   if(!bTextData & is.null(strquali)) maxCharDoc <- 0# maxDocs <- 0
   
-  
-  
+
+
+
  #  if(maxDocs>0)  {
   if(maxCharDoc>0)  {
+
     if(bTextData) {
-      var.text <- object$info$var.text[[1]]
-      str.base <- object$info$base[[1]]
-      str.envir <- object$info$menvir[[1]]
-      base <- get(str.base, envir=str.envir)
-      
-      # NA in texts is replaced by ""
-      for (i in 1:length(var.text)){		
-        base[, var.text[i]] <- as.character(base[, var.text[i]])
-        base[is.na(base[var.text[i]]), var.text[i]] <- ""
-      }
-      corpus <- base[, var.text[1]]
-      
-      
+      base.new <- object$info$base[[1]]
+      var.text <- object$info$var.text[[1]]   #  Important  Relaunch
+     # str.base <- object$info$base[[1]]    # open.question, character
+    #  str.envir <- object$info$menvir[[1]]
+
+        base.new[, var.text[1]] <- as.character(base.new[, var.text[1]])
+        base.new[is.na(base.new[var.text[1]]), var.text[1]] <- ""
+        corpus <-  base.new[, var.text[1]]
+
       if(length(var.text) > 1) {					
         for (i in 2:length(var.text)){	
-          corpus2 <- as.character(base[, var.text[i]])
+          corpus2 <- as.character(base.new[, var.text[i]])
           dos <-which(corpus!="" & corpus2!="")
           corpus[dos] <- paste(corpus[dos], corpus2[dos], sep=". ")
           uno <-which(corpus=="" & corpus2!="")
@@ -828,7 +823,7 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
         rm(corpus2)
       }					
       corpus <- data.frame(corpus, stringsAsFactors = FALSE)	
-      rownames(corpus) <- rownames(base)					# 300
+      rownames(corpus) <- rownames(base.new)					# 300
       
       corpus <- corpus[rownames(DT.Z),,drop=FALSE]   # 292 o 298 for Fmin
       DT6 <- DT.Z[rowSums(DT.Z[,1:(ncol(DT.Z)-1)])!=0,,drop=FALSE]
@@ -845,12 +840,11 @@ LexChar <- function(object,  proba = 0.05, maxCharDoc = 10, maxPrnDoc=100, marg.
     
   } # End maxDocs maxCharDoc
   
+
   
   res$Proba <- proba
   class(res) <- c("LexChar", "list")    
   return(res)
 }
 
-## Pendiente con nombres
-# print
-# plot
+

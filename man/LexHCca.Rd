@@ -7,14 +7,16 @@
 \description{Agglomerative hierarchical clustering of documents or words issued from correspondence analysis coordinates}
 
 
-\usage{LexHCca(x, cluster.CA="docs", nb.clust="click", min=2, max=NULL, kk=Inf, 
-   consol=FALSE, iter.max=500, graph=TRUE, description=TRUE, 
+\usage{LexHCca(x, cluster.CA="docs",  type="agnes", ncp=5, nb.clust="click", min=2, 
+   max=NULL, kk=Inf, consol=FALSE, iter.max=500, graph=TRUE, description=TRUE, 
    proba=0.05, nb.desc=5, size.desc=80, seed=12345,...)}
    
 
 \arguments{
 \item{x}{object of LexCA class}
-\item{cluster.CA}{if "rows" or "docs" cluster analysis is performed on documents; if "columns" or "words", cluster analysis is performed on words (by default "docs")}
+\item{cluster.CA}{if "rows" or "docs" cluster analysis is performed on documents; if "columns" or "words", cluster analysis is performed on words (by default "docs")}´
+\item{type}{type of cluster; "agnes" (Agglomerative), "diana" (Divisive) (by default agnes)}
+\item{ncp}{number of dimensions used from LexCA object (by default 5)}
 \item{nb.clust}{number of clusters. If 0 (or "click"), the tree is cut at the level the user clicks on.
 If -1 (or "auto"), the tree is automatically cut at the suggested level. 
 If a (positive) integer, the tree is cut with nb.clust clusters (by default "click")}
@@ -37,7 +39,7 @@ If a (positive) integer, the tree is cut with nb.clust clusters (by default "cli
  \item{data.clust}{the active lexical table used in LexCA plus a new column called Clust_ containing the partition}
  \item{coord.clust}{coordinates table issued from CA plus a new column called Clust_ containing the partition}
  \item{centers}{coordinates of the gravity centers of the clusters} 
-  \item{clust.count}{counts of documents/words belonging to each cluster and contribution of the clusters to the variability decomposition}
+ \item{clust.count}{counts of documents/words belonging to each cluster and contribution of the clusters to the variability decomposition}
  \item{clust.content}{list of the document/word labels according to the cluster they belong to}
  \item{call}{list of internal objects. \code{call$t} giving the results for the hierarchical tree. See the second reference for more details}
  \item{description}{$desc.axes for description of the clusters by the characteristic axes ($axes) and eta-squared between axes and clusters ($quanti.var).
@@ -46,13 +48,12 @@ If a (positive) integer, the tree is cut with nb.clust clusters (by default "cli
  if contextual variables were considered in LexCA, description of the partition/clusters by qualitative ($qualisup) and quantitative ($quantisup) variables, paragons ($para) and specific words ($dist) of each cluster.
 
   $des.word.doc description of the clusters of words by their characteristic documents ($docs), paragons ($para) and 
-  specific documents ($dist) of each cluster. 
+  specific documents ($dist) of each cluster.}
+  
+ \item{type}{Type of cluster used (by default agnes).}
+ \item{coef.hclust}{Agglomerative coefficient (Divisive coefficient for diana), measuring the clustering structure of the dataset.}
 
-}
-
-
-Returns the hierarchical tree with a barplot of the successive inertia gains, and the 
-first CA map of the documents/words. The labels are colored according to the cluster.
+Returns the hierarchical tree and the first CA map of the documents/words. The labels are colored according to the cluster.
 }
 
 

@@ -70,7 +70,7 @@ if(xx=="coord" | xx=="cos2" | xx=="contrib" | xx=="meta" )
 }
 # Final functions
 
-X = object$call$X
+X <- object$call$X
 if(!is.null(selDoc)) selDoc <- selectionDW(selDoc,object$row,"Doc",axes[1],axes[2])
 if(!is.null(selWord)) selWord <- selectionDW(selWord, object$col,"Word",axes[1],axes[2])
 if ( (length(selDoc) + length(selWord))  == 0)

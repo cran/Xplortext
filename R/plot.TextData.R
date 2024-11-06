@@ -8,6 +8,7 @@ plot.TextData <- function (x, ndoc=25, nword=25, nseg=25, sel=NULL, ordFreq=TRUE
   xtitle=NULL, col.fill="grey", col.lines="black", text.size=12, freq=NULL, vline=NULL, 
   interact=FALSE, round.dec=4,...)
 {
+
   if(!is.null(vline))
   if(vline=="median")
   {
@@ -23,7 +24,7 @@ if (!inherits(x, "TextData"))
   
 idiom <- x$info$idiom[[1]]
 theme$text$size <- text.size
-words<-iFreq<-docnames<-rsegment<-frequency<-NULL
+words<-iFreq<-docnames<-rsegment<-frequency<-DocName<-y.var<-NULL
 
 if(!is.null(freq)) if(freq=="YES"| freq==TRUE) freq <- 5
 
@@ -35,6 +36,7 @@ bsel.word <- bsel.doc <- bsel.seg <- FALSE
 
 n.Init.word <-length(x$DocTerm$dimnames$Terms)
 n.Init.doc <- length(x$DocTerm$dimnames$Docs)
+
 
 # 2) if("indexS" %in% names(x)) bSegment <- TRUE else bSegment <- FALSE
 # 3) if(bSegment) n.Init.seg <- length(x$indexS$segOrderlist$segment)
@@ -89,7 +91,7 @@ if(is.null(sel)) {
     if(sel$type=="word"){ 
       ndoc <- nseg <- 0
       s.init.word <- x$DocTerm$dimnames$Terms
-      
+
       if(is.numeric(sel$select)) s.sel.word <- s.init.word[sel$select]
       else  s.sel.word <- s.init.word[s.init.word %in% sel$select] }
     
@@ -101,7 +103,6 @@ if(is.null(sel)) {
   } # End   length(sel)
 } # End sel
 #################################
-
 
 
 
@@ -193,7 +194,6 @@ if(ndoc>0 | nword > 0) {
 ################################  End stop words tm and users ######################################
 
 
-
 if(nword>0){
   ##################################
   # Selection of words by number and name
@@ -237,7 +237,7 @@ if(nword>0){
   if(ordFreq) level_order.w <- rev(df.rw$words)
   else level_order.w <-  df.rw[rev(order(df.rw$words)),]$words
   
-  
+
   pword <- ggplot(df.rw)+ geom_col(aes(x=factor(words, levels=level_order.w), y=iFreq),color = col.lines, fill = col.fill) + 
      coord_flip() +
     ylab(txtitle.w) + xlab("") + ggtitle(ttitle.w) + theme + theme(plot.title = element_text(hjust = 0.5))
@@ -271,7 +271,6 @@ if(nword>0){
 
 
 ####################################################   Docs   #################################################
-
 
 if(ndoc>0){
   # If aggegate documents by qualitative variable mean length is shown. In summary and print both mean and total are shown
@@ -350,16 +349,17 @@ if(ndoc>0){
     df.rd$y.var <- df.rd$Number.Words
     df.rd$DocName <- factor(df.rd$DocName, levels = df.rd$DocName[order(df.rd$DocName)])
   }
+ 
   
-  
-  pdoc <- ggplot(df.rd)+ geom_bar(aes(x=factor(df.rd$DocName, levels=level_order.d), y=df.rd$y.var),stat = "identity",
+   pdoc <- ggplot(df.rd)+ geom_bar(aes(x=factor(DocName, levels=level_order.d), y=y.var),stat = "identity",
                                   color = col.lines, fill = col.fill) +   coord_flip() +
     ggtitle(ttitle.d) + theme + theme(plot.title = element_text(hjust = 0.5)) + ylab(txtitle.d) + xlab("") 
-  
-  
+
+
   if(!is.null(freq))
     pdoc <- pdoc + geom_text(aes(x=df.rd$DocName, y=df.rd$y.var + freq, label = round(df.rd$y.var,round.dec)))  
   
+
   
   if(!is.null(vline)) {
     if(is.numeric(vline)) mean.before.d <- mean.after.d  <- vline

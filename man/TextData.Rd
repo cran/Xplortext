@@ -57,6 +57,8 @@ in accordance with the nature of DocTerm table (non-aggregate/ aggregate), see d
 this data structure, in slam package compressed format}
 \item{indexS}{working-documents by repeated-segments table, in slam package compressed format}
 \item{remov.docs}{vector with the names of the removed empty source-documents}
+\item{VCr}{Cramer's V coefficient of document x term matrix}
+\item{Inertia}{total inertia of document x term matrix}
 }
 
 \details{
@@ -68,11 +70,9 @@ Backslash or double backslash are used to start an escape sequence defining spec
 The default is:
 \verb{
 
-sep.weak = ("[\%`:_*$&#/^|<=>;'+@.,~?(){}|[[:space:]]|
+sep.weak = ("[\%`:*$&#/^|<=>;'+@.,~?(){}|[[:space:]]|
 
-\u2014|\u002D|\u00A1|\u0021|\u00BF|\u00AB|\u00BB|\u2026|\u0022|\u005D")
-
-
+\u2014|\u002D|\u00A1|\u0021|\u00BF|\u00AB|\u00BB|\u2026|\u0022|\u005D|\u0097")
 
 }
 Some special characters can be introduced as unicode characters. Back slash (escape contol) is not allowed.

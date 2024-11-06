@@ -1,39 +1,88 @@
-#' @import flexclust
+#' @rawNamespace import(flexclust, except = c(barplot, boxplot, predict, plot, pairs, image))
+#' @import flashClust
+#' @import cluster
+#' @rawNamespace import(dendextend, except=c(cutree))
 #' @export
-LexHCca <- function(x, cluster.CA="docs", nb.clust="click",  min=2, max=NULL, kk=Inf, 
-                    consol=FALSE, iter.max=500, graph=TRUE, description=TRUE, proba=0.05, 
-                    nb.desc=5, size.desc=80, seed=12345,...)
+LexHCca <- function(x, cluster.CA="docs", type="agnes",  ncp=5, nb.clust="click",  min=2, max=NULL,
+                    kk=Inf, consol=FALSE, iter.max=500, graph=TRUE, description=TRUE, 
+                    proba=0.05, nb.desc=5, size.desc=80, seed=12345,...)
   
 {
+  #### Change method.sel to "Ward.D2"
+ # agnes function (x, diss = inherits(x, "dist"), metric = "euclidean", 
+ #            stand = FALSE, method = "average", par.method, keep.diss = n < 
+ #              100, keep.data = !diss, trace.lev = 0) 
+ 
   dots <- list(...)
   if(is.null(dots$method)) method.sel <- "ward"
     else method.sel <-  dots$method
-    
+    str.type <- c("agnes","diana")
+    if(!type %in% str.type) stop("Argument type must be agnes or diana")
 
-    object <- x
+######################  New. Modification of x removing no factors used ######################
+    ncp.max <- ncol(x$row$coord)
+    if(ncp>ncp.max)   {
+      warning(paste0("Number of components ncp= ", ncp ," is bigger than number of components in ",
+                     deparse(substitute(x)), "= ", ncp.max),"\nncp is changed to ",ncp.max)	
+     ncp <- ncp.max
+    } 
+    x$row$coord <- x$row$coord[, 1:ncp, drop=FALSE]
+    x$row$contrib <- x$row$contrib[, 1:ncp, drop=FALSE]
+    x$row$cos2 <- x$row$cos2[, 1:ncp, drop=FALSE]
+    x$row$inertia <- x$row$inertia[1:ncp, drop=FALSE]
+
+    x$col$coord <- x$col$coord[, 1:ncp, drop=FALSE]
+    x$col$contrib <- x$col$contrib[, 1:ncp, drop=FALSE]
+    x$col$cos2 <- x$col$cos2[, 1:ncp, drop=FALSE]
+    x$col$inertia <- x$col$inertia[1:ncp, drop=FALSE]
+    
+    if(!is.null(x$quanti.sup$coord)) {
+      x$quanti.sup$coord <- x$quanti.sup$coord[, 1:ncp, drop=FALSE]
+      x$quanti.sup$cos2 <- x$quanti.sup$cos2[, 1:ncp, drop=FALSE]   }
+    
+    
+    if(!is.null(x$quali.sup$coord)) {
+      x$quali.sup$coord <- x$quali.sup$coord[, 1:ncp, drop=FALSE]
+      x$quali.sup$cos2 <- x$quali.sup$cos2[, 1:ncp, drop=FALSE] 
+      x$quali.sup$v.test <- x$quali.sup$v.test[, 1:ncp, drop=FALSE] 
+      x$quali.sup$eta2 <- x$quali.sup$eta2[, 1:ncp, drop=FALSE] }
+
+    if(!is.null(x$meta$Word)) x$meta$Word <- x$meta$Word[as.numeric(x$meta$Word$Dim)<(ncp+1),, drop=FALSE]
+    if(!is.null(x$meta$Doc)) x$meta$Doc <- x$meta$Doc[as.numeric(x$meta$Doc$Dim)<(ncp+1),, drop=FALSE]
+################################# End removing not used factors #############################
+  
+  object <- x
 if (!inherits(object, "LexCA")) stop("object should be LexCA class")
   options(stringsAsFactors = FALSE)
   
   marg.doc<-"before"
  if(description==FALSE)  nb.desc <-0
   
+
+
 #---- Initial checks -----------------------------------------
   ## Type selection number of clusters
 if(is.character(nb.clust))
   nb.clust <- ifelse(nb.clust == "auto", -1,0)
  # if(nb.clust=="click") nb.clust<- 0
- #  if(nb.clust=="auto") nb.clust<- -1
+ # if(nb.clust=="auto") nb.clust<- -1
   
   
 # if(nb.clust>0) if(kk!=Inf) stop("For k-means nb.clust must be 0 (user selection) or -1 (automatic selection)")
 # graph.scale = add top right the barplot
   graph.scale="inertia"
 
+
   if ((kk != Inf) & (consol == TRUE)) {
     warning("No consolidation has been done after the hierarchical clustering since kk is different from Inf")				
     consol <- FALSE
   }	
   ### nb.clust can be a number; 0 is click; -1 is automatic
+  
+  if ((kk != Inf) & (type == "diana")) {
+    stop("No divisive method with k-means (kk argument) is allowed.")
+  }
+  
   
   ##
   if (min <2) min<-2
@@ -48,18 +97,21 @@ if(is.character(nb.clust))
   auto.cut.tree <- function(res, min, max, metric, method=method.sel, weight = NULL, cla = NULL, ...)
   {
     set.seed(seed)
-    X <- as.data.frame(res$ind$coord)
+    X <- as.data.frame(res$ind$coord, drop=FALSE)
     do <- dist(X, method = metric)^2			
     eff <- outer(weight, weight, FUN = function(x, y, n) {x * y/n/(x + y)}, n = sum(weight))
     dissi <- do * eff[lower.tri(eff)]
-    hc <- flashClust::hclust(dissi, method = method, members = weight)
+
+    if(type=="agnes") hc <- flashClust::hclust(dissi, method = method, members = weight)
+    if(type=="diana") hc <- cluster::diana(dissi)
     inert.gain <- rev(hc$height)
     intra <- rev(cumsum(rev(inert.gain)))
     quot <- intra[min:(max)]/intra[(min-1):(max-1)]
     nb.clust <- which.min(quot) + min-1
     rm(.Random.seed,envir=globalenv()) # Retrieve set.seed
+    
     return(list(res = res, tree = hc, nb.clust = nb.clust,
-                within = intra, inert.gain = inert.gain, quot = quot))
+                within = intra, inert.gain = inert.gain, quot = quot, dissi=dissi))
   }	  # End Function auto.cut.tree  
   
   
@@ -74,8 +126,8 @@ if(is.character(nb.clust))
     lay = matrix(ncol = 5, nrow = 5, c(2, 4, 4, 4, 4, 
                                        2, 4, 4, 4, 4, 2, 4, 4, 4, 4, 2, 4, 4, 4, 4,1, 3, 3, 3, 3))
     layout(lay, respect = TRUE)
-    barplot(rev(t$tree$height)[1:max(15, max)], col = c(rep("black", 
-                                                            t$nb.clust - 1), rep("grey", max(max, 15) - t$nb.clust + 1)), rep(0.1, max(max, 15)), space = 0.9)
+    barplot(rev(t$tree$height)[1:max(15, max)], col = c(rep("black",t$nb.clust - 1),
+     rep("grey", max(max, 15) - t$nb.clust + 1)), rep(0.1, max(max, 15)), space = 0.9)
     plot(x = 1, xlab = "", ylab = "", main = "", col = "white",axes = FALSE)
     text(1,1,title,cex=2)
     plot(x = 1, xlab = "", ylab = "", main = "", col = "white",axes = FALSE)
@@ -143,8 +195,8 @@ if(is.character(nb.clust))
     } # End while
     return(ck_flex@cluster)
   } 
-  
   #---- F4 End Consolidation function ----
+  
   
   #---- F5 descfreq_New ----
   descfreq_New <- function (donnee, by.quali = NULL, proba = 0.05, row.INIT, col.INIT)
@@ -214,6 +266,7 @@ if(is.character(nb.clust))
   ######################################################################################## 
 
 
+
    #---- 1. Weighting documents (after/before) and words ----
   doc.w.after <- apply(object$call$X,1,sum)    # Initial weighting for documents after selection
   #nm <- names(doc.w.after)
@@ -223,7 +276,7 @@ if(is.character(nb.clust))
   word.w <- apply(object$call$X, 2, sum) 
     #if(marg.doc=="before") doc.w <- doc.w.before else doc.w <- doc.w.after # before word's selection
 
-
+ 
   #---- 2. Selecting words or documents to cluster  ----
   if (cluster.CA == "docs") {
     weight.dw <- doc.w.after # 
@@ -232,8 +285,9 @@ if(is.character(nb.clust))
     weight.dw <- word.w
     coord.dw <- object$col$coord
   }   
- 
   
+  
+ 
   #---- 3. Building PCA object ----
   # Check if kmeans will be performed
   # Operations with kk
@@ -242,8 +296,8 @@ if(is.character(nb.clust))
   ################# Selecting cluster of rows (documents) or columns (words) 
   cla <- res <- NULL	
   
-  
-  
+ 
+  #########################################################  Kmeans    ###########################
   if (kk < nrow(coord.dw)) {  # Kmeans
     res <- as.data.frame(sweep(coord.dw, 2, sqrt(object$eig[1:ncol(coord.dw), 1]), FUN = "*"))
     kk <- min(kk, nrow(unique(coord.dw)))
@@ -266,7 +320,8 @@ if(is.character(nb.clust))
     }          # end      if (kk <= nrow(res)) 
   } # Final of k-means
   
-
+ 
+  ################  Hiearchical ascendent cluster ############################
   # If kk >= nrow(word) now a hierarchical cluster is performed, res don't exist
   if(kk==Inf){ ## It is hierarchical cluster, no k-means
     aux <- object$eig			
@@ -276,9 +331,6 @@ if(is.character(nb.clust))
 
 
 
-    
-  
-  
   #---- 4. Checking the minimum and maximum number of clusters ----
   # max min  "ind" is documents if cluster.CA="docs", words if cluster.CA="words"
   nb.ind <- nrow(coord.dw)			## Cases (docs o words) 
@@ -296,23 +348,22 @@ if(is.character(nb.clust))
   
 
   
-
-  
-  
-
   
   #---- 5. Building the tree to select number clusters -----   
   # Retrieve the tree with cases if hierarchical or groups if k-means	
   # row.w.init has the weighting from rows from res object of PCA
   # method=ward, metric=euclidean , res$call$row.w.init is absolute frequency after
   
-    t <- auto.cut.tree(res, min = min, max = max, metric = metric,method.sel = method.sel,
-                     weight = res$call$row.w.init, cla = cla, order = order, ...)	
- 
-   # tree can be plotted plot(t$tree)
-  # We need to select the number of clusters
-  # Only is necessary the plot if nb.clust = click (0 value)
 
+  ####### stop("repasar cla y order) en el original. ###############################
+
+    t <- auto.cut.tree(res, min = min, max = max, metric = metric, method.sel = method.sel,
+                     weight = res$call$row.w.init, cla = cla, order = order, ...)	
+  
+  # tree can be plotted using plot(t$tree)
+  
+  
+  # We need to select the number of clusters  only is necessary if nb.clust = click (0 value)
   if (graph.scale == "inertia") {
     nb.ind.clI <- nrow(t$res$ind$coord)
     inertia.height <- rep(0, nb.ind.clI - 1)							
@@ -321,9 +372,7 @@ if(is.character(nb.clust))
     t$tree$height <- inertia.height							
   }			# end of graph.scale =="inertia"
   
-  
-  
-  
+
   #---- 6. Check number clusters (max,min) before selection ----
   options(warn=0)
   if (nb.clust == 1)  #
@@ -345,19 +394,22 @@ if(is.character(nb.clust))
     nb.clust <- max  # New instruction
   }    
   
- 
   
-  #---- 7. Height for proposed number of clusters, necessary to plot for selection ----
+
+  
+  #---- 7. Compute Height value  for proposed number of clusters, necessary to plot for selection ----
   auto.haut <- ((t$tree$height[length(t$tree$height) - t$nb.clust + 2]) +		
                   (t$tree$height[length(t$tree$height) - t$nb.clust + 1]))/2 
-  
-  #---- 8. Print Inertia gain graph for selection case ----
+ 
+
+    #---- 8. Print Inertia gain graph for selection number of groups ----
   if (nb.clust==0 ) {
     par(mfrow=c(1,1))			
     print.inertia("Hierarchical Clustering")
     print("Click on the graph to cut the tree")	
-    flush.console()							
-    plot(t$tree, hang = -1, main = "Click to cut the tree", xlab = "", sub = "")
+    flush.console()		
+   if(type=="agnes") plot(t$tree, hang = -1, main = "Click to cut the tree", xlab = "", sub = "")
+   if(type=="diana") plot(t$tree, which.plots=2, hang = -1, main = "Click to cut the tree", xlab = "", sub = "")
     text(1, 1, "Hierarchical Clustering", "cex" = 2)	
     abline(h = auto.haut, col = "black", lwd = 3)	
     coupe <- locator(n = 1)							
@@ -376,36 +428,32 @@ if(is.character(nb.clust))
   }
 
   # y has the point of cut
-  # composition of clusters (if kmeans not the cases)
-  clust <- cutree(as.hclust(t$tree), h = y)	
-
+  # clust is a vector with composition of clusters (if kmeans not the case)
   # integer with the number of the cluster
   # The name is the label of the doc/word 
+  clust <- stats::cutree(as.hclust(t$tree), h = y)	
+
   nb.clust <- max(clust)	
   
-  
-### REVISAR SI ordColo es necesario después
+  #---- End Inertia gain graph for selection case ----
   # Order of clusters in dendrogram (duplicates are removed)
   ordColo <- unique(clust[t$tree$order])
+  X <- as.data.frame(t$res$ind$coord)	   # Coordinates Docs or words x dimensions, If kmeans groups x dimensions
   
-  
-  ### REVISAR SI X es necesario después
-    X <- as.data.frame(t$res$ind$coord)	   # Coordinates Docs or words x dimensions, If kmeans groups x dimensions
-  #---- End Print Inertia gain graph for selection case ----
   
   
   #---- 9. df.coord.cla docs x  (Dim.1;...;Dim k; weight cluster ----
-  if(kk==Inf) {  # Jerárquico
+  if(kk==Inf) {  # Hierarchical
     df.coord.cla <- data.frame(X, weight= res$call$row.w.init[rownames(X)], cluster=clust[rownames(X)])
   }
-  if(kk!=Inf) {   # Kmedias
+  if(kk!=Inf) {   # K.means
     df.coord.cla <-   data.frame(coord.dw, weight= cla[rownames(coord.dw),"weight.dw"], cluster=clust[cla$cla.clust])                               #cluster=cla[rownames(coord.dw),"cluster"])
   }
 
 
-    
+
   #---- 10 Print dendrogram - Selection of the number of the clusters has been done, cla ----
-  if(graph) if(kk!=Inf) {
+  if(graph ) if(kk!=Inf) {
     warning("Warning: Dendrogram is not plotted for kmeans method")
    # graph <- FALSE
   }
@@ -414,11 +462,14 @@ if(is.character(nb.clust))
   #  graph <- FALSE
   }
 
-  if(graph & kk==Inf) {
+
+  if(graph & kk==Inf) { 
     par(mfrow=c(1,1))
-    print.inertia("Hierarchical Clustering")
-    plot(t$tree, hang = -1, main = "", xlab = "", sub = "")
-    text(1, 1, "Hierarchical Clustering", "cex" = 2)
+    if(type=="agnes") str.title <- "Aglomerative Hierarchical CLustering" else
+      str.title <- "Divisive Hierarchical CLustering"  
+    if(type=="agnes") plot(t$tree, hang = -1, main = "", xlab = "", sub = "")
+    if(type=="diana") plot(t$tree, which.plots=2, hang = -1, main = "", xlab = "", sub = "")
+    text(1, 1, str.title, "cex" = 2)
     rect <- rect.hclust(t$tree, h = y, border = ordColo)
     clust <- NULL
     for (j in 1:nb.clust) clust <- c(clust, rep(j, length(rect[[j]])))
@@ -430,11 +481,9 @@ if(is.character(nb.clust))
     if (nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY")))				
       layout(matrix(nrow = 1, ncol = 1, 1), respect = TRUE)
   }
-  
-  
+
     
-    
-  #---- 11. Consolidation if hierarchical ----			
+  #---- 11. Consolidation if hierarchical ascendent ----			
  if(consol==TRUE){
    clust.afterconsol <- consolidationW(df.coord.cla[,c(1:(ncol(df.coord.cla)-2))], cluster_i=df.coord.cla[,"cluster"],
                                                weights=df.coord.cla[,"weight"] , iter.max = iter.max)
@@ -444,26 +493,22 @@ if(is.character(nb.clust))
    df.coord.cla <- dftemp
 }
 
-    
+ 
   #---- 12. Computing centers. Building RDO object  ----			
   RDO <-   ssquares(df.coord.cla[,c(1:(ncol(coord.dw)))],  df.coord.cla[,"weight"], df.coord.cla[,"cluster"]) 
-  
+  RDO$CA <- object
+
   RDO <- list("data.clust"=data.frame(df.coord.cla[,c(1:(ncol(coord.dw)))], "clust"=df.coord.cla[,"cluster"]),   
               "centers"=RDO$coord.centers, "clust.count"=RDO$dfclust, "clust.content"=RDO$dfw,
               "global"= list("ss.tot"=RDO$ss.tot, "ss.intra"=RDO$ss.intra,"ss.inter"= RDO$ss.inter,			
                              "%Explained"= 100*RDO$ss.inter/RDO$ss.tot), cluster.CA=cluster.CA)
-  RDO$CA <- object
+ 
   class(RDO) <- "LexHCca"
-  # End 12. Computing centers. Building RDO object 
-  
+    # End 12. Computing centers. Building RDO object 
+ 
 
-  
-  
-  
-  
-  
 
-  #---- 14. Weighting documents (after/before) and words ----
+  #---- 13. Weighting documents (after/before) and words ----
   #  doc.w.after <- apply(object$call$X,1,sum)    # Initial weighting for documents after selection
   nm <- names(doc.w.after)
   # doc.w.before before word's selection
@@ -473,14 +518,13 @@ if(is.character(nb.clust))
   if(marg.doc=="before") doc.w <- doc.w.before else doc.w <- doc.w.after # before word's selection
   # num.docs <- nrow(object$call$X)
   # num.words <- ncol(object$call$X)
-  # Final 14 weighting docs
- 
-#  doc.w.after <- apply(object$call$X,1,sum)    # Initial weighting for documents after selection
+  # Final 13 weighting docs
+  #  doc.w.after <- apply(object$call$X,1,sum)    # Initial weighting for documents after selection
   
   
   
   
-  # tabInd coordinates + cluster if active docs/words
+  #---- 14. tabInd coordinates + cluster if active docs/words
   if (cluster.CA == "docs"){ 
     descr.data <- object$call$X   # words in columns
     descr.cl <- data.frame("cluster_"=df.coord.cla[rownames(descr.data),"cluster"])  # drop=FALSE
@@ -492,17 +536,12 @@ if(is.character(nb.clust))
     rownames(descr.cl) <- rownames(descr.data)
     tabInd <- cbind.data.frame(object$col$coord, clust=as.factor(df.coord.cla[rownames(descr.data),"cluster"]))
   }
+  #---- Final 14 
 
-  
-  
-  
-  
-  
-  
+
+  #---- 15. descword, Cluster description by words and descdoc ---- 
   desc.ind <- descaxes <- descword <- descwordsup <- descdoc <- descquali <- descquanti <- NULL
-  #---- 15. descword, Cluster description by words and descdoc ----
   if(description) { 
-    
     if(cluster.CA=="docs") {
       descr.w.rows <- doc.w[rownames(descr.data)]
       descr.w.cols <- word.w[colnames(descr.data)]
@@ -514,26 +553,23 @@ if(is.character(nb.clust))
       # Cluster Description by active documents # Using doc.w.after
       descdoc <- descfreq_New(descr.data, descr.cl$cluster_ ,prob=proba, row.INIT= descr.w.rows, col.INIT=doc.w.after) 
     } 
-    #----  End descword, Cluster description by words and descdoc ----    
+    #----  15. End descword, Cluster description by words and descdoc ----    
 
 
-    
-    
-    #---- Document description by qualitative supplementary variables ----
-    ### Por defecto es before...
+ 
+    #---- 16. Document description by qualitative supplementary variables ----
     if(!is.null(object$quali.sup$coord)) {
       if(cluster.CA=="docs") {
-    #    descr.cl <- data.frame("cluster_"=df.coord.cla[rownames(descr.data),"cluster"])  # drop=FALSE
         a1 <- object$call$Xtot[rownames(descr.data), rownames(object$quali.sup$eta2), drop=FALSE]
         a2 <- cbind(a1, "clust_"=as.factor(descr.cl[rownames(a1),"cluster_"]))
          descquali <- FactoMineR::catdes(a2, num.var=ncol(a2), proba = proba, row.w=doc.w[rownames(a2)])
          names(descquali$category) <-paste("cluster",1:length(descquali$category),sep="_")
       }}
-    #---- End Document description by qualitative supplementary variables ----    
+    #---- 16. End Document description by qualitative supplementary variables ----    
+ 
    
-    #---- Document description by quantitative supplementary variables ----
+    #---- 17. Document description by quantitative supplementary variables ----
     if(!is.null(object$quanti.sup$coord)) {
-    
       if(cluster.CA=="docs") {
         a1 <- object$call$Xtot[rownames(descr.data), rownames(object$quanti.sup$coord), drop=FALSE]
         a2<- cbind(a1, "clust_"=as.factor(descr.cl[rownames(a1),"cluster_"]))
@@ -541,15 +577,16 @@ if(is.character(nb.clust))
         if(!is.null(descquanti$quanti)>0)  
           names(descquanti$quanti) <-paste("cluster",1:length(descquanti$quanti),sep="_")
       }}
-    #---- End Document description by quantitative supplementary variables ----
+    #---- 17. End Document description by quantitative supplementary variables ----
     
-    
+
+        
     #---- Description of axes ----
     if(cluster.CA=="docs") {
       descaxes <- data.frame(cbind(object$row$coord,clust_=as.factor(descr.cl[rownames(object$row$coord),"cluster_"])))
       descaxes$clust_ <- as.factor(descaxes$clust_)
       descaxes <- FactoMineR::catdes(descaxes, num.var=ncol(descaxes), proba = proba, row.w=doc.w[rownames(descaxes)])  
-    } else { # columnas
+    } else { # columns
       descaxes <- data.frame(cbind(object$col$coord,clust_=as.factor(clust[rownames(object$col$coord)])))
       descaxes$clust_ <- as.factor(descaxes$clust_)
       descaxes <- FactoMineR::catdes(descaxes, num.var=ncol(descaxes), proba = proba, row.w=word.w[rownames(descaxes)]) 
@@ -558,7 +595,7 @@ if(is.character(nb.clust))
  
   
     if(nb.desc>0){
-      # Calculo de los centros
+      # Computing centers
       # list.centers <- by(tabInd[, -ncol(tabInd), drop = FALSE], tabInd[, ncol(tabInd)], colMeans)
       # centers <- matrix(unlist(list.centers), ncol = ncol(tabInd) - 1, byrow = TRUE)
       #---- Function select --------------------------------
@@ -620,7 +657,8 @@ if(is.character(nb.clust))
     } # End nb.par
   }  
   #---- Final Descriptions ----
-  
+
+   
 
   newcall <- list(t = t, min = min, max = max, X = tabInd[,-ncol(tabInd)], vec = FALSE, call = match.call(), 
                   cluster.CA=cluster.CA)  
@@ -632,7 +670,6 @@ if(is.character(nb.clust))
   newres <- list(data.clust = df.tmp, centers =as.data.frame(RDO$centers), clust.count = RDO$clust.count, 
                  clust.content = RDO$clust.content, ss=RDO$global, call = newcall)
   
-
   if (!is.null(descaxes)) {
     class(descaxes) <- NULL
     newres$description$desc.axes <- descaxes
@@ -648,36 +685,39 @@ if(is.character(nb.clust))
       newres$description$desc.cluster.word <- list(docs = descdoc)
   }
   
-  
+
 
   
-  
+
   if (!is.null(object$info)) {
     if (nb.desc > 0) {
       if (is.null(desc.ind$para)) 
         stop("Please, use description=TRUE \n  to obtain a description of the clusters by the characteristic documents ")
-     
-
+   
       if(!is.null(object$var.agg)) vbaggr <- TRUE else vbaggr <- FALSE
-      
+
       if(vbaggr==FALSE) {
-      var.text <- object$info$var.text[[1]]
-      str.base <- object$info$base[[1]]
-      str.envir <- object$info$menvir[[1]]
-      base <- get(str.base, envir = str.envir)
-      corpus <- base[, var.text[1]]
-      if (length(var.text) > 1) {
-        for (i in 2:length(var.text)) {
-          corpus <- paste(corpus, base[, var.text[i]], sep = ".")
-        }
-      }
-      }
-      if(vbaggr==FALSE) {
-      corpus <- data.frame(corpus, stringsAsFactors = FALSE)
-      rownames(corpus) <- rownames(base)
+        base.new <- object$info$base[[1]]
+        var.text <- unlist(object$info$var.text[1:(length(object$info$var.text)-1)])   #  Important  Relaunch
+        corpus <- as.character(base.new[, var.text[1]])
+        corpus[is.na(corpus)] <- ""
+
+        if(length(var.text) > 1) {	
+          for (i in 2:length(var.text)){	
+            corpus2 <- as.character(base.new[, var.text[i]])
+            corpus2[is.na(corpus2)] <- ""
+            dos <- which(corpus!="" & corpus2!="")
+            corpus[dos] <- paste(corpus[dos], corpus2[dos], sep=". ")
+            uno <-which(corpus=="" & corpus2!="")
+            corpus[uno] <- corpus2[uno]
+          }
+          rm(corpus2)
+        }	
+       corpus <- data.frame(corpus, stringsAsFactors = FALSE)	
+       rownames(corpus) <- rownames(base.new)
       }
       
-     
+
       lispara <- vector(mode = "list")
    
       for (iclus in 1:nb.clust) {
@@ -728,15 +768,33 @@ if(is.character(nb.clust))
   }
   newres$call$CA <- object
   newres$coord.clust <- cbind(newres$call$X, "Clust_"=newres$data.clust[rownames(newres$call$X),"Clust_"])
-  
-  class(newres) <- c("LexHCca")
+  newres$type <- type
+
   #---- 13. Plot Factorial Plane with centers ----
   if(graph){
-    p<-plot.LexHCca(newres, type="map", draw=c("points","centers"))
+     p<-plot.LexHCca(newres, type="map")
     plot(p)
-  }
+  } 
   # 13. Plot Factorial Plane with centers
+ 
+  # Agglomeraive or divisive coefficient
+  # Computes the “agglomerative coefficient” (aka “divisive coefficient” for diana), 
+  #  measuring the clustering structure of the dataset.
+  # 
+  # For each observation i, denote by # its dissimilarity to the first cluster it is merged with, 
+  # divided by the dissimilarity of the merger in the final step of the algorithm. 
+  # The agglomerative coefficient is the average of all . 
+  # It can also be seen as the average width (or the percentage filled) of the banner plot.
+  # 
+  # coefHier() directly interfaces to the underlying C code, and “proves” that only object$heights is needed to compute the coefficient.
+  # 
+  # Because it grows with the number of observations, this measure should not be used to compare datasets of very different sizes.
+  newres$coef.hclust <- coef(as.hclust(t$tree))# Compute divisive coefficient
   
+
+  ## Guardar el tipo, consolidado...
+  class(newres) <- c("LexHCca")
+
 return(newres)
 
 }

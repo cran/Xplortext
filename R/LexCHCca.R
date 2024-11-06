@@ -4,16 +4,49 @@
 #' @export
 
 
-LexCHCca <- function (object, nb.clust=0, min=2, 
+LexCHCca <- function (object, ncp=5, nb.clust=0, min=2, 
                       max=NULL, nb.par=5, graph=TRUE, proba=0.05, cut.test = FALSE, alpha.test =0.05,
                       description=FALSE, nb.desc=5, size.desc=80) 
 {
+  x <- object
+  ######################  New. Modification of x removing no factors used ######################
+  ncp.max <- ncol(x$row$coord)
+  if(ncp>ncp.max)   {
+    warning(paste0("Number of components ncp= ", ncp ," is bigger than number of components in ",
+                   deparse(substitute(object)), "= ", ncp.max),"\nncp is changed to ",ncp.max)			
+    ncp <- ncp.max
+  } 
+
+  x$row$coord <- x$row$coord[, 1:ncp]
+  x$row$contrib <- x$row$contrib[, 1:ncp]
+  x$row$cos2 <- x$row$cos2[, 1:ncp]
+  x$row$inertia <- x$row$inertia[1:ncp]
+  
+  x$col$coord <- x$col$coord[, 1:ncp]
+  x$col$contrib <- x$col$contrib[, 1:ncp]
+  x$col$cos2 <- x$col$cos2[, 1:ncp]
+  x$col$inertia <- x$col$inertia[1:ncp]
+  
+  if(!is.null(x$quanti.sup$coord)) {
+    x$quanti.sup$coord <- x$quanti.sup$coord[, 1:ncp]
+    x$quanti.sup$cos2 <- x$quanti.sup$cos2[, 1:ncp]   }
+  
+  
+  if(!is.null(x$quali.sup$coord)) {
+    x$quali.sup$coord <- x$quali.sup$coord[, 1:ncp]
+    x$quali.sup$cos2 <- x$quali.sup$cos2[, 1:ncp] 
+    x$quali.sup$v.test <- x$quali.sup$v.test[, 1:ncp] 
+    x$quali.sup$eta2 <- x$quali.sup$eta2[, 1:ncp] }
+  
+  if(!is.null(x$meta$Word)) x$meta$Word <- x$meta$Word[as.numeric(x$meta$Word$Dim)<(ncp+1),]
+  if(!is.null(x$meta$Doc)) x$meta$Doc <- x$meta$Doc[as.numeric(x$meta$Doc$Dim)<(ncp+1),]
+  ##############################################################################################
+  
   # cut.stat. NULL, percent, median
   if(cut.test == FALSE) cut.stat <- NULL else cut.stat <- "percent"
   
   options(warn=0)
   marg.doc<- "after"
-  x<- object
   cor.stat <- "pearson"                      # Or spearman, not included in the function
   if (!inherits(x,"LexCA")) stop("Object x should be LexCA class")
   options(stringsAsFactors = FALSE)
@@ -67,7 +100,6 @@ LexCHCca <- function (object, nb.clust=0, min=2,
    #---- F1. sum of squares ----
   ssquares <- function(coord, weight_,clust_){ # }, weight_, clust_) {
     dfw <- data.frame(coord,"weight_"=weight_, "clust_"=clust_)
-    # write.csv2(dfw,file="C:/Xplortext/dfw.csv")
     sum.weights <- sum(dfw$weight_)
     pct.weight <- dfw$weight_/ sum.weights  
     dfclust <- as.data.frame(table(clust_))
@@ -389,7 +421,7 @@ LexCHCca <- function (object, nb.clust=0, min=2,
       }
     }
     
-    #  if(bTest==FALSE) cut.names <- cut.names <- cutree()
+    #  if(bTest==FALSE) cut.names <- stats::cutree()
     #  else cut.names <- rownames(mDist)
     #  
     
@@ -486,9 +518,9 @@ LexCHCca <- function (object, nb.clust=0, min=2,
   if(bTest==TRUE) {
     # nb.clust <- nb.cluster.test
     #  y <- (t$height[length(t$height)]+t$height[length(t$height)-nb.clust+1])/2
-      clust <- cutree(as.hclust(t$tree), k = nb.cluster.test)
+      clust <- stats::cutree(as.hclust(t$tree), k = nb.cluster.test)
   } else {
-    clust <- cutree(as.hclust(t$tree), h = y)
+    clust <- stats::cutree(as.hclust(t$tree), h = y)
   } 
 
   

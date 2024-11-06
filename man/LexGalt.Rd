@@ -57,7 +57,7 @@ Bécue-Bertaut M. and Pagès J. (2015). Correspondence analysis of textual data 
 
 Bécue-Bertaut M., Pagès J. and Kostov B. (2014). Untangling the influence of several contextual variables on the respondents' lexical choices. A statistical approach. SORT - Statistics and Operations Research Transactions, vol.(38) 2: 285-302.
 
-Kostov B. A. (2015). A principal component method to analyse disconnected frequency tables by means of contextual information. (Doctoral dissertation). Retrieved from \url{http://upcommons.upc.edu/handle/2117/95759}.
+Kostov B. A. (2015). A principal component method to analyse disconnected frequency tables by means of contextual information. (Doctoral dissertation). Retrieved from \url{https://upcommons.upc.edu/handle/2117/95759}.
 
 Kostov, B., Bécue-Bertaut, M., & Husson, F. (2015). Correspondence Analysis on Generalised Aggregated Lexical Tables (CA-GALT) in the FactoMineR Package. 
 The R Journal, Vol.7, Num.1, 109-117. \doi{10.32614/RJ-2015-010}

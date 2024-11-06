@@ -97,7 +97,7 @@ plot.LexGalt <- function(x, type="QL", selDoc=NULL, selWord=NULL, selQualiVar=NU
     # Cambiado
     if(new.plot) if(!nzchar(Sys.getenv("RSTUDIO_USER_IDENTITY"))) {
       dev.new(width = min(14, 8 * (xlim[2] - xlim[1])/(ylim[2] - ylim[1])), height = 8) # Outside RStudio 
-     } else dev.new()
+    } else dev.new()
     
     if(is.null(title)) titleE <- "Eigenvalues" else titleE <- title
     barplot(res.cagalt$eig[, 1], main = titleE, col=col.eig, cex.axis=cex, cex.names=cex,

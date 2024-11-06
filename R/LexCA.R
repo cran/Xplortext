@@ -2,393 +2,406 @@
 #' @importFrom methods hasArg
 #' @export
 LexCA <- function(object,ncp=5, context.sup="ALL", doc.sup=NULL, word.sup=NULL, 
- segment=FALSE, graph=TRUE, axes=c(1, 2), lmd=3, lmw=3)
+                  segment=FALSE, graph=TRUE, axes=c(1, 2), lmd=3, lmw=3)
 {
-if(is.null(object)) stop("Missing argument for object")
-  
-  
-# if (!inherits(object,"TextData")) stop("Object should be TextData class")
+  if(is.null(object)) stop("Missing argument for object")
+
+  # if (!inherits(object,"TextData")) stop("Object should be TextData class")
   if (!inherits(object,"TextData") & !inherits(object,"DocumentTermMatrix")) stop("Object should be TextData class or DocumentTermMatrix")
   bDT <- ifelse (inherits(object,"DocumentTermMatrix"), TRUE,FALSE)
- options(stringsAsFactors = FALSE)
+  options(stringsAsFactors = FALSE)
+  
+  
+  # Starting CA_New  
+  CA_New <- function (x, ncp = 5, row.sup = NULL, col.sup = NULL, quanti.sup = NULL, 
+                      quali.sup = NULL, graph = TRUE, axes = c(1, 2), row.w = NULL, 
+                      excl = NULL) 
+  {
+  
+    X <-x
+      
+    fct.eta2 <- function(vec, x, weights) {
+      VB <- function(xx) {
+        return(sum((colSums((tt * xx) * weights)^2)/ni))
+      }
+      tt <- tab.disjonctif(vec)
+      ni <- colSums(tt * weights)
+      unlist(lapply(as.data.frame(x), VB))/colSums(x * x *  weights)}
+    # End fct.eta2
+    
+    if (is.table(X)) X <- matrix(as.vector(X), nrow(X), dimnames = dimnames(X))
+    if (is.null(rownames(X))) rownames(X) <- 1:nrow(X)
+    if (is.null(colnames(X))) colnames(X) <- colnames(X, do.NULL = FALSE, prefix = "V")
+    if(bDT) X <- as.data.frame(as.matrix(X))  else  X <- as.data.frame(X)
+    
+    is.quali <- which(!unlist(lapply(X, is.numeric)))
+    X[, is.quali] <- lapply(X[, is.quali, drop = FALSE], as.factor)
+    for (i in is.quali) X[, i] = as.factor(X[, i])
+    X <- droplevels(X)
+    Xtot <- X
+
+    if (any(!sapply(X, is.numeric))) {
+      auxi = NULL
+      for (j in (1:ncol(X))[!((1:ncol(X)) %in% quali.sup)]) if (!is.numeric(X[, j])) 
+        auxi = c(auxi, colnames(X)[j])
+      if (!is.null(auxi)) 
+        stop(paste("\nThe following variables are not quantitative: ", auxi))
+    }
+    
+    if (!inherits(X, "data.frame")) stop("X is not a data.frame")
+    if (!is.null(row.sup)) X <- as.data.frame(X[-row.sup, ])
+    if ((!is.null(col.sup)) || (!is.null(quanti.sup)) || (!is.null(quali.sup))) 
+      X <- as.data.frame(X[, -c(col.sup, quanti.sup, quali.sup)])
+    
+    if (any(apply(X, 1, sum) == 0)) {
+      warning(paste0("The rows ", paste(rownames(X)[which(apply(X, 1, sum) == 0)], collapse = ", "),
+                     " sum at 0. They were suppressed from the analysis"))
+      X <- X[-which(apply(X, 1, sum) == 0), , drop = FALSE]
+    }
+    
+    
+    if (any(apply(X, 2, sum) == 0)) {
+      warning(paste0("The columns ", paste(colnames(X)[which(apply(X,2, sum) == 0)], collapse = ", "), 
+                     " sum at 0. They were suppressed from the analysis"))
+      X <- X[, -which(apply(X, 2, sum) == 0), drop = FALSE]
+    }
+    
+    
+    if (is.null(row.w)) row.w = rep(1, nrow(X))
+    row.w.init <- row.w
+    
+    if (length(row.w) != nrow(X)) stop("length of vector row.w should be the number of active rows")
+    total <- sum(X * row.w)
+    
+    F <- as.matrix(X) * (row.w/total)
+    marge.col <- colSums(F)
+    marge.row <- rowSums(F)
+    ncp <- min(ncp, (nrow(X) - 1), (ncol(X) - 1))
+    Tc <- t(t(F/marge.row)/marge.col) - 1
+    if (!is.null(excl)) marge.col[excl] <- 1e-15
+    tmp <- svd.triplet(Tc, row.w = marge.row, col.w = marge.col, ncp = ncp)
+    
+    if (!is.null(excl))  marge.col[excl] <- 0
+    eig <- tmp$vs^2
+    vp <- matrix(NA, length(eig), 3)
+    rownames(vp) <- paste("dim", 1:length(eig))
+    colnames(vp) <- c("eigenvalue", "percentage of variance", 
+                      "cumulative percentage of variance")
+    vp[, "eigenvalue"] <- eig
+    vp[, "percentage of variance"] <- (eig/sum(eig)) * 100
+    vp[, "cumulative percentage of variance"] <- cumsum(vp[,"percentage of variance"])
+    V <- tmp$V
+    U <- tmp$U
+    
+
+    eig <- eig[1:ncol(U)]
+    coord.col <- t(t(V) * sqrt(eig))
+    coord.row <- t(t(U) * sqrt(eig))
+    dist2.col <- colSums(Tc^2 * marge.row)
+    contrib.col <- t(t(coord.col^2 * marge.col)/eig)
+    cos2.col <- coord.col^2/dist2.col
+    colnames(coord.col) <- colnames(contrib.col) <- colnames(cos2.col) <- paste("Dim",1:length(eig))
+    rownames(coord.col) <- rownames(contrib.col) <- rownames(cos2.col) <- attributes(X)$names
+    dist2.row <- rowSums(t(t(Tc^2) * marge.col))
+    contrib.row <- t(t(coord.row^2 * marge.row)/eig)
+    cos2.row <- coord.row^2/dist2.row
+    colnames(coord.row) <- colnames(contrib.row) <- colnames(cos2.row) <- paste("Dim",1:length(eig))
+    rownames(coord.row) <- rownames(contrib.row) <- rownames(cos2.row) <- attributes(X)$row.names
+    
+    
+    inertia.row = marge.row * dist2.row
+    inertia.col = marge.col * dist2.col
+    names(inertia.col) <- attributes(coord.col)$row.names
+    names(inertia.row) <- attributes(coord.row)$row.names
+    res.call <- list(X = X, marge.col = marge.col, marge.row = marge.row, 
+                     ncp = ncp, row.w = row.w, excl = excl, call = match.call(), 
+                     Xtot = Xtot, N = sum(row.w * rowSums(X)))
+    
+    res.col <- list(coord = as.matrix(coord.col[, 1:ncp]), contrib = as.matrix(contrib.col[, 1:ncp] * 100), 
+                    cos2 = as.matrix(cos2.col[, 1:ncp]), inertia = inertia.col)
+    res.row <- list(coord = coord.row[, 1:ncp], contrib = contrib.row[, 1:ncp] * 100,
+                    cos2 = cos2.row[, 1:ncp], inertia = inertia.row)
+    res <- list(eig = vp[1:min(nrow(X) - 1, ncol(X) - 1), , drop = FALSE], 
+                call = res.call, row = res.row, col = res.col, svd = tmp)
+    
+
+    
+    if (!is.null(row.sup)) {
+      X.row.sup <- as.data.frame(Xtot[row.sup, ])
+      
+    if ((!is.null(col.sup)) || (!is.null(quanti.sup)) || (!is.null(quali.sup))) 
+      X.row.sup <- as.data.frame(X.row.sup[, -c(col.sup, quanti.sup, quali.sup)])
+      somme.row <- rowSums(X.row.sup)
+      X.row.sup <- X.row.sup/somme.row
+      coord.row.sup <- crossprod(t(as.matrix(X.row.sup)), V)
+      dist2.row <- rowSums(t((t(X.row.sup) - marge.col)^2/marge.col))
+      cos2.row.sup <- coord.row.sup^2/dist2.row
+      coord.row.sup <- coord.row.sup[, 1:ncp, drop = FALSE]
+      cos2.row.sup <- cos2.row.sup[, 1:ncp, drop = FALSE]
+      colnames(coord.row.sup) <- colnames(cos2.row.sup) <- paste("Dim", 1:ncp)
+      rownames(coord.row.sup) <- rownames(cos2.row.sup) <- rownames(X.row.sup)
+      res.row.sup <- list(coord = coord.row.sup, cos2 = cos2.row.sup)
+      res$row.sup <- res.row.sup
+      res$call$row.sup <- row.sup
+    }
+    
+    if (!is.null(col.sup)) {
+      X.col.sup <- as.data.frame(Xtot[, col.sup])
+      if (!is.null(row.sup)) 
+        X.col.sup <- as.data.frame(X.col.sup[-row.sup, ])
+      X.col.sup <- X.col.sup * row.w
+      colnames(X.col.sup) <- colnames(Xtot)[col.sup]
+      somme.col <- colSums(X.col.sup)
+      X.col.sup <- t(t(X.col.sup)/somme.col)
+      coord.col.sup <- crossprod(as.matrix(X.col.sup), U)
+      dist2.col <- colSums((X.col.sup - marge.row)^2/marge.row)   
+      coord.col.sup <- as.matrix(coord.col.sup[, 1:ncp, drop = FALSE])
+      cos2.col.sup <- coord.col.sup^2/dist2.col
+      cos2.col.sup <- cos2.col.sup[, 1:ncp, drop = FALSE]
+      colnames(coord.col.sup) <- colnames(cos2.col.sup) <- paste("Dim",1:ncp)   
+      rownames(coord.col.sup) <- rownames(cos2.col.sup) <- colnames(X.col.sup)
+      res.col.sup <- list(coord = coord.col.sup, cos2 = cos2.col.sup)
+      res$col.sup <- res.col.sup
+      res$call$col.sup <- col.sup
+    }
+    
+    
+
+    
+    if (!is.null(quanti.sup)) {
+      coord.quanti.sup <- matrix(NA, length(quanti.sup), ncp)
+      
+      if (is.null(row.sup)) 
+        coord.quanti.sup <- cov.wt(cbind.data.frame(res$row$coord, 
+                                                    Xtot[, quanti.sup, drop = FALSE]), cor = TRUE, 
+                                   wt = marge.row, method = "ML")$cor[-(1:ncp), 1:ncp, drop = FALSE]
+      else coord.quanti.sup <- cov.wt(cbind.data.frame(res$row$coord, 
+                                                       Xtot[-row.sup, quanti.sup, drop = FALSE]), wt = marge.row, 
+                                      cor = TRUE, method = "ML")$cor[-(1:ncp), 1:ncp, drop = FALSE]
+      dimnames(coord.quanti.sup) <- list(colnames(Xtot)[quanti.sup], paste("Dim", 1:ncp, sep = "."))   
+      res$quanti.sup$coord <- coord.quanti.sup
+      res$quanti.sup$cos2 <- coord.quanti.sup^2
+      res$call$quanti.sup <- quanti.sup
+    }
+    
+    
+    if (!is.null(quali.sup)) {
+      if (!is.null(row.sup)) 
+        X.del <- as.data.frame(Xtot[-row.sup, -c(col.sup,quanti.sup, quali.sup)])
+      else X.del <- Xtot[, -c(col.sup, quanti.sup, quali.sup)]
+      
+      X.quali.sup <- NULL
+      Xtot2 <- Xtot
+      if (!is.null(row.sup))  Xtot2 <- Xtot[-row.sup,] 
+      
+      for (j in 1:length(quali.sup)) {
+        Xtot2[,quali.sup[j]] <- droplevels(Xtot2[,quali.sup[j]] , reorder=FALSE)  
+        X.quali.sup <- rbind(X.quali.sup, matrix(unlist(by(X.del, 
+                                                           Xtot2[, quali.sup[j]], colSums)), ncol = ncol(X.del), byrow = T))
+      }
+      
+      somme.quali <- rowSums(X.quali.sup)
+      X.quali.sup <- X.quali.sup/somme.quali
+      coord.quali.sup <- crossprod(t(as.matrix(X.quali.sup)), V)
+      dist2.quali <- rowSums(t((t(X.quali.sup) - marge.col)^2/marge.col))
+      cos2.quali.sup <- coord.quali.sup^2/dist2.quali
+      coord.quali.sup <- coord.quali.sup[, 1:ncp, drop = FALSE]
+      cos2.quali.sup <- cos2.quali.sup[, 1:ncp, drop = FALSE]
+      
+      rownames(coord.quali.sup) <- rownames(cos2.quali.sup) <- paste(rep(colnames(Xtot2)[quali.sup], 
+                                                                         lapply(Xtot2[, quali.sup, drop = FALSE], nlevels)), 
+                                                                     unlist(lapply(Xtot2[, quali.sup, drop = FALSE], levels)),sep = ".") 
+      
+      colnames(coord.quali.sup) <- colnames(cos2.quali.sup) <- paste("Dim", 1:ncp)
+      res$quali.sup <- list(coord = coord.quali.sup, cos2 = cos2.quali.sup)
+      
+      Zqs <- tab.disjonctif(Xtot2[, quali.sup])
+      
+      Nj <- colSums(Zqs * row.w)
+      Nj <- colSums(Zqs * marge.row) * total
+      if (total > 1) 
+        coef <- sqrt(Nj * ((total - 1)/(total - Nj)))
+      else coef <- sqrt(Nj)
+      res$quali.sup$v.test <- res$quali.sup$coord * coef
+      
+      eta2 = matrix(NA, length(quali.sup), ncp)
+      eta2 <- sapply(as.data.frame(Xtot2[, quali.sup, drop = FALSE]), 
+                     fct.eta2, res$row$coord, weights = marge.row)
+      
+      eta2 <- t(as.matrix(eta2, ncol = ncp))
+      colnames(eta2) = paste("Dim", 1:ncp)
+      rownames(eta2) = colnames(Xtot)[quali.sup]
+      res$quali.sup$eta2 <- eta2
+      res$call$quali.sup <- quali.sup
+    }
  
-# Starting CA_New  
- CA_New <- function (X, ncp = 5, row.sup = NULL, col.sup = NULL, quanti.sup = NULL, 
-                     quali.sup = NULL, graph = TRUE, axes = c(1, 2), row.w = NULL, 
-                     excl = NULL) 
- {
-   
-   fct.eta2 <- function(vec, x, weights) {
-     VB <- function(xx) {
-       return(sum((colSums((tt * xx) * weights)^2)/ni))
-     }
-     tt <- tab.disjonctif(vec)
-     ni <- colSums(tt * weights)
-     unlist(lapply(as.data.frame(x), VB))/colSums(x * x *  weights)
-   }
-   
-   
-   if (is.table(X)) X <- matrix(as.vector(X), nrow(X), dimnames = dimnames(X))
-   
-   if (is.null(rownames(X))) rownames(X) <- 1:nrow(X)
-   
-   if (is.null(colnames(X))) colnames(X) <- colnames(X, do.NULL = FALSE, prefix = "V")
-   
-   if(bDT) X <- as.data.frame(as.matrix(X))  else  X <- as.data.frame(X)
-   is.quali <- which(!unlist(lapply(X, is.numeric)))
-   
-   X[, is.quali] <- lapply(X[, is.quali, drop = FALSE], as.factor)
-   for (i in is.quali) X[, i] = as.factor(X[, i])
-   X <- droplevels(X)
-   Xtot <- X
-   
-   
-   if (any(!sapply(X, is.numeric))) {
-     auxi = NULL
-     for (j in (1:ncol(X))[!((1:ncol(X)) %in% quali.sup)]) if (!is.numeric(X[, j])) 
-       auxi = c(auxi, colnames(X)[j])
-     if (!is.null(auxi)) 
-       stop(paste("\nThe following variables are not quantitative: ", auxi))
-   }
-   if (!inherits(X, "data.frame")) stop("X is not a data.frame")
-   if (!is.null(row.sup)) X <- as.data.frame(X[-row.sup, ])
-   if ((!is.null(col.sup)) || (!is.null(quanti.sup)) || (!is.null(quali.sup))) 
-     X <- as.data.frame(X[, -c(col.sup, quanti.sup, quali.sup)])
-   
-   if (any(apply(X, 1, sum) == 0)) {
-     warning(paste0("The rows ", paste(rownames(X)[which(apply(X, 1, sum) == 0)], collapse = ", "),
-                    " sum at 0. They were suppressed from the analysis"))
-     X <- X[-which(apply(X, 1, sum) == 0), , drop = FALSE]
-   }
-   
-   
-   if (any(apply(X, 2, sum) == 0)) {
-     warning(paste0("The columns ", paste(colnames(X)[which(apply(X, 
-                                                                  2, sum) == 0)], collapse = ", "), " sum at 0. They were suppressed from the analysis"))
-     X <- X[, -which(apply(X, 2, sum) == 0), drop = FALSE]
-   }
-   
-   
-   if (is.null(row.w)) row.w = rep(1, nrow(X))
-   row.w.init <- row.w
-   
-   if (length(row.w) != nrow(X)) stop("length of vector row.w should be the number of active rows")
-   total <- sum(X * row.w)
-   
-   F <- as.matrix(X) * (row.w/total)
-   marge.col <- colSums(F)
-   marge.row <- rowSums(F)
-   ncp <- min(ncp, (nrow(X) - 1), (ncol(X) - 1))
-   Tc <- t(t(F/marge.row)/marge.col) - 1
-   if (!is.null(excl)) marge.col[excl] <- 1e-15
-   tmp <- svd.triplet(Tc, row.w = marge.row, col.w = marge.col, ncp = ncp)
-   
-   if (!is.null(excl))  marge.col[excl] <- 0
-   eig <- tmp$vs^2
-   vp <- matrix(NA, length(eig), 3)
-   rownames(vp) <- paste("dim", 1:length(eig))
-   colnames(vp) <- c("eigenvalue", "percentage of variance", 
-                     "cumulative percentage of variance")
-   vp[, "eigenvalue"] <- eig
-   vp[, "percentage of variance"] <- (eig/sum(eig)) * 100
-   vp[, "cumulative percentage of variance"] <- cumsum(vp[,"percentage of variance"])
-   V <- tmp$V
-   U <- tmp$U
-   
-   eig <- eig[1:ncol(U)]
-   coord.col <- t(t(V) * sqrt(eig))
-   coord.row <- t(t(U) * sqrt(eig))
-   dist2.col <- colSums(Tc^2 * marge.row)
-   contrib.col <- t(t(coord.col^2 * marge.col)/eig)
-   cos2.col <- coord.col^2/dist2.col
-   colnames(coord.col) <- colnames(contrib.col) <- colnames(cos2.col) <- paste("Dim",1:length(eig))
-   rownames(coord.col) <- rownames(contrib.col) <- rownames(cos2.col) <- attributes(X)$names
-   dist2.row <- rowSums(t(t(Tc^2) * marge.col))
-   contrib.row <- t(t(coord.row^2 * marge.row)/eig)
-   cos2.row <- coord.row^2/dist2.row
-   colnames(coord.row) <- colnames(contrib.row) <- colnames(cos2.row) <- paste("Dim",1:length(eig))
-   rownames(coord.row) <- rownames(contrib.row) <- rownames(cos2.row) <- attributes(X)$row.names
-   
-   
-   inertia.row = marge.row * dist2.row
-   inertia.col = marge.col * dist2.col
-   names(inertia.col) <- attributes(coord.col)$row.names
-   names(inertia.row) <- attributes(coord.row)$row.names
-   res.call <- list(X = X, marge.col = marge.col, marge.row = marge.row, 
-                    ncp = ncp, row.w = row.w, excl = excl, call = match.call(), 
-                    Xtot = Xtot, N = sum(row.w * rowSums(X)))
-   
-   res.col <- list(coord = as.matrix(coord.col[, 1:ncp]), contrib = as.matrix(contrib.col[, 1:ncp] * 100), 
-                   cos2 = as.matrix(cos2.col[, 1:ncp]), inertia = inertia.col)
-   res.row <- list(coord = coord.row[, 1:ncp], contrib = contrib.row[, 1:ncp] * 100,
-                   cos2 = cos2.row[, 1:ncp], inertia = inertia.row)
-   res <- list(eig = vp[1:min(nrow(X) - 1, ncol(X) - 1), , drop = FALSE], 
-               call = res.call, row = res.row, col = res.col, svd = tmp)
-   
-   
-   
-   
-   if (!is.null(row.sup)) {
-     X.row.sup <- as.data.frame(Xtot[row.sup, ])
-     
-     if ((!is.null(col.sup)) || (!is.null(quanti.sup)) || 
-         (!is.null(quali.sup))) 
-       X.row.sup <- as.data.frame(X.row.sup[, -c(col.sup, quanti.sup, quali.sup)])
-     somme.row <- rowSums(X.row.sup)
-     X.row.sup <- X.row.sup/somme.row
-     coord.row.sup <- crossprod(t(as.matrix(X.row.sup)), V)
-     dist2.row <- rowSums(t((t(X.row.sup) - marge.col)^2/marge.col))
-     cos2.row.sup <- coord.row.sup^2/dist2.row
-     coord.row.sup <- coord.row.sup[, 1:ncp, drop = FALSE]
-     cos2.row.sup <- cos2.row.sup[, 1:ncp, drop = FALSE]
-     colnames(coord.row.sup) <- colnames(cos2.row.sup) <- paste("Dim", 1:ncp)
-     rownames(coord.row.sup) <- rownames(cos2.row.sup) <- rownames(X.row.sup)
-     res.row.sup <- list(coord = coord.row.sup, cos2 = cos2.row.sup)
-     res$row.sup <- res.row.sup
-     res$call$row.sup <- row.sup
-   }
-   
-   if (!is.null(col.sup)) {
-     X.col.sup <- as.data.frame(Xtot[, col.sup])
-     if (!is.null(row.sup)) 
-       X.col.sup <- as.data.frame(X.col.sup[-row.sup, ])
-     X.col.sup <- X.col.sup * row.w
-     colnames(X.col.sup) <- colnames(Xtot)[col.sup]
-     somme.col <- colSums(X.col.sup)
-     X.col.sup <- t(t(X.col.sup)/somme.col)
-     coord.col.sup <- crossprod(as.matrix(X.col.sup), U)
-     dist2.col <- colSums((X.col.sup - marge.row)^2/marge.row)   
-     coord.col.sup <- as.matrix(coord.col.sup[, 1:ncp, drop = FALSE])
-     cos2.col.sup <- coord.col.sup^2/dist2.col
-     cos2.col.sup <- cos2.col.sup[, 1:ncp, drop = FALSE]
-     colnames(coord.col.sup) <- colnames(cos2.col.sup) <- paste("Dim",1:ncp)   
-     rownames(coord.col.sup) <- rownames(cos2.col.sup) <- colnames(X.col.sup)
-     res.col.sup <- list(coord = coord.col.sup, cos2 = cos2.col.sup)
-     res$col.sup <- res.col.sup
-     res$call$col.sup <- col.sup
-   }
-   
-   
-   if (!is.null(quanti.sup)) {
-     coord.quanti.sup <- matrix(NA, length(quanti.sup), ncp)
-     
-     if (is.null(row.sup)) 
-       coord.quanti.sup <- cov.wt(cbind.data.frame(res$row$coord, 
-                                                   Xtot[, quanti.sup, drop = FALSE]), cor = TRUE, 
-                                  wt = marge.row, method = "ML")$cor[-(1:ncp), 1:ncp, drop = FALSE]
-     else coord.quanti.sup <- cov.wt(cbind.data.frame(res$row$coord, 
-                                                      Xtot[-row.sup, quanti.sup, drop = FALSE]), wt = marge.row, 
-                                     cor = TRUE, method = "ML")$cor[-(1:ncp), 1:ncp, drop = FALSE]
-     dimnames(coord.quanti.sup) <- list(colnames(Xtot)[quanti.sup], paste("Dim", 1:ncp, sep = "."))   
-     res$quanti.sup$coord <- coord.quanti.sup
-     res$quanti.sup$cos2 <- coord.quanti.sup^2
-     res$call$quanti.sup <- quanti.sup
-   }
-   
-   
-   if (!is.null(quali.sup)) {
-     if (!is.null(row.sup)) 
-       X.del <- as.data.frame(Xtot[-row.sup, -c(col.sup,quanti.sup, quali.sup)])
-     else X.del <- Xtot[, -c(col.sup, quanti.sup, quali.sup)]
-     
-     X.quali.sup <- NULL
-     Xtot2 <- Xtot
-     if (!is.null(row.sup))  Xtot2 <- Xtot[-row.sup,] 
-     
-     for (j in 1:length(quali.sup)) {
-       Xtot2[,quali.sup[j]] <- droplevels(Xtot2[,quali.sup[j]] , reorder=FALSE)  
-       X.quali.sup <- rbind(X.quali.sup, matrix(unlist(by(X.del, 
-                                                          Xtot2[, quali.sup[j]], colSums)), ncol = ncol(X.del), byrow = T))
-     }
-     
-     somme.quali <- rowSums(X.quali.sup)
-     X.quali.sup <- X.quali.sup/somme.quali
-     coord.quali.sup <- crossprod(t(as.matrix(X.quali.sup)), V)
-     dist2.quali <- rowSums(t((t(X.quali.sup) - marge.col)^2/marge.col))
-     cos2.quali.sup <- coord.quali.sup^2/dist2.quali
-     coord.quali.sup <- coord.quali.sup[, 1:ncp, drop = FALSE]
-     cos2.quali.sup <- cos2.quali.sup[, 1:ncp, drop = FALSE]
-     
-     rownames(coord.quali.sup) <- rownames(cos2.quali.sup) <- paste(rep(colnames(Xtot2)[quali.sup], 
-                                                                        lapply(Xtot2[, quali.sup, drop = FALSE], nlevels)), 
-                                                                    unlist(lapply(Xtot2[, quali.sup, drop = FALSE], levels)),sep = ".") 
-     
-     colnames(coord.quali.sup) <- colnames(cos2.quali.sup) <- paste("Dim", 1:ncp)
-     res$quali.sup <- list(coord = coord.quali.sup, cos2 = cos2.quali.sup)
-     
-     Zqs <- tab.disjonctif(Xtot2[, quali.sup])
-     
-     Nj <- colSums(Zqs * row.w)
-     Nj <- colSums(Zqs * marge.row) * total
-     if (total > 1) 
-       coef <- sqrt(Nj * ((total - 1)/(total - Nj)))
-     else coef <- sqrt(Nj)
-     res$quali.sup$v.test <- res$quali.sup$coord * coef
-     
-     eta2 = matrix(NA, length(quali.sup), ncp)
-     eta2 <- sapply(as.data.frame(Xtot2[, quali.sup, drop = FALSE]), 
-                    fct.eta2, res$row$coord, weights = marge.row)
-     
-     eta2 <- t(as.matrix(eta2, ncol = ncp))
-     colnames(eta2) = paste("Dim", 1:ncp)
-     rownames(eta2) = colnames(Xtot)[quali.sup]
-     res$quali.sup$eta2 <- eta2
-     res$call$quali.sup <- quali.sup
-   }
-   class(res) <- c("CA", "list")
-   if (graph & (ncp > 1)) {
-     print(plot(res, axes = axes))
-     if (!is.null(quanti.sup)) 
-       print(plot(res, choix = "quanti.sup", axes = axes, 
-                  new.plot = TRUE))
-   }
-   return(res)
- }
- 
- 
-##### Final CA_New 
- 
-# Functions -------------------
-plotLexCA <- function()
-{
-
-# if(dev.interactive()) dev.new()
-plot.LexCA(res, selDoc=NULL, selWord=NULL, eigen=TRUE, axes=axes, graph.type = "classic", new.plot=TRUE)
-
-
-if(!is.null(res$quanti.sup$coord)) {
-#  if(dev.interactive()) dev.new()
- plot.LexCA(res, selDoc=NULL, selWord=NULL, quanti.sup=rownames(res$quanti.sup$coord), eigen=FALSE, axes=axes, graph.type = "classic",
-            new.plot=TRUE)
-}
-
-#if(dev.interactive()) dev.new()
-  plot.LexCA(res, selDoc= paste("meta ", lmd), selWord= paste("meta ", lmw), eigen=FALSE, axes=axes, graph.type = "classic",
-             new.plot=TRUE)
-
-if(!is.null(rownames(res$segment$coord))& segment==TRUE){
-#  if(dev.interactive()) dev.new()
-  plot.LexCA(res, selDoc= NULL, selWord= NULL, selSeg="ALL", axes=axes, graph.type = "classic",
-             new.plot=TRUE)}
-
-if(!is.null(res$quali.sup)) {
-# if(dev.interactive()) dev.new()
-  plot.LexCA(res, selDoc= NULL, selWord= NULL, quali.sup="ALL", axes=axes, graph.type = "classic",
-             new.plot=TRUE)
- }
-
-if(!is.null(res$row.sup$coord)){
-   ident <- identical(dimnames(res$quali.sup$coord)[1], dimnames(res$row.sup$coord)[1])
-   if(ident==FALSE) {
-#  if(dev.interactive()) dev.new()
-   plot.LexCA(res, selDoc= NULL, selWord= NULL, selDocSup="ALL", axes=axes, graph.type = "classic",
-              new.plot=TRUE)
- }
-}
-
-if(!is.null(res$col.sup$coord)){
-   ident <- identical(dimnames(res$col.sup$coord)[1], dimnames(res$segment$coord)[1])
-   if(ident==FALSE) {
-#  if(dev.interactive()) dev.new()
-   plot.LexCA(res, selDoc= NULL, selWord= NULL, selWordSup="ALL", selSeg=NULL, axes=axes, graph.type = "classic",
-              new.plot=TRUE) }
-}
-}
-
-
-# Put documents at the end
-remdocs <- function(z,doc_sup){
-  df <- data.frame(z[,, drop=FALSE])
-  tmprow <- rownames(df)[doc_sup]
-  rowqq <- data.frame(df[doc_sup,, drop=FALSE])	
-  df <- rbind(df,rowqq)	
-  df <- data.frame(df[-doc_sup,,drop=FALSE])	
-  rownames(df)[(ndoc-ndocsup+1):ndoc] <- tmprow	
-  z <- data.frame(df[,, drop=FALSE])
- return(z)}
-
-# --------------- Check context quanti-quali
-checkcontext <- function(context_, TDContext) {
- if (is.character(context_)) 	
-        context_ <- which(colnames(TDContext) %in% context_)	
-        context_ <- colnames(TDContext)[context_]	
-        context_ <- context_[!is.na(context_)]	
-        context_ <- which(colnames(TDContext) %in% context_)	
-  if(length(context_ )==0) context_ <- NULL
- return(context_) }
-
-
-# --------------- Keys function
- Keys <- function(res,lmd,lmw,naxes, axes) {			
- title <- "Metakeys & Dockeys"
- col.word <- "red"; col.doc<-"blue"; cex=1
- axx <- axes[1]
- axy <- axes[2]			
- Ccontr <- res$col$contrib			
- Ccoor <- res$col$coord			
- Rcontr <-res$row$contrib			
- Rcoor <- res$row$coord			
- eigen <- res$eig			
-if(naxes>=min(nrow(Rcontr),nrow(Ccontr)))			
- naxes <- min((nrow(Rcontr)-1),(nrow(Ccontr)-1))			
-# Computing the metakeys: words with contributions over lmw*average_contribution of words  		
-
- 
- Metakeys <-vector(mode="list",length=naxes)		
-for (i in 1:naxes){Metakeys[[i]]=vector(mode="list",length=2)}	
-
-for(i in 1:naxes){		
-  lmw_ <- lmw*mean(Ccontr[,i])
-  Metakeys[[i]][[1]]<-sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]>0),i],decreasing=TRUE)	
-  if (length(Metakeys[[i]][[1]])==1) 	
-    names(Metakeys[[i]][[1]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]>0),i],decreasing=TRUE))]		
-  Metakeys[[i]][[2]]<-sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]<0),i],decreasing=TRUE)	
-  if (length(Metakeys[[i]][[2]])==1) 	
-    names(Metakeys[[i]][[2]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]<0),i],decreasing=TRUE))]		
+    
+    class(res) <- c("CA", "list")
+    
+    if (graph & (ncp > 1)) {
+      print(plot(res, axes = axes))
+      if (!is.null(quanti.sup)) 
+        print(plot(res, choix = "quanti.sup", axes = axes, 
+                   new.plot = TRUE))
+    }
+    return(res)
   }
+  
+
+  ##### Final CA_New 
+  
+  
+  # Functions -------------------
+  plotLexCA <- function()
+  {
+    # if(dev.interactive()) dev.new()
+    plot.LexCA(res, selDoc=NULL, selWord=NULL, eigen=TRUE, axes=axes, graph.type = "classic", new.plot=TRUE)
+    
+    
+    if(!is.null(res$quanti.sup$coord)) {
+      #  if(dev.interactive()) dev.new()
+      plot.LexCA(res, selDoc=NULL, selWord=NULL, quanti.sup=rownames(res$quanti.sup$coord), eigen=FALSE, axes=axes, 
+                 graph.type = "ggplot", new.plot=TRUE)
+    }
+    
+    #if(dev.interactive()) dev.new()
+    plot.LexCA(res, selDoc= paste("meta ", lmd), selWord= paste("meta ", lmw), eigen=FALSE, axes=axes, graph.type = "classic",
+               new.plot=TRUE)
+    
+    if(!is.null(rownames(res$segment$coord))& segment==TRUE){
+      #  if(dev.interactive()) dev.new()
+      plot.LexCA(res, selDoc= NULL, selWord= NULL, selSeg="ALL", axes=axes, graph.type = "classic",
+                 new.plot=TRUE)}
+    
+    if(!is.null(res$quali.sup)) {
+      # if(dev.interactive()) dev.new()
+      plot.LexCA(res, selDoc= NULL, selWord= NULL, quali.sup="ALL", axes=axes, graph.type = "classic",
+                 new.plot=TRUE)
+    }
+    
+    if(!is.null(res$row.sup$coord)){
+      ident <- identical(dimnames(res$quali.sup$coord)[1], dimnames(res$row.sup$coord)[1])
+      if(ident==FALSE) {
+        #  if(dev.interactive()) dev.new()
+        plot.LexCA(res, selDoc= NULL, selWord= NULL, selDocSup="ALL", axes=axes, graph.type = "classic",
+                   new.plot=TRUE)
+      }
+    }
+    
+    if(!is.null(res$col.sup$coord)){
+      ident <- identical(dimnames(res$col.sup$coord)[1], dimnames(res$segment$coord)[1])
+      if(ident==FALSE) {
+        #  if(dev.interactive()) dev.new()
+        plot.LexCA(res, selDoc= NULL, selWord= NULL, selWordSup="ALL", selSeg=NULL, axes=axes, graph.type = "classic",
+                   new.plot=TRUE) }
+    }
+  }
+  
 
 
- # Computing the Keydocs : documents/answers with contributions over lmd*average_contribution of documents 			
-#lmd <- 3; lmw<-3
+  # Put documents at the end
+  remdocs <- function(z,doc_sup){
+    df <- data.frame(z[,, drop=FALSE])
+    tmprow <- rownames(df)[doc_sup]
+    rowqq <- data.frame(df[doc_sup,, drop=FALSE])	
+    df <- rbind(df,rowqq)	
+    df <- data.frame(df[-doc_sup,,drop=FALSE])	
+    rownames(df)[(ndoc-ndocsup+1):ndoc] <- tmprow	
+    z <- data.frame(df[,, drop=FALSE])
+    return(z)}
+  
+  # --------------- Check context quanti-quali
+  checkcontext <- function(context_, TDContext) {
+    if (is.character(context_)) 	
+      context_ <- which(colnames(TDContext) %in% context_)	
+    context_ <- colnames(TDContext)[context_]	
+    context_ <- context_[!is.na(context_)]	
+    context_ <- which(colnames(TDContext) %in% context_)	
+    if(length(context_ )==0) context_ <- NULL
+    return(context_) }
+  
+  
+  # --------------- Keys function
+  Keys <- function(res,lmd,lmw,naxes, axes) {			
+    title <- "Metakeys & Dockeys"
+    col.word <- "red"; col.doc<-"blue"; cex=1
+    axx <- axes[1]
+    axy <- axes[2]			
+    Ccontr <- res$col$contrib			
+    Ccoor <- res$col$coord			
+    Rcontr <-res$row$contrib			
+    Rcoor <- res$row$coord			
+    eigen <- res$eig			
+    if(naxes>=min(nrow(Rcontr),nrow(Ccontr)))			
+      naxes <- min((nrow(Rcontr)-1),(nrow(Ccontr)-1))			
+    # Computing the metakeys: words with contributions over lmw*average_contribution of words  		
+    
 
+    Metakeys <-vector(mode="list",length=naxes)		
+    for (i in 1:naxes){Metakeys[[i]]=vector(mode="list",length=2)}	
+    
+    for(i in 1:naxes){		
+      lmw_ <- lmw*mean(Ccontr[,i])
+      Metakeys[[i]][[1]]<-sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]>0),i],decreasing=TRUE)	
+      if (length(Metakeys[[i]][[1]])==1) 	
+        names(Metakeys[[i]][[1]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]>0),i],decreasing=TRUE))]		
+      Metakeys[[i]][[2]]<-sort(Ccontr[which(Ccontr[,i]>lmw*mean(Ccontr[,i])&Ccoor[,i]<0),i],decreasing=TRUE)	
+      if (length(Metakeys[[i]][[2]])==1) 	
+        names(Metakeys[[i]][[2]])<-rownames(Ccontr)[which(Ccontr[,i]%in%sort(Ccontr[which(Ccontr[,i]>lmw_&Ccoor[,i]<0),i],decreasing=TRUE))]		
+    }
+    
+    
+    # Computing the Keydocs : documents/answers with contributions over lmd*average_contribution of documents 			
+    #lmd <- 3; lmw<-3
 
-Keydocs<-vector(mode="list",length=naxes)			
-for (i in 1:naxes){			
-	Keydocs[[i]]=vector(mode="list",length=2)}		
-for(i in 1:naxes){			
-	Keydocs[[i]][[1]]<-sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]>0),i],decreasing=TRUE)		
-	if (length(Keydocs[[i]][[1]])==1) 		
-       names(Keydocs[[i]][[1]])<-rownames(Rcontr)[which(Rcontr[,i]%in%sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]>0),i],decreasing=TRUE))]			
-	Keydocs[[i]][[2]]<-sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]<0),i],decreasing=TRUE)		
-	if (length(Keydocs[[i]][[2]])==1) 		
+    
+    Keydocs<-vector(mode="list",length=naxes)			
+    for (i in 1:naxes){			
+      Keydocs[[i]]=vector(mode="list",length=2)}		
+    for(i in 1:naxes){			
+      Keydocs[[i]][[1]]<-sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]>0),i],decreasing=TRUE)		
+      if (length(Keydocs[[i]][[1]])==1) 		
+        names(Keydocs[[i]][[1]])<-rownames(Rcontr)[which(Rcontr[,i]%in%sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]>0),i],decreasing=TRUE))]			
+      Keydocs[[i]][[2]]<-sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]<0),i],decreasing=TRUE)		
+      if (length(Keydocs[[i]][[2]])==1) 		
         names(Keydocs[[i]][[2]])<-rownames(Rcontr)[which(Rcontr[,i]%in%sort(Rcontr[which(Rcontr[,i]>lmd*mean(Rcontr[,i])&Rcoor[,i]<0),i],decreasing=TRUE))]			
-}			
-# metakeys and Keydocs				
-       Metakeys.Keydocs <-vector(mode="list",naxes)				
-       names(Metakeys.Keydocs)<-paste("DIM",1:naxes,sep="")				
-	for (i in 1:naxes){			
-                X <-list(names(Metakeys[[i]][[1]]),names(Keydocs[[i]][[1]]),				
-                      names(Metakeys[[i]][[2]]),names(Keydocs[[i]][[2]]))				
-            names(X)<-c("Metakeys+","Keydocs+","Metakeys-","Keydocs-")				
-           Metakeys.Keydocs[[i]]<-X       }				
- #Dimension of the words				
-    mkeys<-numeric()				
-	for (i in 1:naxes){			
-		for (j in 1:2){		
-			mkeys<-c(mkeys,names(Metakeys[[i]][[j]]))	}}
-mkeys<-as.factor(mkeys)	
-levels(mkeys)	
-matmkeys<-t(rbind(summary(mkeys,maxsum=10000),rep(naxes,length(levels(mkeys))),round(summary(mkeys,maxsum=10000)*100/naxes,2)))	
-colnames(matmkeys)<-c("Dim","Total.Dim","%Dim")	
-DimensionWord<-matmkeys[order(matmkeys[,1],decreasing = T),]	
+    }			
+    
+    # metakeys and Keydocs				
+    Metakeys.Keydocs <-vector(mode="list",naxes)				
+    names(Metakeys.Keydocs)<-paste("DIM",1:naxes,sep="")				
+    for (i in 1:naxes){			
+      X <-list(names(Metakeys[[i]][[1]]),names(Keydocs[[i]][[1]]),				
+               names(Metakeys[[i]][[2]]),names(Keydocs[[i]][[2]]))				
+      names(X)<-c("Metakeys+","Keydocs+","Metakeys-","Keydocs-")				
+      Metakeys.Keydocs[[i]]<-X       }				
+    #Dimension of the words	
+    
+    
 
- # Graph of metakeys and Keydocs on the "axes" of the CA
- axes<-c(axx,axy)
- # Identify metakeys of the dimensions "axes"
- ClusPal1<-which(Ccontr[,axes[1]]%in%Metakeys[[axes[1]]][[1]])
- ClusPal2<-which(Ccontr[,axes[1]]%in%Metakeys[[axes[1]]][[2]])
- ClusPal3<-which(Ccontr[,axes[2]]%in%Metakeys[[axes[2]]][[1]])
- ClusPal4<-which(Ccontr[,axes[2]]%in%Metakeys[[axes[2]]][[2]])
+    mkeys<-numeric()				
+    for (i in 1:naxes){			
+      for (j in 1:2){		
+        mkeys<-c(mkeys,names(Metakeys[[i]][[j]]))	}}
+    
+    mkeys<-as.factor(mkeys)	
+  nlevels <- length(levels(mkeys))
+  
+  # matmkeys<-t(rbind(summary(mkeys,maxsum=100000),rep(naxes,length(levels(mkeys))),
+   #                  round(summary(mkeys,maxsum=100000)*100/naxes,2)))	
+  matmkeys<-t(rbind(summary(mkeys,maxsum=nlevels),rep(naxes,nlevels),
+                   round(summary(mkeys,maxsum=nlevels)*100/naxes,2)))	
+    colnames(matmkeys)<-c("Dim","Total.Dim","%Dim")	
+   DimensionWord<-matmkeys[order(matmkeys[,1],decreasing = T),]	
+
+   
+   # Graph of metakeys and Keydocs on the "axes" of the CA
+   axes<-c(axx,axy)
+   # Identify metakeys of the dimensions "axes"
+   ClusPal1<-which(Ccontr[,axes[1]]%in%Metakeys[[axes[1]]][[1]])
+   ClusPal2<-which(Ccontr[,axes[1]]%in%Metakeys[[axes[1]]][[2]])
+   ClusPal3<-which(Ccontr[,axes[2]]%in%Metakeys[[axes[2]]][[1]])
+   ClusPal4<-which(Ccontr[,axes[2]]%in%Metakeys[[axes[2]]][[2]])
  ClusPal<-c(ClusPal1,ClusPal2,ClusPal3,ClusPal4)
  ClusPal<-ClusPal[!duplicated(ClusPal)]
 
@@ -415,7 +428,6 @@ if(length(ClusPal)==0&length(ClusDoc)>0){
  yl=c(min(Rcoor[ClusDoc,axes[2]]),max(Rcoor[ClusDoc,axes[2]]))}
 
  
-
 
 if(length(ClusPal)>0|length(ClusDoc)>0){
 dfW<-dfD<-NULL
@@ -512,18 +524,6 @@ keysR <- list(Word=dfW, Doc = dfD, lmd=lmd, lmw=lmw)
   
  } # End DocumentTermMatrix
    
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
  
  
  
@@ -743,6 +743,7 @@ pos.col.sup <- c(pos.word.sup,pos.seg.sup)
 
 if(nquali >0){ quali.sup <- c((ncoltemp+1):(ncoltemp+nquali)); ncoltemp <- ncoltemp+nquali}
 if(nquanti >0){ quanti.sup <- c((ncoltemp+1):(ncoltemp+nquanti)); ncoltemp <- ncoltemp+nquanti}
+
 
 # res <- FactoMineR::CA(LT, ncp, row.sup=row.sup, col.sup=word.seg.sup, quali.sup=quali.sup, quanti.sup=quanti.sup, graph=FALSE)
 # res <- FactoMineR::CA(LT, ncp, row.sup=row.sup, col.sup=pos.col.sup, quali.sup=quali.sup, quanti.sup=quanti.sup, graph=FALSE)
