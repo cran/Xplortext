@@ -1,5 +1,5 @@
-b91d6a6ce86c4667f3d9bdde8e879f03 *DESCRIPTION
-75fa02c8fc067cf60718a58b5978ff4d *NAMESPACE
+08ae691505cb3bfbb44d86708771c1bf *DESCRIPTION
+4a14c6960669e3ca20d9b482adfa71fb *NAMESPACE
 7590eae75c39cce5ee34eee5239b6fc3 *R/LabelTree.R
 3a25625e2cae3ef12dbedf46c15541e0 *R/LexCA.R
 27eeb3776d87f4617beac57179c97c1b *R/LexCHCca.R
@@ -19,11 +19,11 @@ f13bbfce76c481b791048feb2cc045bb *R/plot.LexGalt.R
 c49f194431977f8447a2446bcaa9a5da *R/print.TextData.R
 1e5ec2fdceda323e6d3cf70f439f1396 *R/summary.LexCA.R
 9716e76750d81796677b2b95ad81222f *R/summary.LexChar.R
-e06d3136faf5bb880620e97436d7af65 *R/summary.TextData.R
-b54db8794555342c4feee5fe0b1b8f5b *build/partial.rdb
+f0517b518ea4acc27f783feb5df87c8f *R/summary.TextData.R
+1dda19015f0aa969acee990c150e3ac9 *build/partial.rdb
 1be85b820fcff814e067756e81690d96 *data/open.question.RData
 458b90f75a1f4247f021401fe87437f8 *inst/CITATION
-d12a89b59cc659a13da4e6e5ff1c4052 *inst/Xplortext.pdf
+91ddaf079d9535020c1531be34e68dfc *inst/Xplortext.pdf
 4ab563568e0cf86a015dcf854fd7689a *man/LabelTree.Rd
 4396a09929a07a422bedca1cb3ec67ac *man/LexCA.Rd
 baca7ffb7e5746ab611bc5f125348db0 *man/LexCHCca.Rd
@@ -31,7 +31,7 @@ baca7ffb7e5746ab611bc5f125348db0 *man/LexCHCca.Rd
 3e60613a44d4042d58744db4b24c454f *man/LexGalt.Rd
 89fa04533baad45a9268487604c8e193 *man/LexHCca.Rd
 38e4ede39eec762df043b969672b722f *man/TextData.Rd
-7c128047f2b9bda64552cfd216a97499 *man/Xplortext-package.Rd
+51340ab4058d550f4edd67f486abd6d7 *man/Xplortext-package.Rd
 ad2d06c988497e1871588d5d346a14a0 *man/ellipseLexCA.Rd
 5eedc52572e743f4f6fc2c0a6fa48de2 *man/open.question.Rd
 c4fd33b9c45ae68a167e9d3d77dacca1 *man/plot.LexCA.Rd

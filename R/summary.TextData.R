@@ -12,7 +12,6 @@ if(is.null(nword)) nword<-0
 
 if(ndoc=="ALL") ndoc <- nrow(object$summDoc)
 
-
 if(nword=="ALL") nword <- object$info$Nword[[1]]
 
  nword <- min(nword, object$info$Nword[[1]])
@@ -48,7 +47,7 @@ if(var.agg=="") {
 A1 <- data.frame(nameF,name2)
 
 
-# A3 7 para ordenar  
+# A3 to sort  
 if(ordFreq==TRUE) {
   datDoc <- object$summDoc[with(object$summDoc, order(-object$summDoc$Occurrences.after)), ]
 } else {datDoc <-object$summDoc  }
@@ -84,9 +83,6 @@ if(nword>0){
     colnames(A1) <- c(format("Word",justify = "l"), "Frequency", "N.Documents")
     
 
-    
-    
-    
     if(is.null(file))  print(A1) else {
       out1 <- t(c("","Word", "Frequency", "N.Documents",sep="\t"))
       write.table(out1, quote=FALSE, sep = sep, col.names=FALSE, row.names=FALSE)
@@ -164,6 +160,7 @@ if(var.agg=="") {
     cat("Supplementary tables in: $context$quali$qualitable\n")
   }}
 
+
 if(info){
   cat("\n\nSummary of used argumments\n" )
   cat("==========================" )
@@ -172,6 +169,7 @@ if(object$info$name.var.agg[[1]]!="") {
   cat("\nThis is an aggregated TextData object built using the aggregated variable: ", object$info$name.var.agg[[1]]," \n")
 }
 
+  
 cat("* ", object$info$var.text[[2]], " :",object$info$var.text[[1]],"\n" )
 cat("* ", object$info$idiom[[2]], " :",object$info$idiom[[1]],"\n" )
 cat("* ", object$info$lminword[[2]], " :",object$info$lminword[[1]],"\n" )
@@ -188,13 +186,7 @@ cat("* ", object$info$stop.word.user[[2]], " :",sort(object$info$stop.word.user[
 
 
 
-
-
-
-
 } # End info TRUE
-
-
 if(!is.null(file)) sink()
 }
 

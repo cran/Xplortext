@@ -17,7 +17,7 @@ See \url{https://xplortext.unileon.es} for examples.
 Package: \tab Xplortext\cr
 Type: \tab Package\cr
 Version: \tab 1.5.4\cr
-Date: \tab 2024-11-06\cr
+Date: \tab 2024-11-12\cr
 License: GPL (>=2.0)
 }
 }

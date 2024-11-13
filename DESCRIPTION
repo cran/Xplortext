@@ -2,8 +2,8 @@ Package: Xplortext
 Type: Package
 Encoding: UTF-8
 Title: Statistical Analysis of Textual Data
-Version: 1.5.4
-Date: 2024-11-06
+Version: 1.5.5
+Date: 2024-11-12
 Authors@R: c(
            person(given="Ramón",family="Alvarez-Esteban", email="ramon.alvarez@unileon.es", role = c("aut", "cre"), comment = c(ORCID="0000-0002-4751-2797")),
            person(given="Mónica",family="Bécue-Bertaut", email="monica.becue@upc.edu", role = "aut", comment = c(ORCID = "0000-0002-6027-3655")),
@@ -27,6 +27,6 @@ Imports: ape, cluster, dendextend, flexclust, flashClust, ggdendro,
 URL: https://xplortext.unileon.es
 RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2024-11-06 21:17:25 UTC; ralve
+Packaged: 2024-11-12 10:27:01 UTC; ralve
 Repository: CRAN
-Date/Publication: 2024-11-06 21:30:05 UTC
+Date/Publication: 2024-11-13 08:50:02 UTC
